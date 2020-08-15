@@ -1,16 +1,16 @@
-/// <reference types="generator" />
+/// <reference types="iterables" />
 /// <reference path="./test.ts" />
 
 {
-  const G = Generator;
+  const I = Iterables;
   test('forEach()', () => {
     const result = '';
-    G.forEach(G.of(), e => e);
+    I.forEach(I.of(), e => e);
     expect(result).toBe('');
   });
   test('forEach()', () => {
     let result = '';
-    G.forEach(G.of(1, 2, 3, 4, 5), e => {
+    I.forEach(I.of(1, 2, 3, 4, 5), e => {
       result += e;
     });
     expect(result).toBe('12345');

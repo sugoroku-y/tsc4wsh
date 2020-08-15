@@ -1,7 +1,10 @@
 {
   "name": "tsc4wsh",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "main": "./lib/main.js",
+  "engines": {
+    "node": ">=10.17.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sugoroku-y/tsc4wsh.git"
@@ -20,37 +23,20 @@
   },
   "license": "NYSL",
   "dependencies": {
-    "@types/activex-adodb": "^6.1.6",
-    "@types/activex-scripting": "^1.0.6",
-    "@types/activex-shell": "^1.0.1",
-    "@types/windows-script-host": "^5.8.2",
-    "optimist": "^0.6.1",
-    "typescript": "~3.1.6",
+    "@types/activex-adodb": "^6.1.7",
+    "@types/activex-scripting": "^1.0.7",
+    "@types/activex-shell": "^1.0.2",
+    "@types/windows-script-host": "^5.8.3",
+    "typescript": "^3.9.7",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27"
   },
   "devDependencies": {
-    "@types/node": "^10.12.19",
+    "@types/node": "^10.14.8",
     "@types/optimist": "0.0.29",
     "@types/xmldom": "^0.1.29",
-    "husky": "^1.3.1",
-    "lint-staged": "^8.1.3",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.16.4",
-    "tslint": "^5.12.1",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*.ts": [
-      "tslint --fix",
-      "git add"
-    ]
+    "prettier": "^1.17.1"
   },
   "bin": {
     "tsc4wsh": "./bin/tsc4wsh.js"

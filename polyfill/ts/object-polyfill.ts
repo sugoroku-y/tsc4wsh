@@ -1,8 +1,9 @@
 // tslint:disable-next-line:interface-name
-interface SymbolConstructor {
-  isSymbol(symbol: any): boolean;
+interface ObjectConstructor {
+  entries(o: object): Array<[string, any]>;
+  values(obj: any): any[];
+  assign(target: any, ...sources: any[]): any;
 }
-
 (function(this: any) {
   const hasOwnProperty = Object.prototype.hasOwnProperty;
   const hasDontEnumBug = !{toString: null}.propertyIsEnumerable('toString');
@@ -51,8 +52,8 @@ interface SymbolConstructor {
     function entries(obj: any) {
       return Object.keys(obj).map<[string, any]>(key => [key, obj[key]]);
     };
-  Object.values =
-    Object.values ||
+  (Object.values as any) =
+    (Object.values as any) ||
     function values(obj: any) {
       return Object.keys(obj).map(key => obj[key]);
     };
@@ -78,8 +79,8 @@ interface SymbolConstructor {
       F.prototype = proto;
       return new (F as any)();
     };
-  Object.assign =
-    Object.assign ||
+  (Object.assign as any) =
+    (Object.assign as any) ||
     function assign(target: any, ...sources: any[]) {
       if (target == null) {
         throw new TypeError('Cannot convert null or undefined to object');

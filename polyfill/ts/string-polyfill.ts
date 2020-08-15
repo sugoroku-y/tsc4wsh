@@ -1,3 +1,8 @@
+interface String {
+  padStart(length: number, padding: string): string;
+  padEnd(length: number, padding: string): string;
+  repeat(count: number): string;
+}
 (function() {
   String.prototype.repeat =
     String.prototype.repeat ||
@@ -66,8 +71,8 @@
           .substr(0, count)
       );
     };
-  String.prototype.startsWith =
-    String.prototype.startsWith ||
+  (String.prototype as any).startsWith =
+    (String.prototype as any).startsWith ||
     function startsWith(this: string, searchString: string, position?: number) {
       position = position !== undefined ? position : 0;
       return (
@@ -75,8 +80,8 @@
         this.lastIndexOf(searchString, position) === position
       );
     };
-  String.prototype.endsWith =
-    String.prototype.endsWith ||
+  (String.prototype as any).endsWith =
+    (String.prototype as any).endsWith ||
     function endsWith(this: string, searchString: string, position?: number) {
       position =
         (position !== undefined ? position : this.length) - searchString.length;
@@ -88,8 +93,8 @@
       const match = /(?:\S(?:.*\S)?)(?=\s*$)/.exec(this);
       return (match && match[0]) || '';
     };
-  String.prototype.includes =
-    String.prototype.includes ||
+  (String.prototype as any).includes =
+    (String.prototype as any).includes ||
     function includes(this: string, searchString: string, position?: number) {
       if (typeof position !== 'number') {
         position = 0;
@@ -110,7 +115,9 @@
     const str = '' + this;
     // Symbol.splitがあればそちらを使う
     if (
-      typeof separator === 'object' &&
+      separator &&
+      typeof separator !== 'string' &&
+      !(separator instanceof RegExp) &&
       typeof separator[Symbol.split] === 'function'
     ) {
       return separator[Symbol.split](str, limit);
@@ -179,7 +186,9 @@
     }
     // セパレータが空文字の場合は1文字ごと分割
     if (!separator) {
-      return new Array(str.length).fill(0).map((_, i) => str.substr(i, 1));
+      return Array(str.length)
+        .fill(0)
+        .map((_, i) => str.substr(i, 1));
     }
     // 文字列で分割
     separator = '' + separator;

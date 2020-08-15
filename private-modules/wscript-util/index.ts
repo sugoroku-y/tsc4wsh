@@ -1,5 +1,5 @@
 /// <reference types="msxml2" />
-/// <reference types="generator" />
+/// <reference types="iterables" />
 
 //
 namespace WScriptUtil {
@@ -43,7 +43,7 @@ namespace WScriptUtil {
       return false;
     }
     export function Unnamed() {
-      return Generator.from(WScript.Arguments.Unnamed);
+      return Iterables.from(WScript.Arguments.Unnamed);
     }
   }
 
@@ -59,7 +59,7 @@ namespace WScriptUtil {
     const doc = WScript.CreateObject('Msxml2.DOMDocument.6.0');
     doc.load(WScript.ScriptFullName);
     let hasError = false;
-    for (const node of Generator.from(doc.selectNodes('/job/runtime/named'))) {
+    for (const node of Iterables.from(doc.selectNodes('/job/runtime/named'))) {
       if (node.nodeType !== MSXML2.DOMNodeType.NODE_ELEMENT) {
         continue;
       }

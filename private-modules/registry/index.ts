@@ -8,7 +8,7 @@ interface SafeArray<T> {
   ubound(dimension: number): number;
 }
 
-namespace IWbemScripting {
+namespace WbemScripting {
   export interface ISWbemLocator {
     ConnectServer(
       server?: string,

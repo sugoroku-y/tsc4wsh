@@ -1,9 +1,9 @@
 /// <reference types="activex-scripting" />
-/// <reference types="generator" />
+/// <reference types="iterables" />
 /// <reference path="./test.ts" />
 
-namespace Generator_from_test {
-  const G = Generator;
+namespace Iterables_from_test {
+  const I = Iterables;
   declare const fso: Scripting.FileSystemObject;
 
   test('from(fso.GetFolder("..").SubFolders', () => {
@@ -18,7 +18,7 @@ namespace Generator_from_test {
       fso.CreateFolder(path2);
       try {
         const subfolder2 = fso.GetFolder(path2);
-        expect(G.from(folder.SubFolders)).toBe(G.of(subfolder1, subfolder2));
+        expect(I.from(folder.SubFolders)).toBe(I.of(subfolder1, subfolder2));
       } finally {
         fso.DeleteFolder(path2);
       }

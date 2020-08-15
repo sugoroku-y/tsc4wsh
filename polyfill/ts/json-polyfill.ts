@@ -146,10 +146,12 @@
     }
     // 特定のワードを値に変換
     private parseWord(pattern: string, value: any): any {
+      this.skipWS();
       return this.stickyMatch(pattern) ? value : this.failedParsing();
     }
     // 数値を変換
     private parseNumber() {
+      this.skipWS();
       const match = this.stickyMatch(
         `-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[Ee][-+]?\\d+)?\\b`
       );
@@ -157,6 +159,7 @@
     }
     // 文字列を変換
     private parseString() {
+      this.skipWS();
       const match = this.stickyMatch(`"[^\\\\"]*(?:\\\\.[^\\\\"]*)*"`);
       return match ? dequote(match[0]) : this.failedParsing();
     }
@@ -205,6 +208,7 @@
           });
         case '{':
           return this.parseSequence('}', {}, obj => {
+            this.skipWS();
             const name = this.parseString();
             this.scanOne(':');
             obj[name] = this.parseValue();

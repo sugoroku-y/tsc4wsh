@@ -1,22 +1,29 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript';
-import {promisify} from 'util';
 
-const fsExists = promisify(fs.exists);
-const fsWriteFile = promisify(fs.writeFile);
-
-async function findTSConfig(source: string) {
+function loadTsConfigFile(source: string): [any, string | null] {
   let dirpath = source;
   while (true) {
     const newdirpath = path.resolve(dirpath, '..');
     if (dirpath === newdirpath) {
-      return null;
+      // ルートまで行っても見つからなかった
+      return [null, null];
     }
     dirpath = newdirpath;
     const tsconfig = path.join(dirpath, 'tsconfig.json');
-    if (await fsExists(tsconfig)) {
-      return tsconfig;
+    // ts.readConfigFileではファイルが存在しないのか、存在していて読み込み時にエラーになったのか区別が付けられないので、先に存在確認する
+    if (!ts.sys.fileExists(tsconfig)) {
+      // 存在していなければ次
+      continue;
+    }
+
+    const {config, error} = ts.readConfigFile(tsconfig, ts.sys.readFile);
+    if (error) {
+      throw new Error(error.toString());
+    }
+    if (config) {
+      return [config, tsconfig];
     }
   }
 }
@@ -57,7 +64,7 @@ export async function generateTSConfig() {
     path.relative(p, p1).replace(/\\/g, '/'),
     path.relative(p, p2).replace(/\\/g, '/'),
   ];
-  await fsWriteFile(
+  await fs.promises.writeFile(
     path.resolve('tsconfig.json'),
     JSON.stringify(config, undefined, 2),
     'utf8'
@@ -167,17 +174,11 @@ function generateObjectMap(program: ts.Program) {
   return objectMap;
 }
 
-export async function transpile(
+export function transpile(
   fileName: string,
   dependencies?: {[filepath: string]: {[filepath: string]: true}}
 ) {
-  const tsconfigPath = await findTSConfig(fileName);
-  const {config, error} = tsconfigPath
-    ? ts.readConfigFile(tsconfigPath, ts.sys.readFile)
-    : {config: null, error: null};
-  if (error) {
-    throw new Error(error.toString());
-  }
+  const [config, tsconfigPath] = loadTsConfigFile(fileName);
   const adjustedConfig = adjustConfig((config && config.compilerOptions) || {});
   const tsbasedir = path.dirname(tsconfigPath || fileName);
   const {

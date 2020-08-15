@@ -6,7 +6,9 @@
     "strictNullChecks": true,
     "types": ["windows-script-host"],
     "typeRoots": [
-      ".."
+      "..",
+      "../../node_modules/@types",
+      "../../node_modules"
     ],
     "outFile": "./",
     "esModuleInterop": true

@@ -1,8 +1,8 @@
 {
-  "name": "generator",
+  "name": "iterables",
   "version": "0.0.1",
   "description": "Utilities for generators",
-  "main": "./Generator.ts",
+  "main": "./iterables.ts",
   "scripts": {
     "build:test": "tsc4wsh test/test-all.ts",
     "test": "cscript //nologo test/test-all.wsf"

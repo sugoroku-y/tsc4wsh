@@ -37,11 +37,10 @@ class TestResult<T> {
     }
     if (
       typeof this.actual === 'object' &&
-      'next' in this.actual &&
-      typeof (this.actual as any).next === 'function'
+      typeof (this.actual as any)[Symbol.iterator] === 'function'
     ) {
-      const a = [...((this.actual as any) as IterableIterator<any>)];
-      const e = [...((expected as any) as IterableIterator<any>)];
+      const a = [...((this.actual as any) as Iterable<any>)];
+      const e = [...((expected as any) as Iterable<any>)];
       if (a.length !== e.length) {
         throw new TestFailed(
           `expected.length: ${e.length}, but actual.length: ${a.length}`
@@ -112,7 +111,7 @@ function test(caption: string, testproc: () => void): void {
 function expect(v: number): TestResult<number>;
 function expect(v: string): TestResult<string>;
 function expect(v: boolean): TestResult<boolean>;
-function expect<T>(v: IterableIterator<T>): TestResult<IterableIterator<T>>;
+function expect<T>(v: Iterable<T>): TestResult<Iterable<T>>;
 function expect<T>(v: () => any): TestResult<() => any>;
 function expect<T>(v: T): TestResult<T> {
   return new TestResult<T>(v);

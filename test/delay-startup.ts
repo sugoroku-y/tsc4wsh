@@ -1,4 +1,4 @@
-/// <reference types="generator" />
+/// <reference types="iterables" />
 
 declare const fso: Scripting.FileSystemObject;
 declare const wshshell: IWshRuntimeLibrary.WshShell;
@@ -7,7 +7,7 @@ const shortcuts: {[targetPath: string]: string} = {};
 
 // スクリプトと同じディレクトリにあるショートカットの実体をMapに記憶
 const dir = fso.GetFolder(fso.GetParentFolderName(WScript.ScriptFullName));
-for (const file of Generator.from(dir.Files)) {
+for (const file of Iterables.from(dir.Files)) {
   if (!/\.lnk$/i.test(file.Name)) {
     continue;
   }
@@ -82,7 +82,7 @@ const oService = oLocator.ConnectServer();
 while (true) {
   // 現在実行中の全プロセスを取得、ショートカットの実体と同じだったらショートカットのマップから削除
   const oClassSet = oService.ExecQuery('Select * From Win32_Process');
-  for (const objProcess of Generator.from(oClassSet)) {
+  for (const objProcess of Iterables.from(oClassSet)) {
     if (!objProcess.ExecutablePath) {
       continue;
     }

@@ -1,22 +1,22 @@
 {
-  "compilerOptions": {
-    "target": "es3",
-    "module": "none",
-    "outFile": "./dummy.js",
-    "downlevelIteration": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "types": [
-      "windows-script-host",
-      "activex-scripting",
-      "activex-adodb"
-    ],
-    "lib": [
-      "es2018"
-    ],
-    "typeRoots": [
+    "compilerOptions": {
+        "target": "es3",
+        "module": "none",
+        "outFile": "./dummy.js",
+        "downlevelIteration": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "types": [
+            "windows-script-host",
+            "activex-scripting",
+            "activex-adodb"
+        ],
+        "lib": [
+            "es2018"
+        ],
+        "typeRoots": [
       "../private-modules",
       "../private-modules/@types"
-    ]
-  }
+        ]
+    }
 }

@@ -1,5 +1,5 @@
 /// <reference types="wscript-util" />
-/// <reference types="generator" />
+/// <reference types="iterables" />
 /// <reference types="filesystemobject-util" />
 /// <reference types="windows-installer" />
 /// <reference types="msxml2" />
@@ -277,7 +277,7 @@ namespace filever {
    */
   const format = WScriptUtil.Arguments.Named(['Format', 'F']) || '$r\t$v';
 
-  /**
+  /** 
    * 追加書き込みするかどうか。省略時には新規書き込み。
    */
   const appendMode = WScriptUtil.Arguments.Switch(['Append', 'A']);
@@ -571,7 +571,7 @@ path of files and directories...
 `);
       return;
     }
-    let args = [...Generator.from(WScript.Arguments.Unnamed)];
+    let args = [...Iterables.from(WScript.Arguments.Unnamed)];
     if (args.length === 0) {
       args = ['**'];
     }

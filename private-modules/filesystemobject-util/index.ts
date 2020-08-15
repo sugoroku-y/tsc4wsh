@@ -1,11 +1,10 @@
 /// <reference types="activex-scripting" />
-/// <reference types="generator" />
+/// <reference types="iterables" />
 
 namespace Scripting.FileSystemObject.Utils {
   declare const fso: Scripting.FileSystemObject;
 
   type FolderItem = File | Folder;
-  const G = Generator;
 
   export function isFolder(f: FolderItem): f is Folder {
     return 'Files' in f;
@@ -21,13 +20,18 @@ namespace Scripting.FileSystemObject.Utils {
     });
   }
   export function files(folder: Folder) {
-    return sort([...G.from(folder.Files)]);
+    return sort([...Iterables.from(folder.Files)]);
   }
   export function subFolders(folder: Folder) {
-    return sort([...G.from(folder.SubFolders)]);
+    return sort([...Iterables.from(folder.SubFolders)]);
   }
   export function filesAndSubFolders(folder: Folder) {
-    return sort([...G.concat(G.from(folder.Files), G.from(folder.SubFolders))]);
+    return sort([
+      ...Iterables.concat(
+        Iterables.from(folder.Files),
+        Iterables.from(folder.SubFolders)
+      ),
+    ]);
   }
   export function getItem(path: string) {
     if (fso.FileExists(path)) {
@@ -118,7 +122,7 @@ namespace Scripting.FileSystemObject.Utils {
           }
           if (i === path.length) {
             return path;
-          }
+        }
           return result.slice(0, i);
         }
         return result;
@@ -136,7 +140,7 @@ namespace Scripting.FileSystemObject.Utils {
     folder: Scripting.Folder
   ): IterableIterator<Scripting.Folder> {
     yield folder;
-    for (const f of Generator.from(folder.SubFolders)) {
+    for (const f of Iterables.from(folder.SubFolders)) {
       yield* recursiveFolders(f);
     }
   }
@@ -144,7 +148,7 @@ namespace Scripting.FileSystemObject.Utils {
     folder: Scripting.Folder
   ): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
-      yield* Generator.from(f.Files);
+      yield* Iterables.from(f.Files);
     }
   }
   export function* recursiveFolderAndFiles(
@@ -152,7 +156,7 @@ namespace Scripting.FileSystemObject.Utils {
   ): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
       yield f;
-      yield* Generator.from(f.Files);
+      yield* Iterables.from(f.Files);
     }
   }
 
@@ -167,25 +171,25 @@ namespace Scripting.FileSystemObject.Utils {
     const regex =
       '^' +
       pattern.replace(/[\^$()\[\]{}+.*?,]/g, ch => {
-        switch (ch) {
-          case '*':
-            return '.*';
-          case '?':
-            return '.';
-          case '{':
-            ++depth;
-            return '(?:';
-          case '}':
+      switch (ch) {
+      case '*':
+        return '.*';
+      case '?':
+        return '.';
+      case '{':
+        ++depth;
+        return '(?:';
+      case '}':
             if (depth <= 0) {
               throw new Error('Unmatched `}`');
             }
-            --depth;
-            return ')';
-          case ',':
-            return depth > 0 ? '|' : ',';
-          default:
-            return '\\' + ch;
-        }
+        --depth;
+        return ')';
+      case ',':
+        return depth > 0 ? '|' : ',';
+      default:
+        return '\\' + ch;
+      }
       }) +
       '$';
     if (depth > 0) {
@@ -205,19 +209,19 @@ namespace Scripting.FileSystemObject.Utils {
       : fso.BuildPath(basedir, pattern);
     if (!/[*?{]/.test(fullpath)) {
       if (fso.FolderExists(fullpath)) {
-        return Generator.of(fso.GetFolder(fullpath));
+        return Iterables.of(fso.GetFolder(fullpath));
       }
       if (fso.FileExists(fullpath)) {
-        return Generator.of(fso.GetFile(fullpath));
+        return Iterables.of(fso.GetFile(fullpath));
       }
-      return Generator.of<Scripting.File>();
+      return Iterables.of<Scripting.File>();
     }
     const match = fullpath.match(
       /^(?:[A-Z]:|\\\\[^\\]+\\+[^\\]+)?(?:\\+[^*?{]+)*\\+/i
     );
     if (!match || match.index !== 0) {
       throw new Error('');
-    }
+      }
     if (match.index >= fullpath.length) {
       throw new Error('');
     }
@@ -235,45 +239,45 @@ namespace Scripting.FileSystemObject.Utils {
             yield f;
           };
         }
-        const last = index + 1 === array.length;
+      const last = index + 1 === array.length;
         if (pathAtom === '**') {
           return last ? recursiveFolderAndFiles : recursiveFolders;
         }
         if (/[*?{]/.test(pathAtom)) {
           const atomPattern = wildcardToRegExp(pathAtom);
-          return function*(ff: Scripting.Folder) {
-            for (const f of Generator.from(ff.SubFolders)) {
+        return function*(ff: Scripting.Folder) {
+            for (const f of Iterables.from(ff.SubFolders)) {
               if (atomPattern && atomPattern.test(f.Name)) {
                 yield f;
               }
-            }
-            if (last) {
-              for (const f of Generator.from(ff.Files)) {
+          }
+          if (last) {
+              for (const f of Iterables.from(ff.Files)) {
                 if (atomPattern && atomPattern.test(f.Name)) {
                   yield f;
                 }
-              }
-            }
-          };
-        }
-        return function*(ff: Scripting.Folder) {
-          const lastpath = fso.BuildPath(ff.Path, pathAtom);
-          if (fso.FolderExists(lastpath)) {
-            yield fso.GetFolder(lastpath);
-            return;
-          }
-          if (last) {
-            if (fso.FileExists(lastpath)) {
-              yield fso.GetFile(lastpath);
-              return;
             }
           }
         };
-      });
+      }
+      return function*(ff: Scripting.Folder) {
+          const lastpath = fso.BuildPath(ff.Path, pathAtom);
+        if (fso.FolderExists(lastpath)) {
+          yield fso.GetFolder(lastpath);
+          return;
+        }
+        if (last) {
+          if (fso.FileExists(lastpath)) {
+            yield fso.GetFile(lastpath);
+            return;
+          }
+        }
+      };
+    });
     return (function* traverse(
       ff: Scripting.Folder,
       index: number
-    ): IterableIterator<Scripting.Folder | Scripting.File> {
+    ): Iterable<Scripting.Folder | Scripting.File> {
       if (index + 1 === pathes.length) {
         yield* pathes[index](ff);
         return;

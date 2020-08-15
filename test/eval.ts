@@ -1,4 +1,5 @@
-/// <reference types="generator" />
+/// <reference types="iterables" />
+/// <reference types="debugContext" />
 
 /**
  * このスクリプトの使用方法を表示する
@@ -21,7 +22,7 @@ const cachedProgid: {[name: string]: string} = {
 };
 (function(this: any) {
   const args: string[] = [];
-  const g = Generator.from(WScript.Arguments)[Symbol.iterator]();
+  const g = Iterables.from(WScript.Arguments)[Symbol.iterator]();
   for (let ir = g.next(); !ir.done; ir = g.next()) {
     const arg = ir.value;
     if (arg === '--') {
@@ -31,36 +32,36 @@ const cachedProgid: {[name: string]: string} = {
       break;
     }
     switch (arg) {
-      case '-r':
-      case '--require':
-        // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
-        const nextarg = ((ir = g.next() || usage()), ir.value);
+    case '-r':
+    case '--require':
+      // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
+        const nextarg = ((ir = g.next()), ir.done && usage(), ir.value);
         const eqIndex = nextarg.indexOf('=');
         const {name, progid} = (() => {
-          if (eqIndex <= 0) {
+      if (eqIndex <= 0) {
             if (!(nextarg in cachedProgid)) {
               return usage();
             }
             return {name: nextarg, progid: cachedProgid[nextarg]};
-          } else {
+      } else {
             return {
               name: nextarg.substr(0, eqIndex),
               progid: nextarg.substr(eqIndex + 1),
             };
-          }
+      }
         })();
-        this[name] = WScript.CreateObject(progid as any);
-        continue;
-      case '-l':
-      case '--load':
-        // 外部スクリプトを読み込めるようにする
-        const loadpath = ((ir = g.next() || usage()), ir.value);
+      this[name] = WScript.CreateObject(progid as any);
+      continue;
+    case '-l':
+    case '--load':
+      // 外部スクリプトを読み込めるようにする
+        const loadpath = ((ir = g.next()), ir.done && usage(), ir.value);
         new Function(
           WScript.CreateObject('Scripting.FileSystemObject')
-            .OpenTextFile(arg)
+            .OpenTextFile(loadpath)
             .ReadAll()
         ).call(this);
-        continue;
+      continue;
     }
     args.push(arg);
   }
@@ -73,6 +74,9 @@ const cachedProgid: {[name: string]: string} = {
   // Functionを使ってスクリプトを実行
   try {
     const r = new Function(`
+      function breakpoint() {
+        this.debugContext.breakpoint();
+      }
       return eval("${script.replace(/["\\\x00-\x1f\x7f]/g, ch =>
         ch === '"' || ch === '\\'
           ? '\\' + ch
@@ -82,17 +86,17 @@ const cachedProgid: {[name: string]: string} = {
           ? '\\r'
           : ch === '\n'
           ? '\\n'
-          : '\\' +
-            ch
-              .charCodeAt(0)
-              .toString(16)
-              .padStart(2, '0')
+          : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2)
       )}")
     `).apply(this, args);
     // スクリプトの返値をプロセスの終了コードとする
     WScript.Quit(+r || 0);
   } catch (ex) {
-    WScript.StdErr.WriteLine(`${ex.name}(${ex.number}): ${ex.message}`);
+    WScript.StdErr.WriteLine(
+      `${ex.name || ''}${(ex.number &&
+        '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')') ||
+        ''}${ex.message}`
+    );
     WScript.Quit(1);
   }
 })();

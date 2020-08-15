@@ -1,8 +1,5 @@
 import * as fs from 'fs';
-import * as optimist from 'optimist';
-import * as os from 'os';
 import * as path from 'path';
-import {promisify} from 'util';
 import * as xmldom from 'xmldom';
 import {generateTSConfig, transpile} from './transpile';
 import {
@@ -11,12 +8,7 @@ import {
   wildcardToRegExp,
   wildcardToRegExpForPath,
 } from './wildcard';
-
-const fsExists = promisify(fs.exists);
-const fsMkdir = promisify(fs.mkdir);
-const fsWriteFile = promisify(fs.writeFile);
-const fsReadFile = promisify(fs.readFile);
-const fsStat = promisify(fs.stat);
+import optionalist from './optionalist';
 
 /**
  * job要素にobject要素を追加する
@@ -71,7 +63,7 @@ function appendScriptElement(jobElement: Element, script: string) {
     .replace(/^\ufeff/, '') // remove BOM
     .replace(/\r\n/g, '\n') // CRLF -> LF
     .replace(/^(?!\n)/, '\n') // insert LF to BOS
-    .replace(/[^\n]$/, '$0\n') // append LF to EOS
+    .replace(/[^\n]$/, '$&\n') // append LF to EOS
     // `/// <wsh:runtime>`～ `/// </wsh:runtime>` をwsfファイルのruntime要素に出力
     .replace(reRuntime, rtContent => {
       const runtime = rtContent
@@ -142,17 +134,19 @@ interface IDependencies {
 
 const dom = new xmldom.DOMImplementation();
 const serializer = new xmldom.XMLSerializer();
-// Symbolのポリフィルは関数として宣言しなければうまく動かない(その上、TypeScriptで関数として書くと標準の宣言、定義に邪魔されてコンパイルが通らない)のでJavaScriptで記述
-const polyfill =
-  fs.readFileSync(path.join(__dirname, '../polyfill/symbol.js'), 'utf-8') +
-  // その他のポリフィルも一緒に追加(こちらはTypeScriptで記述してコンパイルしたもの)
-  fs.readFileSync(path.join(__dirname, '../polyfill/index.js'), 'utf-8');
+// ポリフィルを追加(TypeScriptで記述してコンパイルしたもの)
+const polyfill = fs.promises.readFile(
+  path.join(__dirname, '../polyfill/index.js'),
+  'utf-8'
+);
 
-function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
+async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
   const script =
-    polyfill +
+    (await polyfill) +
     // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
-    transpiled.replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`);
+    transpiled.replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
+    // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
+    .replace(/\\u([0-9a-f]{4})/ig, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
   const jobElement = doc.documentElement!;
@@ -191,14 +185,19 @@ async function writeWsf(filepath: string, doc: Document) {
       : // outputに拡張子WSFが指定されていなければディレクトリと見なして
         // そこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
         path.join(options.output, path.basename(filepath, '.ts') + '.wsf');
-  if (
-    (await fsExists(outputPath)) &&
-    (await fsReadFile(outputPath, 'utf8')) === content
-  ) {
+  const existent = await fs.promises.readFile(outputPath, 'utf8').catch(err => {
+    if (err.code === 'ENOENT') {
+      // 存在してなかった場合には空のファイルと同じ扱い
+      return '';
+    }
+    // その他のエラーはエラーとして扱う
+    throw err;
+  });
+  if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
     process.stdout.write(`\t\t変化なし: ${outputPath}\n`);
   } else {
-    await fsWriteFile(outputPath, content, 'utf8');
+    await fs.promises.writeFile(outputPath, content, 'utf8');
     process.stdout.write(`\t\t出力先: ${outputPath}\n`);
   }
 }
@@ -230,11 +229,11 @@ async function tsc4wsh(
           if (path.extname(filepath).toLowerCase() !== '.ts') {
             throw new Error('サポートしていないファイルです。');
           }
-          const {script: transpiled, objectMap: progids} = await transpile(
+          const {script: transpiled, objectMap: progids} = transpile(
             filepath,
             dependencies
           );
-          const doc = makeWsfDom(transpiled, progids);
+          const doc = await makeWsfDom(transpiled, progids);
           await writeWsf(filepath, doc);
           return true;
         } catch (ex) {
@@ -261,62 +260,61 @@ async function tsc4wsh(
   }
 }
 
-const optimistParser = optimist.options({
-  o: {
-    alias: 'output',
+const options = optionalist.parse({
+  output: {
+    alias: 'o',
     describe: `
     出力先ディレクトリ、もしくは出力先ファイルを指定する。
     拡張子'.wsf'を付けると出力先ファイルと見なす。
     変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
   },
   // tslint:disable-next-line:object-literal-sort-keys
-  b: {
-    alias: 'base',
+  base: {
+    alias: 'b',
     describe: `
     基準ディレクトリを指定する。`,
   },
-  w: {
-    alias: 'watch',
+  watch: {
+    alias: 'w',
     describe: `
     ファイルの更新監視を開始するかどうか。`,
     type: 'boolean',
   },
-  h: {
-    alias: 'help',
+  help: {
+    alias: 'h',
     describe: `
     このヘルプを表示する。`,
     type: 'boolean',
   },
-  i: {
-    alias: 'init',
+  init: {
+    alias: 'i',
     describe: `
     tsconfig.jsonを生成する。`,
     type: 'boolean',
   },
-  c: {
-    alias: 'console',
+  console: {
+    alias: 'c',
     describe: `
     変換結果をファイルではなく標準出力に表示する。`,
     type: 'boolean',
   },
 });
-const options = optimistParser.argv as {
-  output?: string;
-  base?: string;
-  watch?: boolean;
-  help?: boolean;
-  init?: boolean;
-  console?: boolean;
-  _: string[];
-};
 
 async function ensureDir(p: string) {
   const d = path.dirname(p);
-  if (await fsExists(d)) {
+  // 存在確認だけでなくディレクトリかどうかもチェック
+  const stat = await fs.promises.stat(d).catch(ex => {
+    if (ex.code === 'ENOENT') {
+      return null;
+    }
+    throw ex;
+  });
+  if (stat?.isDirectory()) {
+    // ディレクトリとして存在していれば何もしないで終了
     return;
   }
   await ensureDir(d);
-  await fsMkdir(d);
+  await fs.promises.mkdir(d);
 }
 
 if (options.help) {
@@ -338,13 +336,13 @@ Version: ${
   - ** は下階層のすべてのファイル、ディレクトリにマッチ
   ファイル名を指定しなかった場合には**\\*.tsが指定されたものと見なす。
 
-${optimistParser.help()}
+${options[optionalist.helpString]}
 `);
   process.exit(1);
 }
 
 // ファイル指定なしの場合はカレントディレクトリ以下にあるすべてのtsファイルを対象とする
-const patterns = options._.length > 0 ? options._ : ['**/*.ts'];
+const patterns = options[optionalist.unnamed].length > 0 ? options[optionalist.unnamed] : ['**/*.ts'];
 
 let gitIgnore = (item: IItem) => item.name === '.git';
 // ワイルドカードを展開
@@ -461,7 +459,7 @@ function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean) {
         pattern = pattern.replace(/\/+/, '');
         directoryOnly = true;
       }
-      // !で始まっていればそれまでにマッチしていたものがあっても除外
+      // `!`で始まっていればそれまでにマッチしていたものがあっても除外
       if (/^!/.test(pattern)) {
         pattern = pattern.substr(1);
         negative = true;
