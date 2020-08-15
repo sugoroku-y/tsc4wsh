@@ -2,44 +2,45 @@ namespace Generator {
   // IterableIteratorは長いのでIIに省略
   type II<T> = IterableIterator<T>;
 
+  // tslint:disable-next-line: no-shadowed-variable
   class Generator<T> implements IterableIterator<T> {
     constructor(private readonly i: IterableIterator<T>) {}
-    next() {
+    public next() {
       return this.i.next();
     }
-    [Symbol.iterator]() {
+    public [Symbol.iterator]() {
       return this.i;
     }
-    forEach(callback: (value: T, index: number) => any) {
+    public forEach(callback: (value: T, index: number) => any) {
       forEach(this.i, callback);
     }
-    some(callback: (value: T, index: number) => boolean) {
+    public some(callback: (value: T, index: number) => boolean) {
       return some(this.i, callback);
     }
-    every(callback: (value: T, index: number) => boolean) {
+    public every(callback: (value: T, index: number) => boolean) {
       return every(this.i, callback);
     }
-    filter<S extends T>(
+    public filter<S extends T>(
       callback: (value: T, index: number) => value is S
     ): Generator<S>;
-    filter(callback: (value: T, index: number) => any): Generator<T>;
-    filter(callback: (value: T, index: number) => any) {
+    public filter(callback: (value: T, index: number) => any): Generator<T>;
+    public filter(callback: (value: T, index: number) => any) {
       return filter(this.i, callback);
     }
-    map<T2>(callback: (value: T, index: number) => T2) {
+    public map<T2>(callback: (value: T, index: number) => T2) {
       return map(this.i, callback);
     }
-    reduce(callback: (result: T, element: T, index: number) => T): T;
-    reduce<T2>(
+    public reduce(callback: (result: T, element: T, index: number) => T): T;
+    public reduce<T2>(
       callback: (result: T2, element: T, index: number) => T2,
       initialValue: T2
     ): T2;
-    reduce<T2>(
+    public reduce<T2>(
       ...args: [(result: T2, element: T, index: number) => T2, T2?]
     ): T2 {
       return reduce(this.i, ...(args as [typeof args[0], T2]));
     }
-    join(separator: string) {
+    public join(separator: string) {
       return join(this.i, separator);
     }
   }
@@ -59,7 +60,9 @@ namespace Generator {
   ): boolean {
     let index = 0;
     for (const e of ii) {
-      if (callback(e, index++)) return true;
+      if (callback(e, index++)) {
+        return true;
+      }
     }
     return false;
   }
@@ -69,7 +72,9 @@ namespace Generator {
   ): boolean {
     let index = 0;
     for (const e of ii) {
-      if (!callback(e, index++)) return false;
+      if (!callback(e, index++)) {
+        return false;
+      }
     }
     return true;
   }
@@ -127,7 +132,9 @@ namespace Generator {
     let ir = ii.next();
     let result: T2;
     if (arguments.length <= 2) {
-      if (ir.done) throw new Error('empty');
+      if (ir.done) {
+        throw new Error('empty');
+      }
       result = ir.value as any;
       ir = ii.next();
       ++index;
@@ -148,9 +155,9 @@ namespace Generator {
     );
   }
 
-  export function concat<T extends II<any>[]>(
+  export function concat<T extends Array<II<any>>>(
     ...generators: T
-  ): Generator<T extends II<infer R>[] ? R : never> {
+  ): Generator<T extends Array<II<infer R>> ? R : never> {
     return new Generator(
       (function*() {
         for (const generator of generators) {
@@ -160,7 +167,7 @@ namespace Generator {
     );
   }
 
-  //type EnumeratorType<T> = EnumeratorConstructor extends (new(c: T) => Enumerator<infer R>) ? R : never;
+  // type EnumeratorType<T> = EnumeratorConstructor extends (new(c: T) => Enumerator<infer R>) ? R : never;
   type EnumeratorType<T> = T extends {Item(index: any): infer R}
     ? R
     : T extends {item(index: any): infer R}
@@ -197,7 +204,7 @@ namespace Generator {
   export function of<T>(): IterableIterator<T extends any[] ? never : T>;
   export function of<T extends any[]>(
     ...args: T
-  ): IterableIterator<T extends (infer R)[] ? R : never>;
+  ): IterableIterator<T extends Array<infer R> ? R : never>;
   export function of<T extends any[]>(...args: T) {
     return new Generator<any>(
       (function*() {

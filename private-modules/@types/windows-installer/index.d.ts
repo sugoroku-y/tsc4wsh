@@ -7,7 +7,7 @@ declare namespace WindowsInstaller {
     msiAdvertiseDefault = 0, //  Standard advertisement
     msiAdvertiseSingleInstance = 1, // Advertises a new instance of the product. Requires that the first transform in the transform list of the transforms parameter be the instance transform that changes the product code. For more information, see Installing Multiple Instances of Products and Patches.
   }
-  export const enum msiAdvertiseScriptFlags{
+  export const enum msiAdvertiseScriptFlags {
     msiAdvertiseScriptCacheInfo = 0x001, // Include this flag if the icons need to be created or removed.
     msiAdvertiseScriptShortcuts = 0x004, // Include this flag if the shortcuts need to be created or removed.
     msiAdvertiseScriptMachineAssign = 0x008, // Include this flag if the product is to be assigned to a computer.
@@ -16,7 +16,7 @@ declare namespace WindowsInstaller {
     msiAdvertiseScriptClassInfoRegistration = 0x080, // Include this flag if advertisement information in the registry related to COM classes needs to be written or removed.
     msiAdvertiseScriptExtensionInfoRegistration = 0x100, // Include this flag if advertisement information in the registry related to an extension needs to be written or removed.
     msiAdvertiseScriptAppInfo = 0x180, // Include this flag if the advertisement information in the registry needs to be written or removed.
-    msiAdvertiseScriptRegData = 0x1A0, // Include this flag if the advertisement information in the registry needs to be written or removed.
+    msiAdvertiseScriptRegData = 0x1a0, // Include this flag if the advertisement information in the registry needs to be written or removed.
   }
   export const enum msiInstallState {
     msiInstallStateAdvertised = 1, // The feature is advertised
@@ -24,8 +24,8 @@ declare namespace WindowsInstaller {
     msiInstallStateLocal = 3, // The feature is installed locally.
     msiInstallStateSource = 4, // The feature is installed to run from source.
     msiInstallStateDefault = 5, // The feature is installed to its default location.
-    msiInstallStateInvalidArg =  -2, //	An invalid parameter was passed to the function.
-    msiInstallStateUnknown =  -1, // The product is neither advertised nor installed.
+    msiInstallStateInvalidArg = -2, // 	An invalid parameter was passed to the function.
+    msiInstallStateUnknown = -1, // The product is neither advertised nor installed.
     msiInstallStateBadConfig = -6, // The configuration data is corrupt.
     msiInstallStateNotUsed = -7,
     msiInstallStateIncomplete = -5,
@@ -65,9 +65,9 @@ declare namespace WindowsInstaller {
   }
   export const enum msiSignatureOption {
     msiSignatureOptionInvalidHashFatal = 1, // With Options set to msiSignatureOptionInvalidHashFatal, FileSignatureInfo always returns a fatal error for an invalid hash.
-                                           // If Options is not set to msiSignatureOptionInvalidHashFatal and Format is set to msiSignatureInfoCertificate, FileSignatureInfo does not return an error for an invalid hash.
+    // If Options is not set to msiSignatureOptionInvalidHashFatal and Format is set to msiSignatureInfoCertificate, FileSignatureInfo does not return an error for an invalid hash.
   }
-  export const enum msiSignatureInfoFormat { 
+  export const enum msiSignatureInfoFormat {
     msiSignatureInfoCertificate = 0, // Returns a SAFEARRAY of bytes that represent the encoded certificate.
     msiSignatureInfoHash = 1, // Returns a SAFEARRAY of bytes that represent the hash.
   }
@@ -87,66 +87,66 @@ declare namespace WindowsInstaller {
     msiOpenDatabaseModePatchFile = 32, // Adds this flag to indicate a patch file.
   }
   export const enum msiProvideAssemblyInfo {
-    msiProvideAssemblyNet  = 0, // A .NET assembly.
+    msiProvideAssemblyNet = 0, // A .NET assembly.
     msiProvideAssemblyWin32 = 1, // A Win32 side-by-side assembly.
   }
   export const enum msiOpenPackageFlags {
     msiOpenPackageFlagsIgnoreMachineState = 1, // Ignore the computer state when creating the product handle.
   }
   export const enum REGROOT {
-    HKEY_CLASSES_ROOT=0,
-    HKEY_CURRENT_USER=1,
-    HKEY_LOCAL_MACHINE=2,
-    HKEY_USERS=3,
-    HKEY_PERFORMANCE_DATA=4,
-    HKEY_CURRENT_CONFIG=5,
-    HKEY_DYN_DATA=6,
+    HKEY_CLASSES_ROOT = 0,
+    HKEY_CURRENT_USER = 1,
+    HKEY_LOCAL_MACHINE = 2,
+    HKEY_USERS = 3,
+    HKEY_PERFORMANCE_DATA = 4,
+    HKEY_CURRENT_CONFIG = 5,
+    HKEY_DYN_DATA = 6,
     HKCU = HKEY_CURRENT_USER,
     HKLM = HKEY_LOCAL_MACHINE,
     HKCR = HKEY_CLASSES_ROOT,
   }
   export const enum SummaryPropertyId {
-    PID_DICTIONARY	= 0, //	Special format, not support by SummaryInfo object
-    PID_CODEPAGE	= 1, //	VT_I2
-    PID_TITLE	= 2, //	VT_LPSTR
-    PID_SUBJECT	= 3, //	VT_LPSTR
-    PID_AUTHOR	= 4, //	VT_LPSTR
-    PID_KEYWORDS	= 5, //	VT_LPSTR
-    PID_COMMENTS	= 6, //	VT_LPSTR
-    PID_TEMPLATE	= 7, //	VT_LPSTR
-    PID_LASTAUTHOR	= 8, //	VT_LPSTR
-    PID_REVNUMBER	= 9, //	VT_LPSTR
-    PID_EDITTIME	= 10, //	VT_FILETIME
-    PID_LASTPRINTED	= 11, //	VT_FILETIME
-    PID_CREATE_DTM	= 12, //	VT_FILETIME
-    PID_LASTSAVE_DTM	= 13, //	VT_FILETIME
-    PID_PAGECOUNT	= 14, //	VT_I4
-    PID_WORDCOUNT	= 15, //	VT_I4
-    PID_CHARCOUNT	= 16, //	VT_I4
-    PID_THUMBNAIL	= 17, //	VT_CF (not supported)
-    PID_APPNAME	= 18, //	VT_LPSTR
-    PID_SECURITY	= 19, //	VT_I4
+    PID_DICTIONARY = 0, // 	Special format, not support by SummaryInfo object
+    PID_CODEPAGE = 1, // 	VT_I2
+    PID_TITLE = 2, // 	VT_LPSTR
+    PID_SUBJECT = 3, // 	VT_LPSTR
+    PID_AUTHOR = 4, // 	VT_LPSTR
+    PID_KEYWORDS = 5, // 	VT_LPSTR
+    PID_COMMENTS = 6, // 	VT_LPSTR
+    PID_TEMPLATE = 7, // 	VT_LPSTR
+    PID_LASTAUTHOR = 8, // 	VT_LPSTR
+    PID_REVNUMBER = 9, // 	VT_LPSTR
+    PID_EDITTIME = 10, // 	VT_FILETIME
+    PID_LASTPRINTED = 11, // 	VT_FILETIME
+    PID_CREATE_DTM = 12, // 	VT_FILETIME
+    PID_LASTSAVE_DTM = 13, // 	VT_FILETIME
+    PID_PAGECOUNT = 14, // 	VT_I4
+    PID_WORDCOUNT = 15, // 	VT_I4
+    PID_CHARCOUNT = 16, // 	VT_I4
+    PID_THUMBNAIL = 17, // 	VT_CF (not supported)
+    PID_APPNAME = 18, // 	VT_LPSTR
+    PID_SECURITY = 19, // 	VT_I4
   }
   export const enum msiUILevel {
-    msiUILevelNoChange = 	0, // Does not change UI level.
-    msiUILevelDefault = 	1, // Uses default UI level.
-    msiUILevelNone = 	2, // Silent installation.
-    msiUILevelBasic = 	3, // Simple progress and error handling.
-    msiUILevelReduced = 	4, // Authored UI and wizard dialog boxes suppressed.
-    msiUILevelFull = 	5, // Authored UI with wizards, progress, and errors.
-    msiUILevelHideCancel = 	32, // If combined with the msiUILevelBasic value, the installer shows progress dialog boxes but does not display a Cancel button on the dialog box to prevent users from canceling the installation.
-    msiUILevelProgressOnly = 	64, // If combined with the msiUILevelBasic value, the installer displays progress dialog boxes but does not display any modal dialog boxes or error dialog boxes.
-    msiUILevelEndDialog = 	128, // If combined with any above value, the installer displays a modal dialog box at the end of a successful installation or if there has been an error. No dialog box is displayed if the user cancels.
+    msiUILevelNoChange = 0, // Does not change UI level.
+    msiUILevelDefault = 1, // Uses default UI level.
+    msiUILevelNone = 2, // Silent installation.
+    msiUILevelBasic = 3, // Simple progress and error handling.
+    msiUILevelReduced = 4, // Authored UI and wizard dialog boxes suppressed.
+    msiUILevelFull = 5, // Authored UI with wizards, progress, and errors.
+    msiUILevelHideCancel = 32, // If combined with the msiUILevelBasic value, the installer shows progress dialog boxes but does not display a Cancel button on the dialog box to prevent users from canceling the installation.
+    msiUILevelProgressOnly = 64, // If combined with the msiUILevelBasic value, the installer displays progress dialog boxes but does not display any modal dialog boxes or error dialog boxes.
+    msiUILevelEndDialog = 128, // If combined with any above value, the installer displays a modal dialog box at the end of a successful installation or if there has been an error. No dialog box is displayed if the user cancels.
   }
   export const enum msiDatabaseState {
-    msiDatabaseStateRead =	0, // Database opens as read-only. Changes to persistent data are not permitted and temporary data is not saved.
-    msiDatabaseStateWrite =	1, // Database is fully operational for read and write.
+    msiDatabaseStateRead = 0, // Database opens as read-only. Changes to persistent data are not permitted and temporary data is not saved.
+    msiDatabaseStateWrite = 1, // Database is fully operational for read and write.
   }
   export const enum msiEvaluateCondition {
-    msiEvaluateConditionFalse	= 0, // Table is temporary.
-    msiEvaluateConditionTrue	= 1, // Table is persistent.
-    msiEvaluateConditionNone	= 2, // Table is not in the database.
-    msiEvaluateConditionError	= 3, // Invalid or missing table name.
+    msiEvaluateConditionFalse = 0, // Table is temporary.
+    msiEvaluateConditionTrue = 1, // Table is persistent.
+    msiEvaluateConditionNone = 2, // Table is not in the database.
+    msiEvaluateConditionError = 3, // Invalid or missing table name.
   }
   export const enum msiTransformError {
     msiTransformErrorNone = 0x0000, // None of the following conditions.
@@ -200,7 +200,7 @@ declare namespace WindowsInstaller {
     userManaged = 1,
     // Include applications installed in the per–user–unmanaged installation context.
     userUnmanaged = 2,
-    // Include applications installed in the per-machine installation context. When dwInstallContext is set to MSIINSTALLCONTEXT_MACHINE only, the szUserSID parameter must be NULL. 
+    // Include applications installed in the per-machine installation context. When dwInstallContext is set to MSIINSTALLCONTEXT_MACHINE only, the szUserSID parameter must be NULL.
     machine = 4,
   }
 
@@ -231,7 +231,7 @@ declare namespace WindowsInstaller {
     msidbComponentAttributes64bit = 0x0100,
     // Set this bit to disable Registry Reflection on all existing and new registry keys affected by this component. If this bit is set, the Windows Installer calls the RegDisableReflectionKey on each key being accessed by the component. This bit is available with Windows Installer version 4.0. This bit is ignored on 32-bit systems. This bit is ignored on the 64-bit versions of Windows XP.
     //     [!Note]
-    //     32-bit Windows applications running on the 64-bit Windows emulator (WOW64) refer to a different view of the registry than 64-bit applications. Registry reflection copies some registry values between these two registry views. 
+    //     32-bit Windows applications running on the 64-bit Windows emulator (WOW64) refer to a different view of the registry than 64-bit applications. Registry reflection copies some registry values between these two registry views.
     msidbComponentAttributesDisableRegistryReflection = 0x0200,
     // Set this bit for a component in a patch package to prevent leaving orphan components on the computer. If a subsequent patch is installed, marked with the msidbPatchSequenceSupersedeEarlier value in its MsiPatchSequence table to supersede the first patch, Windows Installer 4.5 and later can unregister and uninstall components marked with the msidbComponentAttributesUninstallOnSupersedence value. If the component is not marked with this bit, installation of a superseding patch can leave behind an unused component on the computer.
     // Setting the MSIUNINSTALLSUPERSEDEDCOMPONENTS property has the same effect as setting this bit for all components.
@@ -242,94 +242,137 @@ declare namespace WindowsInstaller {
     // Windows Installer 4.0 and earlier: The msidbComponentAttributesShared value is not supported and is ignored.
     msidbComponentAttributesShared = 0x0800,
   }
+  const enum msiComponentRequestState {
+    // Item is to be removed.
+    msiInstallStateAbsent = 2,
+    // Item is to be installed locally.
+    msiInstallStateLocal = 3,
+    // Item is to be installed and run from the source media.
+    msiInstallStateSource = 4,
+    // If installed, the item is to be reinstalled in the same state.
+    msiInstallStateDefault = 5,
+  }
+  const enum msiRunMode {
+    // Administrative mode install, else product install.
+    msiRunModeAdmin = 0,
+    // Advertise mode of install.
+    msiRunModeAdvertise = 1,
+    // 	Maintenance mode database loaded.
+    msiRunModeMaintenance = 2,
+    // Rollback is enabled.
+    msiRunModeRollbackEnabled = 3,
+    // Log file is active.
+    msiRunModeLogEnabled = 4,
+    // Executing or spooling operations.
+    msiRunModeOperations = 5,
+    // Reboot is needed (settable).
+    msiRunModeRebootAtEnd = 6,
+    // Reboot is needed to continue installation (settable).
+    msiRunModeRebootNow = 7,
+    // Installing files from cabinets and files using Media table.
+    msiRunModeCabinet = 8,
+    // Source files use only short file names.
+    msiRunModeSourceShortNames = 9,
+    // 	Target files are to use only short file names.
+    msiRunModeTargetShortNames = 10,
+    // Operating system is Windows 98/95.
+    msiRunModeWindows9x = 12,
+    // Operating system supports advertising of products.
+    msiRunModeZawEnabled = 13,
+    // Deferred custom action called from install script execution.
+    msiRunModeScheduled = 16,
+    // Deferred custom action called from rollback execution script.
+    msiRunModeRollback = 17,
+    // Deferred custom action called from commit execution script.
+    msiRunModeCommit = 18,
+  }
 
-  interface Collection<T> {
+  interface ICollection<T> {
     Item(index: any): T;
   }
 
-  interface Record {
+  interface IRecord {
+    FieldCount: number; // Returns the number of fields in the record.
     ClearData(): void; // Clears the data in all fields, setting them to null.
     FormatText(): void; // Formats fields according to the template in field 0.
     ReadStream(field: number, length: number, format: msiReadStreamFormat): any; // Reads a specified number of bytes from a record field holding stream data.
-    SetStream(field: number,  filepath: string): void; // Copies the content of the specified file into the designated record field as stream data.
+    SetStream(field: number, filepath: string): void; // Copies the content of the specified file into the designated record field as stream data.
     DataSize(field: number): number; // Returns the size of the data for the designated field.
-    FieldCount: number; // Returns the number of fields in the record.
-    IntegerData(field: number): number // Read/write  Transfers 32-bit integer data in to or out of a specified field within the record.
+    IntegerData(field: number): number; // Read/write  Transfers 32-bit integer data in to or out of a specified field within the record.
     IsNull(field: number): boolean; // Returns True if the indicated field is null and False if the field contains data.
     StringData(field: number): string; // Read/write Transfers string data in to or out of a specified field within the record.
   }
-  type RecordList = Collection<Record>;
-  type StringList = Collection<string>;
-  interface Session {
+  type RecordList = ICollection<IRecord>;
+  type StringList = ICollection<string>;
+  interface ISession {
+    readonly ComponentCosts: RecordList; // Returns a RecordList object enumerating the disk space per drive required to install a component.
+    readonly Database: IDatabase; // Returns the database for the current installation session.
+    readonly FeatureCost: number; // Returns the total amount of disk space (in units of 512 bytes) required by the specified feature and its parent features (up to the root of the Feature table).
+    readonly Installer: Installer; // Returns the active installer object.
+    readonly Language: number; // Represents the numeric language identifier used by the current installation session.
+    VerifyDiskSpace: boolean; // Returns true if enough disk space exists, and false if the disk is full.
+    // 	Executes the specified action.
+    DoAction(...args: any[]): any;
+    // 	Evaluates a logical expression containing symbols and values and returns an integer of the enumeration msiEvaluateConditionErrorEnum.
+    EvaluateCondition(...args: any[]): any;
+    // 	Returns a FeatureInfo object containing descriptive information for the specified feature.
+    FeatureInfo(...args: any[]): any;
+    // 	Returns a formatted string from template and record data.
+    FormatRecord(...args: any[]): any;
+    // 	Performs any enabled logging operations and defers execution to the UI handler object associated with the engine.
+    Message(...args: any[]): any;
+    // 	Opens a query on the specified table, ordering the actions by the numbers in the Sequence column. For each row fetched, the DoAction method is called, provided that any supplied condition expression does not evaluate to False.
+    Sequence(...args: any[]): any;
+    // 	Sets the install level for the current installation to a specified value and recalculates the Select and Installed states for all features.
+    SetInstallLevel(...args: any[]): any;
+    ComponentCurrentState(id: string): msiComponentRequestState; // Returns the current installed state of the designated component.
+    ComponentRequestState(id: string): msiComponentRequestState; // Obtains or requests a change in the Action state of a row in the Component table.
+    FeatureCurrentState(name: string | 'ALL'): msiInstallState; // Returns the current installed state of the designated feature.
+    FeatureRequestState(name: string | 'ALL'): msiInstallState; // Read/write Obtains or requests a change in the Select state of a feature's record and subrecords.
+    FeatureValidStates(name: string): msiInstallState; // Returns an integer representing bit flags with each relevant bit representing a valid installation state for the specified feature.
+    Mode(flag: msiRunMode): any; // This property is a value representing the designated mode flag for the current installation session.
+    ProductProperty(name: string): any; // Represents the string value of a named installer property.
+    Property(name: string): any; //  (Session Object) Read/write Retrieves product properties from the product database.
+    SourcePath(id: string): string; // Provides the full path to the designated folder on the source media or server image.
+    TargetPath(id: string): string; // Read/write Provides the full path to the designated folder on the installation target drive.
   }
-  interface SummaryInfo {
+  interface ISummaryInfo {
+    PropertyCount: number;
     Persist(): void;
     Property(id: SummaryPropertyId): any;
-    PropertyCount: number;
   }
-  interface View {
+  interface IView {
     Close(): void; // Terminates query execution and releases database resources.
-    Execute(params?: Record): void; // Uses the question mark token to represent parameters in a SQL query. The values of these parameters are passed in as the corresponding fields of a parameter record.
-    Fetch(): Record; // Returns a Record object containing the requested column data if more rows are available in the result set, otherwise, it returns null.
+    Execute(params?: IRecord): void; // Uses the question mark token to represent parameters in a SQL query. The values of these parameters are passed in as the corresponding fields of a parameter record.
+    Fetch(): IRecord; // Returns a Record object containing the requested column data if more rows are available in the result set, otherwise, it returns null.
     GetError(): string; // Returns the Validation error and column name for which the error occurred.
-    Modify(action: msiViewModify, record: Record): void; // Modifies a database row with a modified Record object obtained by the Fetch method.
+    Modify(action: msiViewModify, record: IRecord): void; // Modifies a database row with a modified Record object obtained by the Fetch method.
     ColumnInfo(info: msiColumnInfo): string;
   }
-  interface Database {
+  interface IDatabase {
+    readonly DatabaseState: msiDatabaseState; // Returns the persistence state of the database.
+    readonly TablePersistent: msiEvaluateCondition; // Returns the persistence state of the table.
     ApplyTransform(storage: string, errorConditions: msiTransformError): void; // Applies the transform to this database.
     Commit(): void; // Finalizes the persistent form of the database.
-    CreateTransformSummaryInfo(reference: Database, storage?: string, errorConditions?: msiTransformError, validation?: msiTransformValidation): void; // Creates and populates the summary information stream of an existing transform file.
+    CreateTransformSummaryInfo(
+      reference: IDatabase,
+      storage?: string,
+      errorConditions?: msiTransformError,
+      validation?: msiTransformValidation
+    ): void; // Creates and populates the summary information stream of an existing transform file.
     EnableUIPreview(): void; // Facilitates the authoring of dialog boxes and billboards by providing the support needed to view user interface dialog boxes stored in the installer database.
     Export(table: string, path: string, file: string): void; // Copies the structure and data from a specified table to a text archive file.
-    GenerateTransform(reference: Database, storage?: string): void; // Creates a transform.
+    GenerateTransform(reference: IDatabase, storage?: string): void; // Creates a transform.
     Import(path: string, file: string): void; // Imports a database table from a text archive file.
-    Merge(reference: Database, errorTable: string): void; // Merges the reference database with the base database.
-    OpenView(sql: string): View; // Returns a View object representing the query specified by a SQL string.
-
-    readonly DatabaseState: msiDatabaseState; // Returns the persistence state of the database.
-    PrimaryKeys(tablename: string): Record; // Returns a Record object containing the table name and the column names (comprising the primary keys).
-    SummaryInformation(max?: number): SummaryInfo; // Returns a SummaryInfo object that can be used to examine, update, and add properties to the summary information stream.
-    readonly TablePersistent: msiEvaluateCondition; // Returns the persistence state of the table.
+    Merge(reference: IDatabase, errorTable: string): void; // Merges the reference database with the base database.
+    OpenView(sql: string): IView; // Returns a View object representing the query specified by a SQL string.
+    PrimaryKeys(tablename: string): IRecord; // Returns a Record object containing the table name and the column names (comprising the primary keys).
+    SummaryInformation(max?: number): ISummaryInfo; // Returns a SummaryInfo object that can be used to examine, update, and add properties to the summary information stream.
   }
 
   export interface Installer {
-    AddSource(Product: string, User: string, Source: string): void;
-    AdvertiseProduct(packagePath: string, context: msiAdvertisementContext, transforms?: string, language?: string, options?: msiAdvertiseOptions): void;
-    AdvertiseScript(scriptPath: string, scriptFlags: msiAdvertiseScriptFlags, removeItems: boolean): void;
-    ApplyPatch(PatchPackage: string, InstallPackage?: string, InstallType?: msiInstallType, CommandLine?: string): void;
-    ApplyMultiplePatches(PatchPackagesList: string, Product: string, szPropertiesList: string): void;
-    ClearSourceList(Product: string, User: string): void;
-    CollectUserInfo(Product: string): void;
-    ConfigureFeature(Product: string, Feature: string, InstallState: msiInstallState): void;
-    ConfigureProduct(Product: string, InstallLevel: number, InstallState: msiInstallState): void;
-    CreateAdvertiseScript(packagePath: string, scriptFilePath: string, transforms?: string, language?: number, platform?: msiAdvertisePlatform, options?: msiAdvertiseOptions): void;
-    CreateRecord(count: number): Record;
-    EnableLog(logMode: string, logFile: string): void;
-    ExtractPatchXMLData(PatchPath: string): string;
-    FileHash(FilePath: string, Options: 0): Record;
-    FileSignatureInfo(FilePath: string, Options: msiSignatureOption, Format: msiSignatureInfoFormat): any;
-    FileSize(Path: string): number;
-    FileVersion(Path: string, Language?: boolean): string;
-    ForceSourceListResolution(Product: string, User: string): void;
-    InstallProduct(packagePath: string, propertyValues: string): void;
-    LastErrorRecord(): Record;
-    OpenPackage(packagePath: string, options: msiOpenPackageFlags): Session;
-    OpenDatabase(name: string, openMode: msiOpenDatabaseMode): Database;
-    OpenProduct(productCode: string): Session;
-    ProductState(Product: string): msiInstallState;
-    ProvideAssembly(assembly: string, appContext: string, installMode: msiInstallMode, assemblyInfo: msiProvideAssemblyInfo): string;
-    ProvideComponent(Product: string, Feature: string, Component: string, InstallMode: msiInstallMode): void;
-    ProvideQualifiedComponent(Category: string, Qualifier: string, InstallMode: msiInstallMode): string;
-    RegistryValue(root: REGROOT, key: string, value?: string | number): string | number | boolean;
-    ReinstallFeature(Product: string, Feature: string, ReinstallMode: msiReinstallMode): void;
-    ReinstallProduct(Product: string, ReinstallMode: msiReinstallMode): void;
-    RemovePatches(PatchList: string, ProductCode: string, UninstallType: msiInstallType.msiInstallSingleInstance, PropertyList?: string): void;
-    UseFeature(Product: string, Feature: string, InstallMode: msiInstallMode): msiInstallState;
-
     readonly ClientEx: RecordList;
-    readonly ComponentClients : StringList;
-    ComponentPath(productCode: string, componentId: string): string;
-    ComponentPathEx(productCode: string, componentId: string, userSid: string, context: msiInstallContext): RecordList;
+    readonly ComponentClients: StringList;
     readonly ComponentQualifiers: StringList;
     readonly Components: StringList;
     readonly ComponentsEx: RecordList;
@@ -339,8 +382,6 @@ declare namespace WindowsInstaller {
     readonly FeatureState: msiInstallState;
     readonly FeatureUsageCount: number;
     readonly FeatureUsageDate: number;
-    FileAttributes(path: string): number;
-    Patches(product: string): StringList;
     readonly PatchesEx: RecordList;
     readonly PatchFiles: StringList;
     readonly PatchInfo: string;
@@ -354,13 +395,124 @@ declare namespace WindowsInstaller {
     readonly Products: StringList;
     readonly QualifierDescription: string;
     readonly RelatedProducts: StringList;
-    ShortcutTarget(path: string): Record;
-    readonly SummaryInformation: SummaryInfo;
+    readonly SummaryInformation: ISummaryInfo;
     UILevel: msiUILevel;
     readonly Version: string;
+    AddSource(Product: string, User: string, Source: string): void;
+    AdvertiseProduct(
+      packagePath: string,
+      context: msiAdvertisementContext,
+      transforms?: string,
+      language?: string,
+      options?: msiAdvertiseOptions
+    ): void;
+    AdvertiseScript(
+      scriptPath: string,
+      scriptFlags: msiAdvertiseScriptFlags,
+      removeItems: boolean
+    ): void;
+    ApplyPatch(
+      PatchPackage: string,
+      InstallPackage?: string,
+      InstallType?: msiInstallType,
+      CommandLine?: string
+    ): void;
+    ApplyMultiplePatches(
+      PatchPackagesList: string,
+      Product: string,
+      szPropertiesList: string
+    ): void;
+    ClearSourceList(Product: string, User: string): void;
+    CollectUserInfo(Product: string): void;
+    ConfigureFeature(
+      Product: string,
+      Feature: string,
+      InstallState: msiInstallState
+    ): void;
+    ConfigureProduct(
+      Product: string,
+      InstallLevel: number,
+      InstallState: msiInstallState
+    ): void;
+    CreateAdvertiseScript(
+      packagePath: string,
+      scriptFilePath: string,
+      transforms?: string,
+      language?: number,
+      platform?: msiAdvertisePlatform,
+      options?: msiAdvertiseOptions
+    ): void;
+    CreateRecord(count: number): IRecord;
+    EnableLog(logMode: string, logFile: string): void;
+    ExtractPatchXMLData(PatchPath: string): string;
+    FileHash(FilePath: string, Options: 0): IRecord;
+    FileSignatureInfo(
+      FilePath: string,
+      Options: msiSignatureOption,
+      Format: msiSignatureInfoFormat
+    ): any;
+    FileSize(Path: string): number;
+    FileVersion(Path: string, Language?: boolean): string;
+    ForceSourceListResolution(Product: string, User: string): void;
+    InstallProduct(packagePath: string, propertyValues: string): void;
+    LastErrorRecord(): IRecord;
+    OpenPackage(packagePath: string, options: msiOpenPackageFlags): ISession;
+    OpenDatabase(name: string, openMode: msiOpenDatabaseMode): IDatabase;
+    OpenProduct(productCode: string): ISession;
+    ProductState(Product: string): msiInstallState;
+    ProvideAssembly(
+      assembly: string,
+      appContext: string,
+      installMode: msiInstallMode,
+      assemblyInfo: msiProvideAssemblyInfo
+    ): string;
+    ProvideComponent(
+      Product: string,
+      Feature: string,
+      Component: string,
+      InstallMode: msiInstallMode
+    ): void;
+    ProvideQualifiedComponent(
+      Category: string,
+      Qualifier: string,
+      InstallMode: msiInstallMode
+    ): string;
+    RegistryValue(
+      root: REGROOT,
+      key: string,
+      value?: string | number
+    ): string | number | boolean;
+    ReinstallFeature(
+      Product: string,
+      Feature: string,
+      ReinstallMode: msiReinstallMode
+    ): void;
+    ReinstallProduct(Product: string, ReinstallMode: msiReinstallMode): void;
+    RemovePatches(
+      PatchList: string,
+      ProductCode: string,
+      UninstallType: msiInstallType.msiInstallSingleInstance,
+      PropertyList?: string
+    ): void;
+    UseFeature(
+      Product: string,
+      Feature: string,
+      InstallMode: msiInstallMode
+    ): msiInstallState;
+    ComponentPath(productCode: string, componentId: string): string;
+    ComponentPathEx(
+      productCode: string,
+      componentId: string,
+      userSid: string,
+      context: msiInstallContext
+    ): RecordList;
+    FileAttributes(path: string): number;
+    Patches(product: string): StringList;
+    ShortcutTarget(path: string): IRecord;
   }
 }
 
+// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'WindowsInstaller.Installer': WindowsInstaller.Installer;
 }

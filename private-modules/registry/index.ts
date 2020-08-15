@@ -1,4 +1,5 @@
 // activex-interopではメソッドが定義されていないので追加
+// tslint:disable-next-line:interface-name
 interface SafeArray<T> {
   toArray(): T[];
   dimensions(): number;
@@ -7,8 +8,8 @@ interface SafeArray<T> {
   ubound(dimension: number): number;
 }
 
-namespace WbemScripting {
-  export interface SWbemLocator {
+namespace IWbemScripting {
+  export interface ISWbemLocator {
     ConnectServer(
       server?: string,
       nameSpace?: string,
@@ -18,41 +19,42 @@ namespace WbemScripting {
       authority?: string,
       securityFlags?: number,
       wbemNamedValueSet?: any
-    ): SWbemServices;
+    ): ISWbemServices;
   }
-  export interface SWbemServices {
+  export interface ISWbemServices {
     Get(
       ObjectPath?: string,
       iFlags?: number,
       wbemNamedValueSet?: any
-    ): SWbemObject;
+    ): ISWbemObject;
   }
-  export interface SWbemObject {
+  export interface ISWbemObject {
+    Methods_: ISWbemMethodSet;
     ExecMethod_<T extends {[name: string]: any}>(
       methodName: string,
-      wbemInParams?: SWbemObject,
+      wbemInParams?: ISWbemObject,
       flags?: number,
       wbemNamedValueSet?: any
-    ): SWbemObject & T;
+    ): ISWbemObject & T;
     SpawnInstance_<T extends {[name: string]: any}>(
       flags?: number
-    ): SWbemObject & T;
-    Methods_: SWbemMethodSet;
+    ): ISWbemObject & T;
   }
 
-  export interface SWbemMethodSet {
-    Item(name: string, flags?: number): SWbemMethod;
+  export interface ISWbemMethodSet {
     readonly Count: number;
+    Item(name: string, flags?: number): ISWbemMethod;
   }
-  export interface SWbemMethod {
-    InParameters: SWbemObject;
+  export interface ISWbemMethod {
+    InParameters: ISWbemObject;
     Name: string;
     OutParameters: any;
   }
 }
 
+// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
-  'WbemScripting.SWbemLocator': WbemScripting.SWbemLocator;
+  'WbemScripting.SWbemLocator': WbemScripting.ISWbemLocator;
 }
 
 enum RegRoot {
@@ -66,10 +68,12 @@ enum RegRoot {
   HKLM = HKEY_LOCAL_MACHINE,
   HKCR = HKEY_CLASSES_ROOT,
   HKU = HKEY_USERS,
-  HKCC = HKEY_CURRENT_CONFIG
+  HKCC = HKEY_CURRENT_CONFIG,
 }
 function parseRegRoot(name: string) {
-  if (!(name in RegRoot)) throw new Error(`Unknown registry root: ${name}`);
+  if (!(name in RegRoot)) {
+    throw new Error(`Unknown registry root: ${name}`);
+  }
   return RegRoot[name as keyof typeof RegRoot];
 }
 
@@ -79,10 +83,12 @@ enum RegType {
   REG_BINARY = 3,
   REG_DWORD = 4,
   REG_MULTI_SZ = 7,
-  REG_QWORD = 11
+  REG_QWORD = 11,
 }
 function parseRegType(name: string) {
-  if (!(name in RegType)) throw new Error(`Unknown registry type: ${name}`);
+  if (!(name in RegType)) {
+    throw new Error(`Unknown registry type: ${name}`);
+  }
   return RegType[name as keyof typeof RegType & string];
 }
 
@@ -106,7 +112,7 @@ const enum RegDesired {
   // Required to modify the DACL in the object's security descriptor.
   WRITE_DAC = 0x40000,
   // Required to change the owner in the object's security descriptor.
-  WRITE_OWNER = 0x80000
+  WRITE_OWNER = 0x80000,
 }
 
 function toSafeArray<T>(arr: T[]) {
@@ -118,33 +124,14 @@ function toSafeArray<T>(arr: T[]) {
 }
 
 class Registry {
-  private readonly stdregprov: WbemScripting.SWbemObject;
+  private readonly stdregprov: WbemScripting.ISWbemObject;
   constructor(computer: string = '.') {
     const locator = WScript.CreateObject('WbemScripting.SWbemLocator');
     const server = locator.ConnectServer(computer, 'root\\default');
     this.stdregprov = server.Get('StdRegProv');
   }
-  private callMethod<
-    T extends {[name: string]: any} = {},
-    R extends {[name: string]: any} = {}
-  >(method_name: string, params: T & {hDefKey: RegRoot; sSubKeyName: string}) {
-    const in_param = this.stdregprov.Methods_.Item(
-      method_name
-    ).InParameters.SpawnInstance_<typeof params>();
-    for (const name of Object.keys(params)) {
-      (in_param as any)[name] = (params as any)[name];
-    }
-    const out = this.stdregprov.ExecMethod_<R & {ReturnValue: number}>(
-      method_name,
-      in_param
-    );
-    if (out.ReturnValue === 2 /* ERROR_FILE_NOT_FOUND */) return null;
-    if (out.ReturnValue !== 0)
-      throw new Error(`Error Code: ${out.ReturnValue}`);
-    return out;
-  }
 
-  CheckAccess(
+  public CheckAccess(
     hDefKey: RegRoot,
     sSubKeyName: string,
     uRequired?: RegDesired
@@ -156,23 +143,27 @@ class Registry {
     return (r && r.bGranted) || undefined;
   }
 
-  CreateKey(hDefKey: RegRoot, sSubKeyName: string) {
+  public CreateKey(hDefKey: RegRoot, sSubKeyName: string) {
     this.callMethod('CreateKey', {hDefKey, sSubKeyName});
   }
 
-  DeleteKey(hDefKey: RegRoot, sSubKeyName: string) {
+  public DeleteKey(hDefKey: RegRoot, sSubKeyName: string) {
     this.callMethod('DeleteKey', {hDefKey, sSubKeyName});
   }
 
-  DeleteValue(hDefKey: RegRoot, sSubKeyName: string, sValueName: string) {
+  public DeleteValue(
+    hDefKey: RegRoot,
+    sSubKeyName: string,
+    sValueName: string
+  ) {
     this.callMethod<{sValueName: typeof sValueName}>('DeleteValue', {
       hDefKey,
       sSubKeyName,
-      sValueName
+      sValueName,
     });
   }
 
-  EnumKey(hDefKey: RegRoot, sSubKeyName: string) {
+  public EnumKey(hDefKey: RegRoot, sSubKeyName: string) {
     const out = this.callMethod<{}, {sNames: SafeArray<string> | null}>(
       'EnumKey',
       {hDefKey, sSubKeyName}
@@ -187,31 +178,38 @@ class Registry {
     );
   }
 
-  EnumValues(hDefKey: RegRoot, sSubKeyName: string) {
+  public EnumValues(hDefKey: RegRoot, sSubKeyName: string) {
     const out = this.callMethod<
       {},
       {sNames: SafeArray<string> | null; Types: SafeArray<RegType> | null}
     >('EnumValues', {hDefKey, sSubKeyName});
-    if (out === null || out.sNames === null || out.Types === null) return null;
+    if (out === null || out.sNames === null || out.Types === null) {
+      return null;
+    }
     const names = out.sNames.toArray();
     const types = out.Types.toArray();
     return names
       .map((name, index) => ({
         name,
         type: types[index],
-        low: name.toLowerCase()
+        // tslint:disable-next-line:object-literal-sort-keys
+        low: name.toLowerCase(),
       }))
       .sort((a, b) => (a.low < b.low ? -1 : a.low > b.low ? 1 : 0));
   }
 
-  GetStringValue(hDefKey: RegRoot, sSubKeyName: string, sValueName: string) {
+  public GetStringValue(
+    hDefKey: RegRoot,
+    sSubKeyName: string,
+    sValueName: string
+  ) {
     const out = this.callMethod<
       {sValueName: typeof sValueName},
       {sValue: string | null}
     >('GetStringValue', {hDefKey, sSubKeyName, sValueName});
     return out !== null ? out.sValue : undefined;
   }
-  GetExpandedStringValue(
+  public GetExpandedStringValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string
@@ -222,14 +220,18 @@ class Registry {
     >('GetExpandedStringValue', {hDefKey, sSubKeyName, sValueName});
     return out !== null ? out.sValue : undefined;
   }
-  GetDWORDValue(hDefKey: RegRoot, sSubKeyName: string, sValueName: string) {
+  public GetDWORDValue(
+    hDefKey: RegRoot,
+    sSubKeyName: string,
+    sValueName: string
+  ) {
     const out = this.callMethod<
       {sValueName: typeof sValueName},
       {uValue: number | null}
     >('GetDWORDValue', {hDefKey, sSubKeyName, sValueName});
     return out !== null ? out.uValue : undefined;
   }
-  GetMultiStringValue(
+  public GetMultiStringValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string
@@ -240,14 +242,22 @@ class Registry {
     >('GetMultiStringValue', {hDefKey, sSubKeyName, sValueName});
     return out === null || out.sValue === null ? null : out.sValue.toArray();
   }
-  GetBinayValue(hDefKey: RegRoot, sSubKeyName: string, sValueName: string) {
+  public GetBinayValue(
+    hDefKey: RegRoot,
+    sSubKeyName: string,
+    sValueName: string
+  ) {
     const out = this.callMethod<
       {sValueName: typeof sValueName},
       {uValue: SafeArray<number> | null}
     >('GetBinaryValue', {hDefKey, sSubKeyName, sValueName});
     return out === null || out.uValue === null ? null : out.uValue.toArray();
   }
-  GetQWORDValue(hDefKey: RegRoot, sSubKeyName: string, sValueName: string) {
+  public GetQWORDValue(
+    hDefKey: RegRoot,
+    sSubKeyName: string,
+    sValueName: string
+  ) {
     const out = this.callMethod<
       {sValueName: typeof sValueName},
       {uValue: number | null}
@@ -255,7 +265,7 @@ class Registry {
     return out !== null ? out.uValue : undefined;
   }
 
-  SetStringValue(
+  public SetStringValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -266,7 +276,7 @@ class Registry {
       {hDefKey, sSubKeyName, sValueName, sValue}
     );
   }
-  SetExpandedStringValue(
+  public SetExpandedStringValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -277,7 +287,7 @@ class Registry {
       {hDefKey, sSubKeyName, sValueName, sValue}
     );
   }
-  SetDWORDValue(
+  public SetDWORDValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -288,29 +298,40 @@ class Registry {
       {hDefKey, sSubKeyName, sValueName, uValue}
     );
   }
-  SetMultiStringValue(
+  public SetMultiStringValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     sValue: string[]
   ) {
-    this.callMethod<{sValueName: typeof sValueName; sValue: SafeArray<string>}>(
-      'SetMultiStringValue',
-      {hDefKey, sSubKeyName, sValueName, sValue: toSafeArray(sValue)}
-    );
+    this.callMethod<{
+      sValueName: typeof sValueName;
+      sValue: SafeArray<string>;
+    }>('SetMultiStringValue', {
+      hDefKey,
+      sSubKeyName,
+      sValueName,
+      // tslint:disable-next-line:object-literal-sort-keys
+      sValue: toSafeArray(sValue),
+    });
   }
-  SetBinayValue(
+  public SetBinayValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     uValue: number[]
   ) {
-    this.callMethod<{sValueName: typeof sValueName; uValue: SafeArray<number>}>(
-      'SetBinaryValue',
-      {hDefKey, sSubKeyName, sValueName, uValue: toSafeArray(uValue)}
-    );
+    this.callMethod<{
+      sValueName: typeof sValueName;
+      uValue: SafeArray<number>;
+    }>('SetBinaryValue', {
+      hDefKey,
+      sSubKeyName,
+      sValueName,
+      uValue: toSafeArray(uValue),
+    });
   }
-  SetQWORDValue(
+  public SetQWORDValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -322,7 +343,7 @@ class Registry {
     );
   }
 
-  GetValue(
+  public GetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -343,55 +364,41 @@ class Registry {
         return this.GetQWORDValue(hDefKey, sSubKeyName, sValueName);
     }
   }
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     value: string,
-    type: RegType.REG_SZ
+    type: RegType.REG_SZ | RegType.REG_EXPAND_SZ
   ): void;
-  SetValue(
-    hDefKey: RegRoot,
-    sSubKeyName: string,
-    sValueName: string,
-    value: string,
-    type: RegType.REG_EXPAND_SZ
-  ): void;
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     value: number[],
     type: RegType.REG_BINARY
   ): void;
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     value: number,
-    type: RegType.REG_DWORD
+    type: RegType.REG_DWORD | RegType.REG_QWORD
   ): void;
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     value: string[],
     type: RegType.REG_MULTI_SZ
   ): void;
-  SetValue(
-    hDefKey: RegRoot,
-    sSubKeyName: string,
-    sValueName: string,
-    value: number,
-    type: RegType.REG_QWORD
-  ): void;
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
     value: number | string | string[] | number[]
   ): void;
-  SetValue(
+  public SetValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -447,5 +454,27 @@ class Registry {
         this.SetQWORDValue(hDefKey, sSubKeyName, sValueName, value as number);
         return;
     }
+  }
+  private callMethod<
+    T extends {[name: string]: any} = {},
+    R extends {[name: string]: any} = {}
+  >(methodName: string, params: T & {hDefKey: RegRoot; sSubKeyName: string}) {
+    const inParam = this.stdregprov.Methods_.Item(
+      methodName
+    ).InParameters.SpawnInstance_<typeof params>();
+    for (const name of Object.keys(params)) {
+      (inParam as any)[name] = (params as any)[name];
+    }
+    const out = this.stdregprov.ExecMethod_<R & {ReturnValue: number}>(
+      methodName,
+      inParam
+    );
+    if (out.ReturnValue === 2 /* ERROR_FILE_NOT_FOUND */) {
+      return null;
+    }
+    if (out.ReturnValue !== 0) {
+      throw new Error(`Error Code: ${out.ReturnValue}`);
+    }
+    return out;
   }
 }

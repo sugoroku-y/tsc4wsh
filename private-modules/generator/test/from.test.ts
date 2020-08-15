@@ -7,7 +7,9 @@ namespace Generator_from_test {
   declare const fso: Scripting.FileSystemObject;
 
   test('from(fso.GetFolder("..").SubFolders', () => {
-    const folder = fso.GetFolder(fso.GetParentFolderName(WScript.ScriptFullName));
+    const folder = fso.GetFolder(
+      fso.GetParentFolderName(WScript.ScriptFullName)
+    );
     const path1 = fso.BuildPath(folder.Path, 'folder1');
     fso.CreateFolder(path1);
     try {

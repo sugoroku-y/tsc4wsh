@@ -1,27 +1,38 @@
 /// <reference types="msxml2" />
 /// <reference types="generator" />
 
+//
 namespace WScriptUtil {
   export namespace Arguments {
+    export function Named<T = string | undefined>(
+      key: string | string[],
+      conv?: (v: string | undefined) => T
+    ): T;
+    export function Named<T = string | undefined>(params: {
+      key: string | string[];
+      conv?: (v: string | undefined) => T;
+    }): T;
     export function Named<T = string | undefined>(
       params:
         | string
         | string[]
-        | {key: string | string[]; conv?: (v: string | undefined) => T}
+        | {key: string | string[]; conv?: (v: string | undefined) => T},
+      convArg?: (v: string | undefined) => T
     ): T {
-      if (typeof params === 'string' || Array.isArray(params))
-        params = {key: params};
-      const {key: _key, conv} = params;
-      const keys = Array.isArray(_key) ? _key : [_key];
+      const [key, conv] =
+        typeof params === 'string' || Array.isArray(params)
+          ? [params, convArg]
+          : [params.key, params.conv];
+      const keys = Array.isArray(key) ? key : [key];
       const value = (() => {
-        for (const key of keys) {
-          if (WScript.Arguments.Named.Exists(key)) {
-            return WScript.Arguments.Named(key);
+        for (const k of keys) {
+          if (WScript.Arguments.Named.Exists(k)) {
+            return WScript.Arguments.Named(k);
           }
         }
         return undefined;
       })();
-      return conv ? conv(value) : <any>value;
+      return conv ? conv(value) : (value as any);
     }
     export function Switch(keys: string | string[]): boolean {
       for (const key of keys) {
@@ -48,10 +59,14 @@ namespace WScriptUtil {
     const doc = WScript.CreateObject('Msxml2.DOMDocument.6.0');
     doc.load(WScript.ScriptFullName);
     let hasError = false;
-    for (let node of Generator.from(doc.selectNodes('/job/runtime/named'))) {
-      if (node.nodeType !== MSXML2.DOMNodeType.NODE_ELEMENT) continue;
+    for (const node of Generator.from(doc.selectNodes('/job/runtime/named'))) {
+      if (node.nodeType !== MSXML2.DOMNodeType.NODE_ELEMENT) {
+        continue;
+      }
       const name = node.getAttribute('name');
-      if (!name) continue;
+      if (!name) {
+        continue;
+      }
       const required: 'true' | 'false' = node.getAttribute('required');
       if (!WScript.Arguments.Named.Exists(name)) {
         if (required) {
@@ -114,6 +129,8 @@ namespace WScriptUtil {
         hasError = true;
       }
     }
-    if (hasError) return WScript.Quit(1);
+    if (hasError) {
+      return WScript.Quit(1);
+    }
   }
 }

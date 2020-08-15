@@ -12,7 +12,7 @@ declare namespace MSXML2 {
     SCHEMACONTENTTYPE_EMPTY = 0,
     SCHEMACONTENTTYPE_TEXTONLY = 1,
     SCHEMACONTENTTYPE_ELEMENTONLY = 2,
-    SCHEMACONTENTTYPE_MIXED = 3
+    SCHEMACONTENTTYPE_MIXED = 3,
   }
 
   /** Schema Object Model Filters */
@@ -24,7 +24,7 @@ declare namespace MSXML2 {
     SCHEMADERIVATIONMETHOD_LIST = 8,
     SCHEMADERIVATIONMETHOD_UNION = 16,
     SCHEMADERIVATIONMETHOD_ALL = 255,
-    SCHEMADERIVATIONMETHOD_NONE = 256
+    SCHEMADERIVATIONMETHOD_NONE = 256,
   }
 
   /** Schema Object Model Process Contents */
@@ -32,7 +32,7 @@ declare namespace MSXML2 {
     SCHEMAPROCESSCONTENTS_NONE = 0,
     SCHEMAPROCESSCONTENTS_SKIP = 1,
     SCHEMAPROCESSCONTENTS_LAX = 2,
-    SCHEMAPROCESSCONTENTS_STRICT = 3
+    SCHEMAPROCESSCONTENTS_STRICT = 3,
   }
 
   /** Schema Object Model Type variety values */
@@ -40,14 +40,14 @@ declare namespace MSXML2 {
     SCHEMATYPEVARIETY_NONE = -1,
     SCHEMATYPEVARIETY_ATOMIC = 0,
     SCHEMATYPEVARIETY_LIST = 1,
-    SCHEMATYPEVARIETY_UNION = 2
+    SCHEMATYPEVARIETY_UNION = 2,
   }
 
   /** Schema Object Model Attribute Uses */
   const enum SCHEMAUSE {
     SCHEMAUSE_OPTIONAL = 0,
     SCHEMAUSE_PROHIBITED = 1,
-    SCHEMAUSE_REQUIRED = 2
+    SCHEMAUSE_REQUIRED = 2,
   }
 
   /** Schema Object Model Whitespace facet values */
@@ -55,7 +55,7 @@ declare namespace MSXML2 {
     SCHEMAWHITESPACE_NONE = -1,
     SCHEMAWHITESPACE_PRESERVE = 0,
     SCHEMAWHITESPACE_REPLACE = 1,
-    SCHEMAWHITESPACE_COLLAPSE = 2
+    SCHEMAWHITESPACE_COLLAPSE = 2,
   }
 
   const enum SERVERXMLHTTP_OPTION {
@@ -63,7 +63,7 @@ declare namespace MSXML2 {
     SXH_OPTION_URL_CODEPAGE = 0,
     SXH_OPTION_ESCAPE_PERCENT_IN_URL = 1,
     SXH_OPTION_IGNORE_SERVER_SSL_CERT_ERROR_FLAGS = 2,
-    SXH_OPTION_SELECT_CLIENT_SSL_CERT = 3
+    SXH_OPTION_SELECT_CLIENT_SSL_CERT = 3,
   }
 
   /** Schema Object Model Item Types */
@@ -140,14 +140,14 @@ declare namespace MSXML2 {
     SOMITEM_EMPTYPARTICLE = 16644,
     SOMITEM_NULL_ANY = 18433,
     SOMITEM_NULL_ANYATTRIBUTE = 18434,
-    SOMITEM_NULL_ELEMENT = 18435
+    SOMITEM_NULL_ELEMENT = 18435,
   }
 
   const enum SXH_PROXY_SETTING {
     SXH_PROXY_SET_DEFAULT = 0,
     SXH_PROXY_SET_PRECONFIG = 0,
     SXH_PROXY_SET_DIRECT = 1,
-    SXH_PROXY_SET_PROXY = 2
+    SXH_PROXY_SET_PROXY = 2,
   }
 
   const enum SXH_SERVER_CERT_OPTION {
@@ -155,7 +155,7 @@ declare namespace MSXML2 {
     SXH_SERVER_CERT_IGNORE_WRONG_USAGE = 512,
     SXH_SERVER_CERT_IGNORE_CERT_CN_INVALID = 4096,
     SXH_SERVER_CERT_IGNORE_CERT_DATE_INVALID = 8192,
-    SXH_SERVER_CERT_IGNORE_ALL_SERVER_ERRORS = 13056
+    SXH_SERVER_CERT_IGNORE_ALL_SERVER_ERRORS = 13056,
   }
 
   /** Options for XHR properties */
@@ -171,7 +171,7 @@ declare namespace MSXML2 {
     XHR_PROP_IGNORE_CERT_ERRORS = 8,
     XHR_PROP_ONDATA_THRESHOLD = 9,
     XHR_PROP_SET_ENTERPRISEID = 10,
-    XHR_PROP_MAX_CONNECTIONS = 11
+    XHR_PROP_MAX_CONNECTIONS = 11,
   }
 
   /** Constants that define a node's type */
@@ -188,19 +188,17 @@ declare namespace MSXML2 {
     NODE_DOCUMENT = 9,
     NODE_DOCUMENT_TYPE = 10,
     NODE_DOCUMENT_FRAGMENT = 11,
-    NODE_NOTATION = 12
+    NODE_NOTATION = 12,
   }
 
-  interface _FILETIME {
+  // tslint:disable-next-line:interface-name
+  interface FILETIME {
     readonly dwHighDateTime: number;
     readonly dwLowDateTime: number;
   }
 
   /** Core DOM node interface */
   interface IXMLDOMNode {
-    /** append a child node */
-    appendChild<T extends IXMLDOMNode>(newChild: T): T;
-
     /** the collection of the node's attributes */
     readonly attributes: IXMLDOMNamedNodeMap<IXMLDOMAttribute>;
 
@@ -209,7 +207,6 @@ declare namespace MSXML2 {
 
     /** the collection of the node's children */
     readonly childNodes: IXMLDOMNodeList;
-    cloneNode(deep: boolean): IXMLDOMNode;
 
     /** the data type of the node */
     dataType: any;
@@ -219,10 +216,6 @@ declare namespace MSXML2 {
 
     /** first child of the node */
     readonly firstChild: IXMLDOMNode_Typed;
-    hasChildNodes(): boolean;
-
-    /** insert a child node */
-    insertBefore<T extends IXMLDOMNode>(newChild: T, refChild: any): T;
 
     /** last child of the node */
     readonly lastChild: IXMLDOMNode_Typed;
@@ -263,6 +256,22 @@ declare namespace MSXML2 {
     /** left sibling of the node */
     readonly previousSibling: IXMLDOMNode_Typed;
 
+    /** indicates whether node is a default value */
+    readonly specified: boolean;
+
+    /** text content of the node and subtree */
+    text: string;
+
+    /** return the XML source for the node and each of its descendants */
+    readonly xml: string;
+    /** append a child node */
+    appendChild<T extends IXMLDOMNode>(newChild: T): T;
+    cloneNode(deep: boolean): IXMLDOMNode;
+    hasChildNodes(): boolean;
+
+    /** insert a child node */
+    insertBefore<T extends IXMLDOMNode>(newChild: T, refChild: any): T;
+
     /** remove a child node */
     removeChild<T extends IXMLDOMNode>(childNode: T): T;
 
@@ -275,28 +284,57 @@ declare namespace MSXML2 {
     /** execute query on the subtree */
     selectSingleNode(queryString: string): IXMLDOMNode_Typed;
 
-    /** indicates whether node is a default value */
-    readonly specified: boolean;
-
-    /** text content of the node and subtree */
-    text: string;
-
     /** apply the stylesheet to the subtree */
     transformNode(stylesheet: IXMLDOMNode): string;
 
     /** apply the stylesheet to the subtree, returning the result through a document or a stream */
     transformNodeToObject(stylesheet: IXMLDOMNode, outputObject: any): void;
-
-    /** return the XML source for the node and each of its descendants */
-    readonly xml: string;
   }
 
   interface IXMLDOMDocument extends IXMLDOMNode {
-    /** abort an asynchronous download */
-    abort(): void;
-
     /** flag for asynchronous download */
     async: boolean;
+
+    /** node corresponding to the DOCTYPE */
+    readonly doctype: IXMLDOMDocumentType;
+
+    /** the root of the tree */
+    documentElement: IXMLDOMElement;
+
+    /** info on this DOM implementation */
+    readonly implementation: IXMLDOMImplementation;
+
+    /** the node's type */
+    readonly nodeType: DOMNodeType.NODE_DOCUMENT;
+
+    /** register an ondataavailable event handler */
+    readonly ondataavailable: any;
+
+    /** register a readystatechange event handler */
+    readonly onreadystatechange: any;
+
+    /** register an ontransformnode event handler */
+    readonly ontransformnode: any;
+
+    /** get the last parser error */
+    readonly parseError: IXMLDOMParseError;
+
+    /** indicates whether the parser preserves whitespace */
+    preserveWhiteSpace: boolean;
+
+    /** get the state of the XML document */
+    readonly readyState: number;
+
+    /** indicates whether the parser resolves references to external DTD/Entities/Schema */
+    resolveExternals: boolean;
+
+    /** get the URL for the loaded XML document */
+    readonly url: string;
+
+    /** indicates whether the parser performs validation */
+    validateOnParse: boolean;
+    /** abort an asynchronous download */
+    abort(): void;
 
     /** create an attribute node */
     createAttribute(name: string): IXMLDOMAttribute;
@@ -367,17 +405,8 @@ declare namespace MSXML2 {
     /** create a text node */
     createTextNode(data: string): IXMLDOMText;
 
-    /** node corresponding to the DOCTYPE */
-    readonly doctype: IXMLDOMDocumentType;
-
-    /** the root of the tree */
-    documentElement: IXMLDOMElement;
-
     /** build a list of elements by name */
     getElementsByTagName(tagName: string): IXMLDOMNodeList;
-
-    /** info on this DOM implementation */
-    readonly implementation: IXMLDOMImplementation;
 
     /** load document from the specified XML source */
     load(xmlSource: any): boolean;
@@ -388,50 +417,15 @@ declare namespace MSXML2 {
     /** retrieve node from it's ID */
     nodeFromID(idString: string): IXMLDOMNode;
 
-    /** the node's type */
-    readonly nodeType: DOMNodeType.NODE_DOCUMENT;
-
-    /** register an ondataavailable event handler */
-    readonly ondataavailable: any;
-
-    /** register a readystatechange event handler */
-    readonly onreadystatechange: any;
-
-    /** register an ontransformnode event handler */
-    readonly ontransformnode: any;
-
-    /** get the last parser error */
-    readonly parseError: IXMLDOMParseError;
-
-    /** indicates whether the parser preserves whitespace */
-    preserveWhiteSpace: boolean;
-
-    /** get the state of the XML document */
-    readonly readyState: number;
-
-    /** indicates whether the parser resolves references to external DTD/Entities/Schema */
-    resolveExternals: boolean;
-
     /** save the document to a specified destination */
     save(destination: any): void;
-
-    /** get the URL for the loaded XML document */
-    readonly url: string;
-
-    /** indicates whether the parser performs validation */
-    validateOnParse: boolean;
   }
 
   /** W3C-DOM XML Document 6.0 (Apartment) */
+  // tslint:disable-next-line:interface-name
   interface DOMDocument60 extends IXMLDOMDocument {
     /** the data type of the node */
     dataType: string | null;
-
-    /** get the value of the named property */
-    getProperty(name: string): any;
-
-    /** clone node such that clones ownerDocument is this document */
-    importNode(node: IXMLDOMNode, deep: boolean): IXMLDOMNode;
 
     /** A collection of all namespaces for this document */
     readonly namespaces: IXMLDOMSchemaCollection;
@@ -441,6 +435,12 @@ declare namespace MSXML2 {
 
     /** The associated schema cache */
     schemas: any;
+
+    /** get the value of the named property */
+    getProperty(name: string): any;
+
+    /** clone node such that clones ownerDocument is this document */
+    importNode(node: IXMLDOMNode, deep: boolean): IXMLDOMNode;
 
     /** set the value of the named property */
     setProperty(name: string, value: any): void;
@@ -455,9 +455,9 @@ declare namespace MSXML2 {
   /** IMXNamespacePrefixes interface */
   // tslint:disable-next-line:interface-name
   interface IMXNamespacePrefixes {
-    item(index: number): string;
-    readonly length: number;
     (index: number): string;
+    readonly length: number;
+    item(index: number): string;
   }
 
   /** XML Schema */
@@ -494,19 +494,19 @@ declare namespace MSXML2 {
   /** XML Schema Item Collection */
   // tslint:disable-next-line:interface-name
   interface ISchemaItemCollection {
+    (index: number): ISchemaItem;
+    readonly length: number;
     item(index: number): ISchemaItem;
     itemByName(name: string): ISchemaItem;
     itemByQName(name: string, namespaceURI: string): ISchemaItem;
-    readonly length: number;
-    (index: number): ISchemaItem;
   }
 
   /** XML Schema String Collection */
   // tslint:disable-next-line:interface-name
   interface ISchemaStringCollection {
-    item(index: number): string;
-    readonly length: number;
     (index: number): string;
+    readonly length: number;
+    item(index: number): string;
   }
 
   interface ISequentialStream {
@@ -516,6 +516,8 @@ declare namespace MSXML2 {
 
   /** IVBSAXAttributes interface */
   interface IVBSAXAttributes {
+    /** Get the number of attributes in the list. */
+    readonly length: number;
     /** Look up the index of an attribute by Namespace name. */
     getIndexFromName(strURI: string, strLocalName: string): number;
 
@@ -548,18 +550,14 @@ declare namespace MSXML2 {
 
     /** Look up an attribute's value by XML 1.0 qualified name. */
     getValueFromQName(strQName: string): string;
-
-    /** Get the number of attributes in the list. */
-    readonly length: number;
   }
 
   /** IVBSAXContentHandler interface */
   interface IVBSAXContentHandler {
-    /** Receive notification of character data. */
-    characters(strChars: string): void;
-
     /** Receive an object for locating the origin of SAX document events. */
     readonly documentLocator: IVBSAXLocator;
+    /** Receive notification of character data. */
+    characters(strChars: string): void;
 
     /** Receive notification of the end of a document. */
     endDocument(): void;
@@ -673,20 +671,19 @@ declare namespace MSXML2 {
   }
 
   interface IXMLDOMTextDataNode extends IXMLDOMNode {
-    /** append string to value */
-    appendData(data: string): void;
-
     /** value of the node */
     data: string;
+
+    /** number of characters in value */
+    readonly length: number;
+    /** append string to value */
+    appendData(data: string): void;
 
     /** delete string within the value */
     deleteData(offset: number, count: number): void;
 
     /** insert string into value */
     insertData(offset: number, data: string): void;
-
-    /** number of characters in value */
-    readonly length: number;
 
     /** replace string within the value */
     replaceData(offset: number, count: number, data: string): void;
@@ -735,14 +732,16 @@ declare namespace MSXML2 {
   }
 
   interface IXMLDOMElement extends IXMLDOMNode {
+    /** the node's type */
+    readonly nodeType: DOMNodeType.NODE_ELEMENT;
+
+    /** get the tagName of the element */
+    readonly tagName: string;
     /** look up the string value of an attribute by name */
     getAttribute(name: string): any;
 
     /** look up the attribute node by name */
     getAttributeNode(name: string): IXMLDOMAttribute;
-
-    /** the node's type */
-    readonly nodeType: DOMNodeType.NODE_ELEMENT;
 
     /** collapse all adjacent text nodes in sub-tree */
     normalize(): void;
@@ -758,9 +757,6 @@ declare namespace MSXML2 {
 
     /** set the specified attribute on the element */
     setAttributeNode(DOMAttribute: IXMLDOMAttribute): IXMLDOMAttribute;
-
-    /** get the tagName of the element */
-    readonly tagName: string;
   }
 
   interface IXMLDOMEntityReference extends IXMLDOMNode {
@@ -774,6 +770,11 @@ declare namespace MSXML2 {
 
   // tslint:disable-next-line:interface-name
   interface IXMLDOMNamedNodeMap<T extends IXMLDOMNode = IXMLDOMNode_Typed> {
+    /** collection of nodes */
+    (index: number): T;
+
+    /** number of nodes in the collection */
+    readonly length: number;
     /** lookup item by name */
     getNamedItem(name: string): T;
 
@@ -782,9 +783,6 @@ declare namespace MSXML2 {
 
     /** collection of nodes */
     item(index: number): T;
-
-    /** number of nodes in the collection */
-    readonly length: number;
 
     /** get next node from iterator */
     nextNode(): T;
@@ -800,27 +798,23 @@ declare namespace MSXML2 {
 
     /** set item by name */
     setNamedItem(newItem: T): T;
-
-    /** collection of nodes */
-    (index: number): T;
   }
 
   // tslint:disable-next-line:interface-name
   interface IXMLDOMNodeList<T extends IXMLDOMNode = IXMLDOMNode_Typed> {
     /** collection of nodes */
-    item(index: number): T;
+    (index: number): T;
 
     /** number of nodes in the collection */
     readonly length: number;
+    /** collection of nodes */
+    item(index: number): T;
 
     /** get next node from iterator */
     nextNode(): T;
 
     /** reset the position of iterator */
     reset(): void;
-
-    /** collection of nodes */
-    (index: number): T;
   }
 
   /** structure for reporting parser errors */
@@ -859,10 +853,14 @@ declare namespace MSXML2 {
   }
 
   /** XML Schemas Collection */
-  // tslint:disable-next-line:interface-name
   interface IXMLDOMSchemaCollection {
+    /** Get namespaceURI for schema by index */
+    (index: number): string;
+
+    /** number of schemas in collection */
+    readonly length: number;
     /** add a new schema */
-    add(namespaceURI: string, var_1: any): void;
+    add(namespaceURI: string, v: any): void;
 
     /** copy & merge other collection into this one */
     addCollection(otherCollection: IXMLDOMSchemaCollection): void;
@@ -870,30 +868,15 @@ declare namespace MSXML2 {
     /** lookup schema by namespaceURI */
     get(namespaceURI: string): IXMLDOMNode;
 
-    /** number of schemas in collection */
-    readonly length: number;
-
     /** Get namespaceURI for schema by index */
     namespaceURI(index: number): string;
 
     /** remove schema by namespaceURI */
     remove(namespaceURI: string): void;
-
-    /** Get namespaceURI for schema by index */
-    (index: number): string;
   }
 
   /** IXSLProcessor Interface */
   interface IXSLProcessor {
-    /** pass object to stylesheet */
-    addObject(obj: any, namespaceURI: string): void;
-
-    /**
-     * set <xsl:param> values
-     * @param namespaceURI [namespaceURI='0']
-     */
-    addParameter(baseName: string, parameter: any, namespaceURI?: string): void;
-
     /** XML input tree to transform */
     input: any;
 
@@ -906,6 +889,23 @@ declare namespace MSXML2 {
     /** current state of the processor */
     readonly readyState: number;
 
+    /** starting XSL mode */
+    readonly startMode: string;
+
+    /** namespace of starting XSL mode */
+    readonly startModeURI: string;
+
+    /** current stylesheet being used */
+    readonly stylesheet: IXMLDOMNode;
+    /** pass object to stylesheet */
+    addObject(obj: any, namespaceURI: string): void;
+
+    /**
+     * set <xsl:param> values
+     * @param namespaceURI [namespaceURI='0']
+     */
+    addParameter(baseName: string, parameter: any, namespaceURI?: string): void;
+
     /** reset state of processor and abort current transform */
     reset(): void;
 
@@ -915,20 +915,12 @@ declare namespace MSXML2 {
      */
     setStartMode(mode: string, namespaceURI?: string): void;
 
-    /** starting XSL mode */
-    readonly startMode: string;
-
-    /** namespace of starting XSL mode */
-    readonly startModeURI: string;
-
-    /** current stylesheet being used */
-    readonly stylesheet: IXMLDOMNode;
-
     /** start/resume the XSL transformation process */
     transform(): boolean;
   }
 
   /** Microsoft HTML Writer 6.0 */
+  // tslint:disable-next-line:interface-name
   interface MXHTMLWriter60 {
     /** Determine whether or not to write the byte order mark */
     byteOrderMark: boolean;
@@ -938,9 +930,6 @@ declare namespace MSXML2 {
 
     /** Set or get the output encoding. */
     encoding: string;
-
-    /** Flushes all writer buffers forcing the writer to write to the underlying output object */
-    flush(): void;
 
     /** Enable or disable auto indent mode. */
     indent: boolean;
@@ -956,9 +945,13 @@ declare namespace MSXML2 {
 
     /** Set or get the xml version info. */
     version: string;
+
+    /** Flushes all writer buffers forcing the writer to write to the underlying output object */
+    flush(): void;
   }
 
   /** MX Namespace Manager 6.0 */
+  // tslint:disable-next-line:interface-name
   interface MXNamespaceManager60 {
     allowOverride: boolean;
     declarePrefix(prefix: string, namespaceURI: string): void;
@@ -975,6 +968,7 @@ declare namespace MSXML2 {
   }
 
   /** Microsoft XML Writer 6.0 */
+  // tslint:disable-next-line:interface-name
   interface MXXMLWriter60 {
     /** Determine whether or not to write the byte order mark */
     byteOrderMark: boolean;
@@ -984,9 +978,6 @@ declare namespace MSXML2 {
 
     /** Set or get the output encoding. */
     encoding: string;
-
-    /** Flushes all writer buffers forcing the writer to write to the underlying output object */
-    flush(): void;
 
     /** Enable or disable auto indent mode. */
     indent: boolean;
@@ -1002,9 +993,13 @@ declare namespace MSXML2 {
 
     /** Set or get the xml version info. */
     version: string;
+
+    /** Flushes all writer buffers forcing the writer to write to the underlying output object */
+    flush(): void;
   }
 
   /** SAX Attributes 6.0 */
+  // tslint:disable-next-line:interface-name
   interface SAXAttributes60 {
     /** Add an attribute to the end of the list. */
     addAttribute(
@@ -1054,6 +1049,7 @@ declare namespace MSXML2 {
   }
 
   /** SAX XML Reader 6.0 */
+  // tslint:disable-next-line:interface-name
   interface SAXXMLReader60 {
     /** Set or get the base URL for the document. */
     baseURL: string;
@@ -1069,6 +1065,9 @@ declare namespace MSXML2 {
 
     /** Allow an application to register an error event handler or look up the current error event handler. */
     errorHandler: IVBSAXErrorHandler;
+
+    /** Set or get the secure base URL for the document. */
+    secureBaseURL: string;
 
     /** Look up the value of a feature. */
     getFeature(strName: string): boolean;
@@ -1087,36 +1086,13 @@ declare namespace MSXML2 {
 
     /** Set the value of a property. */
     putProperty(strName: string, varValue: any): void;
-
-    /** Set or get the secure base URL for the document. */
-    secureBaseURL: string;
   }
 
   /** Server XML HTTP Request 6.0  */
+  // tslint:disable-next-line:interface-name
   interface ServerXMLHTTP60 {
-    /** Abort HTTP request */
-    abort(): void;
-
-    /** Get all HTTP response headers */
-    getAllResponseHeaders(): string;
-
-    /** Get an option value */
-    getOption(option: SERVERXMLHTTP_OPTION): any;
-
-    /** Get HTTP response header */
-    getResponseHeader(bstrHeader: string): string;
-
     /** Register a complete event handler */
     readonly onreadystatechange: any;
-
-    /** Open HTTP connection */
-    open(
-      bstrMethod: string,
-      bstrUrl: string,
-      varAsync?: any,
-      bstrUser?: any,
-      bstrPassword?: any
-    ): void;
 
     /** Get ready state */
     readonly readyState: number;
@@ -1132,6 +1108,32 @@ declare namespace MSXML2 {
 
     /** Get response body */
     readonly responseXML: any;
+
+    /** Get HTTP status code */
+    readonly status: number;
+
+    /** Get HTTP status text */
+    readonly statusText: string;
+    /** Abort HTTP request */
+    abort(): void;
+
+    /** Get all HTTP response headers */
+    getAllResponseHeaders(): string;
+
+    /** Get an option value */
+    getOption(option: SERVERXMLHTTP_OPTION): any;
+
+    /** Get HTTP response header */
+    getResponseHeader(bstrHeader: string): string;
+
+    /** Open HTTP connection */
+    open(
+      bstrMethod: string,
+      bstrUrl: string,
+      varAsync?: any,
+      bstrUser?: any,
+      bstrPassword?: any
+    ): void;
 
     /** Send HTTP request */
     send(varBody?: any): void;
@@ -1160,19 +1162,14 @@ declare namespace MSXML2 {
       receiveTimeout: number
     ): void;
 
-    /** Get HTTP status code */
-    readonly status: number;
-
-    /** Get HTTP status text */
-    readonly statusText: string;
-
     /** Wait for asynchronous send to complete, with optional timeout (in seconds) */
     waitForResponse(timeoutInSeconds?: any): boolean;
   }
 
+  // tslint:disable-next-line:interface-name class-name
   interface tagXHR_COOKIE {
     readonly dwFlags: number;
-    readonly ftExpires: _FILETIME;
+    readonly ftExpires: FILETIME;
     readonly pwszName: string;
     readonly pwszP3PPolicy: string;
     readonly pwszUrl: string;
@@ -1180,27 +1177,10 @@ declare namespace MSXML2 {
   }
 
   /** XML HTTP Request class 6.0 */
+  // tslint:disable-next-line:interface-name
   interface XMLHTTP60 {
-    /** Abort HTTP request */
-    abort(): void;
-
-    /** Get all HTTP response headers */
-    getAllResponseHeaders(): string;
-
-    /** Get HTTP response header */
-    getResponseHeader(bstrHeader: string): string;
-
     /** Register a complete event handler */
     readonly onreadystatechange: any;
-
-    /** Open HTTP connection */
-    open(
-      bstrMethod: string,
-      bstrUrl: string,
-      varAsync?: any,
-      bstrUser?: any,
-      bstrPassword?: any
-    ): void;
 
     /** Get ready state */
     readonly readyState: number;
@@ -1217,23 +1197,47 @@ declare namespace MSXML2 {
     /** Get response body */
     readonly responseXML: any;
 
-    /** Send HTTP request */
-    send(varBody?: any): void;
-
-    /** Add HTTP request header */
-    setRequestHeader(bstrHeader: string, bstrValue: string): void;
-
     /** Get HTTP status code */
     readonly status: number;
 
     /** Get HTTP status text */
     readonly statusText: string;
+    /** Abort HTTP request */
+    abort(): void;
+
+    /** Get all HTTP response headers */
+    getAllResponseHeaders(): string;
+
+    /** Get HTTP response header */
+    getResponseHeader(bstrHeader: string): string;
+
+    /** Open HTTP connection */
+    open(
+      bstrMethod: string,
+      bstrUrl: string,
+      varAsync?: any,
+      bstrUser?: any,
+      bstrPassword?: any
+    ): void;
+
+    /** Send HTTP request */
+    send(varBody?: any): void;
+
+    /** Add HTTP request header */
+    setRequestHeader(bstrHeader: string, bstrValue: string): void;
   }
 
   /** XML Schema Cache 6.0 */
+  // tslint:disable-next-line:interface-name
   interface XMLSchemaCache60 {
+    /** Get namespaceURI for schema by index */
+    (index: number): string;
+
+    /** number of schemas in collection */
+    readonly length: number;
+    validateOnLoad: boolean;
     /** add a new schema */
-    add(namespaceURI: string, var_1: any): void;
+    add(namespaceURI: string, v: any): void;
 
     /** copy & merge other collection into this one */
     addCollection(otherCollection: IXMLDOMSchemaCollection): void;
@@ -1243,28 +1247,21 @@ declare namespace MSXML2 {
     getDeclaration(node: IXMLDOMNode): ISchemaItem;
     getSchema(namespaceURI: string): ISchema;
 
-    /** number of schemas in collection */
-    readonly length: number;
-
     /** Get namespaceURI for schema by index */
     namespaceURI(index: number): string;
 
     /** remove schema by namespaceURI */
     remove(namespaceURI: string): void;
     validate(): void;
-    validateOnLoad: boolean;
-
-    /** Get namespaceURI for schema by index */
-    (index: number): string;
   }
 
   /** XSL Stylesheet Cache 6.0 */
+  // tslint:disable-next-line:interface-name
   interface XSLTemplate60 {
-    /** create a new processor object */
-    createProcessor(): IXSLProcessor;
-
     /** stylesheet to use with processors */
     stylesheet: IXMLDOMNode;
+    /** create a new processor object */
+    createProcessor(): IXSLProcessor;
   }
 
   interface IXMLDOMNotation extends IXMLDOMNode {
@@ -1287,6 +1284,7 @@ declare namespace MSXML2 {
     | IXMLDOMNotation;
 }
 
+// tslint:disable-next-line:interface-name
 interface ActiveXObject {
   on(
     obj: MSXML2.DOMDocument60,
@@ -1295,6 +1293,7 @@ interface ActiveXObject {
   ): void;
 }
 
+// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'Msxml2.DOMDocument': MSXML2.DOMDocument60;
   'Msxml2.DOMDocument.6.0': MSXML2.DOMDocument60;
@@ -1310,7 +1309,9 @@ interface ActiveXObjectNameMap {
   'Msxml2.XSLTemplate': MSXML2.XSLTemplate60;
 }
 
+// tslint:disable-next-line:interface-name
 interface EnumeratorConstructor {
+  // tslint:disable-next-line:callable-types
   new <T extends MSXML2.IXMLDOMNode = MSXML2.IXMLDOMNode_Typed>(
     collection: MSXML2.IXMLDOMNodeList<T>
   ): Enumerator<T>;

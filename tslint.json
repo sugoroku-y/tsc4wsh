@@ -1,0 +1,42 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier"
+  ],
+  "jsRules": {},
+  "rules": {
+    "no-namespace": false,
+    "no-reference": false,
+    "only-arrow-functions": false,
+    "arrow-parens": false,
+    "quotemark": [true, "single"],
+    "trailing-comma": [
+      true, {
+        "multiline": {
+          "arrays": "always",
+          "functions": "never",
+          "object": "always",
+          "typeLiteral": "always"
+        },
+        "singleline": {
+          "arrays": "ignore",
+          "functions": "never",
+          "object": "ignore",
+          "typeLiteral": "ignore"
+        }
+      }
+    ],
+    "prettier": [
+      true, {
+        "bracketSpacing": false,
+        "endOfLine": "lf",
+        "singleQuote": true,
+        "trailingComma": "es5"
+      }
+    ]
+  },
+  "rulesDirectory": [
+    "tslint-plugin-prettier"
+  ]
+}

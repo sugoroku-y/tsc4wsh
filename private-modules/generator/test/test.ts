@@ -1,5 +1,7 @@
+// tslint:disable: max-classes-per-file
+
 function toString(v: number | boolean | string | null | undefined): string {
-  return typeof v === 'string' ? '"' + v.replace(/[\\""]/g, '\\$&') : ''+ v;
+  return typeof v === 'string' ? '"' + v.replace(/[\\""]/g, '\\$&') : '' + v;
 }
 
 class TestFailed extends Error {
@@ -15,43 +17,50 @@ class IllegalTest extends Error {
 
 class TestResult<T> {
   constructor(private readonly actual: T) {}
-  toBe(expected: T): void {
-    if (!this.actual || typeof this.actual === 'number' || typeof this.actual === 'string' || typeof this.actual === 'boolean') {
+  public toBe(expected: T): void {
+    if (
+      !this.actual ||
+      typeof this.actual === 'number' ||
+      typeof this.actual === 'string' ||
+      typeof this.actual === 'boolean'
+    ) {
       if (this.actual !== expected) {
         throw new TestFailed(
-          `expected: ${toString(expected as any)}, but actual.length: ${
-            toString(this.actual as any)
-          }`
+          `expected: ${toString(
+            expected as any
+          )}, but actual.length: ${toString(this.actual as any)}`
         );
       }
       return;
     } else if (typeof this.actual === 'function') {
       throw new IllegalTest('Unsupported value type: function');
     }
-    if (typeof this.actual === 'object' && 'next' in this.actual && typeof (this.actual as any).next === 'function') {
-      const a = [...(this.actual as any) as IterableIterator<any>];
-      const e = [...(expected as any) as IterableIterator<any>];
+    if (
+      typeof this.actual === 'object' &&
+      'next' in this.actual &&
+      typeof (this.actual as any).next === 'function'
+    ) {
+      const a = [...((this.actual as any) as IterableIterator<any>)];
+      const e = [...((expected as any) as IterableIterator<any>)];
       if (a.length !== e.length) {
         throw new TestFailed(
-          `expected.length: ${e.length}, but actual.length: ${
-            a.length
-          }`
+          `expected.length: ${e.length}, but actual.length: ${a.length}`
         );
       }
       for (let i = 0; i < a.length; ++i) {
-        if (a[i] === e[i]) continue;
+        if (a[i] === e[i]) {
+          continue;
+        }
         throw new TestFailed(
-          `expected[${i}]: ${JSON.stringify(e[i])}, but actual[${i}]: ${
-            a[i]
-          }`
+          `expected[${i}]: ${JSON.stringify(e[i])}, but actual[${i}]: ${a[i]}`
         );
       }
     }
   }
-  toThrow(checker?: (ex: any) => boolean | RegExp) {
+  public toThrow(checker?: (ex: any) => boolean | RegExp) {
     ++total;
     if (typeof this.actual !== 'function') {
-      throw new IllegalTest('not thrown, because it is not function')
+      throw new IllegalTest('not thrown, because it is not function');
     }
     try {
       this.actual();
@@ -64,21 +73,25 @@ class TestResult<T> {
           }
         } else if (typeof checker === 'function') {
           if (!checker(ex)) {
-            throw new TestFailed(`The exception not passed the check: ${checker.toString()}`);
+            throw new TestFailed(
+              `The exception not passed the check: ${checker.toString()}`
+            );
           }
         } else {
-          throw new IllegalTest(`Unsupported checker: ${(checker as any).toString()}`);
+          throw new IllegalTest(
+            `Unsupported checker: ${(checker as any).toString()}`
+          );
         }
       }
       ++success;
       return;
     }
-    throw new TestFailed('No exception thrown')
+    throw new TestFailed('No exception thrown');
   }
 }
 
-var success = 0;
-var total = 0;
+let success = 0;
+let total = 0;
 function test(caption: string, testproc: () => void): void {
   ++total;
   try {
@@ -86,9 +99,13 @@ function test(caption: string, testproc: () => void): void {
     ++success;
   } catch (ex) {
     if (ex instanceof TestFailed) {
-      WScript.StdErr.WriteLine(`FAILED: ${caption}: ${ex.message || ex.toString()}`);
+      WScript.StdErr.WriteLine(
+        `FAILED: ${caption}: ${ex.message || ex.toString()}`
+      );
     } else {
-      WScript.StdErr.WriteLine(`Illegal test: ${caption}: ${ex.message || ex.Message || ex.toString()}`);
+      WScript.StdErr.WriteLine(
+        `Illegal test: ${caption}: ${ex.message || ex.Message || ex.toString()}`
+      );
     }
   }
 }
@@ -96,11 +113,15 @@ function expect(v: number): TestResult<number>;
 function expect(v: string): TestResult<string>;
 function expect(v: boolean): TestResult<boolean>;
 function expect<T>(v: IterableIterator<T>): TestResult<IterableIterator<T>>;
-function expect<T>(v: ()=>any): TestResult<()=>any>;
+function expect<T>(v: () => any): TestResult<() => any>;
 function expect<T>(v: T): TestResult<T> {
   return new TestResult<T>(v);
 }
 
 function teardown() {
-  WScript.Echo(`Success: ${success} / ${total} : ${((success / total * 1000 + 0.5) | 0) / 10}%`);
+  WScript.Echo(
+    // tslint:disable-next-line: no-bitwise
+    `Success: ${success} / ${total} : ${(((success / total) * 1000 + 0.5) | 0) /
+      10}%`
+  );
 }
