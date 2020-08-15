@@ -10,7 +10,7 @@ async function findTSConfig(source: string) {
   let dirpath = source;
   while (true) {
     const newdirpath = path.resolve(dirpath, '..');
-    if (dirpath === newdirpath) throw new Error('tsconfig.json not found!');
+    if (dirpath === newdirpath) return null;
     dirpath = newdirpath;
     let tsconfig = path.join(dirpath, 'tsconfig.json');
     if (await fs_exists(tsconfig)) return tsconfig;
@@ -45,12 +45,16 @@ function adjustConfig(config: {[key: string]: any}) {
 }
 
 export async function generateTSConfig() {
-  const config = {compilerOptions: adjustConfig({})}
+  const config = {compilerOptions: adjustConfig({})};
+  // private-modulesをtypeRootsに指定
+  const p = path.resolve('.');
+  const p1 = path.join(__dirname, '../private-modules');
+  const p2 = path.join(p1, '@types');
   config.compilerOptions.typeRoots = [
-    path.relative(path.resolve('.'), path.join(path.dirname(__dirname), 'private-modules',)),
-    path.relative(path.resolve('.'), path.join(path.dirname(__dirname), 'private-modules', '@types')),
+    path.relative(p, p1).replace(/\\/g, '/'),
+    path.relative(p, p2).replace(/\\/g, '/'),
   ];
-  await fs_writeFile(path.resolve('tsconfig.json'), JSON.stringify(config, undefined, 4), 'utf8');
+  await fs_writeFile(path.resolve('tsconfig.json'), JSON.stringify(config, undefined, 2), 'utf8');
 }
 
 function diagnosticToText(diag: ts.Diagnostic): string {
@@ -131,10 +135,15 @@ function generateObjectMap(program: ts.Program) {
 
 export async function transpile(fileName: string, dependencies?: {[filepath: string]: {[filepath: string]: true}}) {
   const tsconfigPath = await findTSConfig(fileName);
-  const {config, error} = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
+  const {config = undefined, error = undefined} = tsconfigPath && ts.readConfigFile(tsconfigPath, ts.sys.readFile) || {};
   if (error) throw new Error(error.toString());
-  const {options: compilerOptions, errors: coError} = ts.convertCompilerOptionsFromJson(adjustConfig(config.compilerOptions), path.dirname(tsconfigPath));
+  const {options: compilerOptions, errors: coError} = ts.convertCompilerOptionsFromJson(adjustConfig(config && config.compilerOptions || {}), path.dirname(tsconfigPath || fileName));
   if (coError && coError.length) throw new Error(coError.join('\n'));
+  // private-modulesがtypeRootsにない場合でもコンパイルできるように追加
+  (compilerOptions.typeRoots = compilerOptions.typeRoots || []).push(
+    path.join(__dirname, '../private-modules'),
+    path.join(__dirname, '../private-modules/@types'),
+  );
   let program = ts.createProgram([fileName], compilerOptions);
   if (dependencies) {
     for (const source of program.getSourceFiles()) {

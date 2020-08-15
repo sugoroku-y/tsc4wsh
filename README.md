@@ -8,33 +8,22 @@ This is a TypeScript compiler for Windows Scripting Host.
 
 ### インストール
 
-以下のコマンドを実行してください
-
-> npm i tsc4wsh -D
-
-### 準備
-
 以下のコマンドを実行してください。
 
-> npx tsc4wsh --init
-
-実行したときのカレントディレクトリに`tsconfig.json`が出力されます。
+> npm install tsc4wsh -D
 
 ### コンパイル
 
 何かTypeScriptで記述したスクリプトを用意してください。
 
 ```ts
-/// <reference types="wscript-util" />
-/// <reference types="filesystemobject-util" />
+declare const fso: Scripting.FileSystemObject;
 
-const fsoU = Scripting.FileSystemObject.Utils;
-
-for (const arg of WScriptUtil.Arguments.Unnamed()) {
-  for (const item of fsoU.wildcard(arg)) {
-    const d = new Date(item.DateLastModified);
-    WScript.Echo(`${arg} ${item.Size} ${d.toLocaleString()}`);
-  }
+for (const e = new Enumerator(WScript.Arguments.Unnamed); !e.atEnd(); e.moveNext()) {
+  const arg = e.item();
+  const file = fso.GetFile(arg);
+  const d = new Date(file.DateLastModified);
+  WScript.Echo(`${file.Path} ${file.Size} ${d.toLocaleString()}`);
 }
 ```
 
@@ -47,4 +36,41 @@ for (const arg of WScriptUtil.Arguments.Unnamed()) {
 `private-modules`以下にWSHスクリプトで使われそうなライブラリを用意しています。
 
 自分でスクリプトを書くために必要な部分だけを宣言、定義しているため、不十分なところがままありますが、必要なときは修正してください。
+
+### エディター向け設定ファイル
+
+VS Codeなどのエディターにはコンパイルエラーを指摘してくれる機能がありますが、適切なtsconfig.jsonファイルを用意していないと`private-modules`以下のライブラリを参照している場合、エラーになってしまいます。
+
+そこでtsconfig.jsonを出力するオプションを用意しています。以下のコマンドを実行してください。
+
+> npx tsc4wsh --init
+
+すると以下のようなtsconfig.jsonが出力されます。
+
+``````json
+{
+  "compilerOptions": {
+    "target": "es3",
+    "module": "none",
+    "outFile": "./dummy.js",
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "types": [
+      "windows-script-host",
+      "activex-scripting",
+      "activex-adodb"
+    ],
+    "lib": [
+      "es2018"
+    ],
+    "typeRoots": [
+      "node_modules/tsc4wsh/private-modules",
+      "node_modules/tsc4wsh/private-modules/@types"
+    ]
+  }
+}
+```
+
+`typeRoots`に`private-modules`のパスが指定されますので、エディター上でもコンパイルが通るようになります。
 
