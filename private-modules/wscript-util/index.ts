@@ -67,7 +67,7 @@ namespace WScriptUtil {
       if (!name) {
         continue;
       }
-      const required: 'true' | 'false' = node.getAttribute('required');
+      const required = node.getAttribute('required') === 'true';
       if (!WScript.Arguments.Named.Exists(name)) {
         if (required) {
           WScript.Echo(`${name} は必須パラメータです。`);

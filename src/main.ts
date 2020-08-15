@@ -1,14 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import xmldom from 'xmldom';
-import transpile from './transpile';
+import {transpile, generateTSConfig} from './transpile';
 import {
+  // eslint-disable-next-line no-unused-vars
   IItem,
   wildcard,
   wildcardToRegExp,
   wildcardToRegExpForPath,
 } from './wildcard';
-import optionalist from './optionalist';
+import * as optionalist from './optionalist';
 
 /**
  * job要素にobject要素を追加する
@@ -23,6 +24,7 @@ function appendObjectElements(
   // ソース中にdeclare const fso: Scripting.FileSystemObbjectのような記述を見つけたら
   // <object id="fso" progid="Scripting.FileSystemObbject">を追加する
   for (const id in progids) {
+    // eslint-disable-next-line no-prototype-builtins
     if (!progids.hasOwnProperty(id)) {
       continue;
     }
@@ -147,8 +149,10 @@ async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
     // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
     transpiled
       .replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
+      // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
+      .replace(/\]\]>/g, ']]\\x3e')
       // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
-      .replace(/(?:\\u[0-9a-f]{4})+/ig, hexEncoded =>
+      .replace(/(?:\\u[0-9a-f]{4})+/gi, hexEncoded =>
         String.fromCharCode(
           ...hexEncoded
             .split('\\u')
@@ -348,7 +352,7 @@ if (options.help) {
 }
 
 if (options.init) {
-  transpile.generateTSConfig();
+  generateTSConfig();
   process.exit(0);
 }
 

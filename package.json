@@ -1,6 +1,6 @@
 {
   "name": "tsc4wsh",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "./lib/main.js",
   "engines": {
     "node": ">=10.17.0"
@@ -35,8 +35,18 @@
     "@types/node": "^10.14.8",
     "@types/optimist": "0.0.29",
     "@types/xmldom": "^0.1.29",
+    "@typescript-eslint/eslint-plugin": "^3.8.0",
+    "@typescript-eslint/parser": "^3.8.0",
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.17.1"
+    "prettier": "^2.0.5"
   },
   "bin": {
     "tsc4wsh": "./bin/tsc4wsh.js"

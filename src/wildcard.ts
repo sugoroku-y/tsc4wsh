@@ -21,7 +21,7 @@ export function wildcardToRegExp(pattern: string): RegExp | undefined {
   let depth = 0;
   const regex =
     '^' +
-    pattern.replace(/[\^$()\[\]{}+.*?,]/g, ch => {
+    pattern.replace(/[\^$()[\]{}+.*?,]/g, ch => {
       switch (ch) {
         // *は0個以上のすべての文字にマッチ
         case '*':
@@ -69,7 +69,7 @@ export function wildcardToRegExpForPath(pattern: string): RegExp | undefined {
   let depth = 0;
   const regex =
     '^' +
-    pattern.replace(/(\*\*\/?)|[\^$()\[\]{}+.*?,]/g, (ch, recursive) => {
+    pattern.replace(/(\*\*\/?)|[\^$()[\]{}+.*?,]/g, (ch, recursive) => {
       if (recursive) {
         return recursive === '**' ? '(?:[^/]+/)*[^/]+' : '(?:[^/]+/)*';
       }
@@ -211,7 +211,7 @@ export function* wildcard(
     .map((pathAtom, index, array) => {
       // \で終わっているようなパターンはそのディレクトリ自体を返す
       if (pathAtom === '') {
-        return function*(item: IItem) {
+        return function* (item: IItem) {
           yield item;
         };
       }
@@ -237,7 +237,7 @@ export function* wildcard(
       // ワイルドカードを含む場合はそのパターンにあったファイルかフォルダを返す
       if (/[*?{]/.test(pathAtom)) {
         const atomPattern = wildcardToRegExp(pathAtom)!;
-        return function*(item: IItem) {
+        return function* (item: IItem) {
           for (const name of fs.readdirSync(item.path)) {
             if (!atomPattern.test(name)) {
               continue;
@@ -251,7 +251,7 @@ export function* wildcard(
         };
       }
       // ワイルドカードを含まない場合はそのパスをつなげて存在していればそのファイル、もしくはフォルダを返す
-      return function*(item: IItem) {
+      return function* (item: IItem) {
         const fpath = path.resolve(item.path, pathAtom);
         // 存在していなければ返さない
         if (!fs.existsSync(fpath)) {
