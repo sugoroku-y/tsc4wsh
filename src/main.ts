@@ -262,6 +262,7 @@ async function tsc4wsh(
 const options = optionalist.parse({
   [optionalist.helpString]: {
     describ: `Windows Scripting Host向けTypeScriptコンパイラ`,
+    showUsageOnError: true,
   },
   output: {
     alias: 'o',
@@ -330,7 +331,7 @@ async function ensureDir(p: string) {
 
 if (options.help) {
   process.stderr.write(options[optionalist.helpString]);
-  process.exit(1);
+  process.exit(0);
 }
 
 if (options.init) {

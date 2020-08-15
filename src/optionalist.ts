@@ -87,6 +87,7 @@ namespace optionalist {
      */
     [helpString]?: {
       describ?: string;
+      showUsageOnError?: true;
     };
   };
   type OptionType<
@@ -113,157 +114,167 @@ namespace optionalist {
     optMap: OptMap,
     args?: Iterable<string>
   ): Options<OptMap> {
-    const itr = args?.[Symbol.iterator]() ?? (() => {
-      const itr = process.argv[Symbol.iterator]();
-      itr.next();
-      itr.next();
-      return itr;
-    })();
-    const unnamedList: string[] = [];
-    const options: {[name: string]: string | number | true} = {};
-    const optMapAlias: {
-      [name: string]: {name: string; info: OptionInformation};
-    } = {};
-    for (const [name, info] of Object.entries(optMap)) {
-      const optArg = `${name.length > 1 ? '--' : '-'}${name}`;
-      if ((info as any).default !== undefined) {
+    try {
+      const itr = args?.[Symbol.iterator]() ?? (() => {
+        const itr = process.argv[Symbol.iterator]();
+        itr.next();
+        itr.next();
+        return itr;
+      })();
+      const unnamedList: string[] = [];
+      const options: {[name: string]: string | number | true} = {};
+      const optMapAlias: {
+        [name: string]: {name: string; info: OptionInformation};
+      } = {};
+      for (const [name, info] of Object.entries(optMap)) {
+        const optArg = `${name.length > 1 ? '--' : '-'}${name}`;
+        if ((info as any).default !== undefined) {
+          switch (info.type) {
+            case 'boolean':
+              throw new Error(
+                `The default value of the ${optArg} parameter cannot be specified.: ${
+                  (info as any).default
+                }`
+              );
+            case 'number':
+              if (typeof info.default !== 'number') {
+                throw new Error(
+                  `The default value of the ${optArg} parameter must be a number.: ${
+                    info.default
+                  }`
+                );
+              }
+              break;
+            case undefined:
+            case 'string':
+              if (typeof info.default !== 'string') {
+                throw new Error(
+                  `The default value of the ${optArg} parameter must be a string.: ${
+                    info.default
+                  }`
+                );
+              }
+              break;
+            default:
+              throw new Error(
+                `unknown type: ${(info as any).type} for the ${optArg} parameter`
+              );
+          }
+          options[name] = info.default;
+        }
+        optMapAlias[optArg] = {name, info};
+        if (info.alias) {
+          for (const alias of Array.isArray(info.alias) ? info.alias : [info.alias]) {
+            const optAlias = `${alias.length > 1 ? '--' : '-'}${alias}`;
+            optMapAlias[optAlias] = {name, info};
+          }
+        }
+      }
+      let aloneOpt: string | undefined;
+      let prevOpt: string | undefined;
+      const next = () => {
+        const r = itr.next();
+        return r.done ? undefined : r.value;
+      };
+      while (true) {
+        const arg = next();
+        if (arg === undefined) {
+          break;
+        }
+        if (arg === '--') {
+          while (true) {
+            const value = next();
+            if (value === undefined) {
+              break;
+            }
+            unnamedList.push(value);
+          }
+          break;
+        }
+        if (!optMapAlias[arg]) {
+          if (arg[0] === '-') {
+            throw new Error(`unknown options: ${arg}`);
+          }
+          unnamedList.push(arg);
+          continue
+        }
+        const {name, info} = optMapAlias[arg];
+        if (aloneOpt || prevOpt && info.alone) {
+          throw new Error(`${aloneOpt || arg} must be specified alone.`);
+        }
+        prevOpt = arg;
+        if (info.alone) {
+          aloneOpt = arg;
+        }
         switch (info.type) {
           case 'boolean':
-            throw new Error(
-              `The default value of the ${optArg} parameter cannot be specified.: ${
-                (info as any).default
-              }`
-            );
+            options[name] = true;
+            continue;
           case 'number':
-            if (typeof info.default !== 'number') {
-              throw new Error(
-                `The default value of the ${optArg} parameter must be a number.: ${
-                  info.default
-                }`
-              );
+            const value = next();
+            if (value === undefined) {
+              throw new Error(`${arg} needs a number parameter${info.example ? ' as the ' + info.example : ''}`);
             }
-            break;
-          case undefined:
-          case 'string':
-            if (typeof info.default !== 'string') {
-              throw new Error(
-                `The default value of the ${optArg} parameter must be a string.: ${
-                  info.default
-                }`
-              );
+            if (Number.isNaN(+value)) {
+              throw new Error(`${arg} needs a number parameter${info.example ? ' as the ' + info.example : ''}: ${value}`);
             }
-            break;
-          default:
-            throw new Error(
-              `unknown type: ${(info as any).type} for the ${optArg} parameter`
-            );
+            options[name] = +value;
+            continue;
         }
-        options[name] = info.default;
-      }
-      optMapAlias[optArg] = {name, info};
-      if (info.alias) {
-        for (const alias of Array.isArray(info.alias) ? info.alias : [info.alias]) {
-          const optAlias = `${alias.length > 1 ? '--' : '-'}${alias}`;
-          optMapAlias[optAlias] = {name, info};
+        const value = next();
+        if (value === undefined) {
+          throw new Error(`${arg} needs a parameter${info.example ? ' as the ' + info.example : ''}`);
         }
+        options[name] = value;
       }
+      return Object.defineProperties(options, {
+        [unnamed]: {
+          get: () => unnamedList.slice(0),
+        },
+        [helpString]: {
+          get: () => makeHelpString(optMap),
+        },
+      }) as Options<OptMap>;
+    } catch (ex) {
+      if (optMap[helpString]?.showUsageOnError) {
+        process.stderr.write(`${ex.message}\n\n${makeHelpString(optMap)}`);
+        process.exit(1);
+      }
+      throw ex;
     }
-    let aloneOpt: string | undefined;
-    let prevOpt: string | undefined;
-    const next = () => {
-      const r = itr.next();
-      return r.done ? undefined : r.value;
-    };
+  }
+  function loadPackageJson() {
+    let dirname = __dirname;
     while (true) {
-      const arg = next();
-      if (arg === undefined) {
-        break;
-      }
-      if (arg === '--') {
-        while (true) {
-          const value = next();
-          if (value === undefined) {
-            break;
+      const json = (() => {
+        try {
+          const stat = fs.statSync(path.join(dirname, 'node_modules'));
+          if (!stat.isDirectory()) {
+            return undefined;
           }
-          unnamedList.push(value);
+          return fs.readFileSync(path.join(dirname, 'package.json'), 'utf8');
+        } catch (ex) {
+          if (ex.code === 'ENOENT') {
+            return undefined;
+          }
+          throw ex;
         }
-        break;
+      })();
+      if (json !== undefined) {
+        return JSON.parse(json);
       }
-      if (!optMapAlias[arg]) {
-        if (arg[0] === '-') {
-          throw new Error(`unknown options: ${arg}`);
-        }
-        unnamedList.push(arg);
-        continue
+      const prev = dirname;
+      dirname = path.dirname(dirname);
+      if (dirname === prev) {
+        // 見つからなかったらundefined
+        return undefined;
       }
-      const {name, info} = optMapAlias[arg];
-      if (aloneOpt || prevOpt && info.alone) {
-        throw new Error(`${aloneOpt || arg} must be specified alone.`);
-      }
-      prevOpt = arg;
-      if (info.alone) {
-        aloneOpt = arg;
-      }
-      switch (info.type) {
-        case 'boolean':
-          options[name] = true;
-          continue;
-        case 'number':
-          const value = next();
-          if (value === undefined) {
-            throw new Error(`${arg} needs a number parameter`);
-          }
-          if (Number.isNaN(+value)) {
-            throw new Error(`${arg} needs a number parameter: ${value}`);
-          }
-          options[name] = +value;
-          continue;
-      }
-      const value = next();
-      if (value === undefined) {
-        throw new Error(`${arg} needs a parameter`);
-      }
-      options[name] = value;
     }
-    return Object.defineProperties(options, {
-      [unnamed]: {
-        get: () => unnamedList.slice(0),
-      },
-      [helpString]: {
-        get: () => makeHelpString(optMap),
-      },
-    }) as Options<OptMap>;
+
   }
   function makeHelpString<OptMap extends OptionInformationMap>(optMap: OptMap): string { 
-    const {version, name: processName} = (() => {
-      let modulePath = __dirname;
-      while (true) {
-        const json = (() => {
-          try {
-            const stat = fs.statSync(path.join(modulePath, 'node_modules'));
-            if (!stat.isDirectory()) {
-              return undefined;
-            }
-            return fs.readFileSync(path.join(modulePath, 'package.json'), 'utf8');
-          } catch (ex) {
-            if (ex.code === 'ENOENT') {
-              return undefined;
-            }
-            throw ex;
-          }
-        })();
-        if (json !== undefined) {
-          return JSON.parse(json);
-        }
-        const dirname = path.dirname(modulePath);
-        if (dirname === modulePath) {
-          // 見つからなかったらundefined
-          return undefined;
-        }
-        modulePath = dirname;
-      }
-    })() || {};
-    let help = 'USAGE:\n';
+    const {version, name: processName} = loadPackageJson() || {};
+    let help = `Version: ${processName} ${version}\nUsage:\n`;
     const requireds: string[] = [];
     const options: string[] = [];
     const alones: string[] = [];
@@ -285,10 +296,6 @@ namespace optionalist {
       if (info?.describ) {
         help += `\nDescription:\n${indent(info.describ, '  ')}`;
       }
-    }
-
-    if (version) {
-      help += `\nVersion: ${version}\n`;
     }
     help += '\nOptions:\n';
     for (const [name, info] of Object.entries(optMap)) {
