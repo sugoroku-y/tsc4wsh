@@ -2,14 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import xmldom from 'xmldom';
 import {transpile, generateTSConfig} from './transpile';
-import {
-  // eslint-disable-next-line no-unused-vars
-  IItem,
-  wildcard,
-  wildcardToRegExp,
-  wildcardToRegExpForPath,
-} from './wildcard';
-import * as optionalist from './optionalist';
+import * as wildkarte from 'wildkarte';
+import * as optionalist from 'optionalist';
 
 /**
  * job要素にobject要素を追加する
@@ -177,7 +171,11 @@ async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
  * @param filepath ソースファイルのパス
  * @param doc WSFのドキュメント
  */
-async function writeWsf(filepath: string, doc: Document) {
+async function writeWsf(
+  filepath: string,
+  doc: Document,
+  options: {console?: boolean; output?: string}
+) {
   const content =
     '<?xml version="1.0" encoding="utf-8" ?>\n' +
     serializer.serializeToString(doc) +
@@ -224,12 +222,12 @@ async function writeWsf(filepath: string, doc: Document) {
  */
 async function tsc4wsh(
   filepaths: string[],
-  dependencies?: IDependencies,
-  watchMode?: boolean
+  options: {console?: boolean; output?: string; watch?: boolean},
+  dependencies?: IDependencies
 ) {
   process.stdout.write(
     `${new Date().toLocaleTimeString()} - tsc4wsh 開始 ${
-      watchMode ? ' (監視中)' : ''
+      options.watch ? ' (監視中)' : ''
     }...\n`
   );
 
@@ -249,7 +247,7 @@ async function tsc4wsh(
               dependencies
             );
             const doc = await makeWsfDom(transpiled, progids);
-            await writeWsf(filepath, doc);
+            await writeWsf(filepath, doc, options);
             return true;
           } catch (ex) {
             // エラーメッセージはすべて例外として受け取る
@@ -278,15 +276,16 @@ async function tsc4wsh(
 
 const options = optionalist.parse({
   [optionalist.helpString]: {
-    describ: `Windows Scripting Host向けTypeScriptコンパイラ`,
+    describe: `Windows Scripting Host向けTypeScriptコンパイラ`,
     showUsageOnError: true,
   },
   output: {
     alias: 'o',
     example: 'outputDirOrFile',
-    describe: `出力先ディレクトリ、もしくは出力先ファイルを指定する。
-              拡張子'.wsf'を付けると出力先ファイルと見なす。
-              変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
+    describe: `
+      出力先ディレクトリ、もしくは出力先ファイルを指定する。
+      拡張子'.wsf'を付けると出力先ファイルと見なす。
+      変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
   },
   base: {
     alias: 'b',
@@ -302,13 +301,13 @@ const options = optionalist.parse({
     alias: 'h',
     describe: `このヘルプを表示する。`,
     type: 'boolean',
-    alone: true,
+    nature: 'alone',
   },
   init: {
     alias: 'i',
     describe: `tsconfig.jsonを生成する。`,
     type: 'boolean',
-    alone: true,
+    nature: 'alone',
   },
   console: {
     alias: 'c',
@@ -317,15 +316,16 @@ const options = optionalist.parse({
   },
   [optionalist.unnamed]: {
     example: 'filename',
-    describe: `コンパイルするファイル
-              ファイル名にはワイルドカードを指定可能。
-              - * はファイル名、ディレクトリ名の任意の0個以上複数文字にマッチ
-              - ? はファイル名、ディレクトリ名の任意の1文字にマッチ
-              - {AAA,BBB}はファイル名、ディレクトリ名のAAAかBBBにマッチ
-              - ** は下階層のすべてのファイル、ディレクトリにマッチ
-              ファイル名を指定しなかった場合には**\\*.tsが指定されたものと見なす。
-              -で始まるファイル名を使用したい場合には--を指定したあとにファイル名を指定する。
-              ただし、その場合--以降でその他のオプションは指定できない。`,
+    describe: `
+      コンパイルするファイル
+      ファイル名にはワイルドカードを指定可能。
+      - * はファイル名、ディレクトリ名の任意の0個以上複数文字にマッチ
+      - ? はファイル名、ディレクトリ名の任意の1文字にマッチ
+      - {AAA,BBB}はファイル名、ディレクトリ名のAAAかBBBにマッチ
+      - ** は下階層のすべてのファイル、ディレクトリにマッチ
+      ファイル名を指定しなかった場合には**\\*.tsが指定されたものと見なす。
+      -で始まるファイル名を使用したい場合には--を指定したあとにファイル名を指定する。
+      ただし、その場合--以降でその他のオプションは指定できない。`,
   },
 });
 
@@ -346,12 +346,12 @@ async function ensureDir(p: string) {
   await fs.promises.mkdir(d);
 }
 
-if (options.help) {
+if ('help' in options) {
   process.stderr.write(options[optionalist.helpString]);
   process.exit(0);
 }
 
-if (options.init) {
+if ('init' in options) {
   generateTSConfig();
   process.exit(0);
 }
@@ -362,15 +362,15 @@ const patterns =
     ? options[optionalist.unnamed]
     : ['**/*.ts'];
 
-let gitIgnore: ((item: IItem) => boolean | undefined) | undefined;
+let gitIgnore: ((item: wildkarte.IItem) => boolean | undefined) | undefined;
 // ワイルドカードを展開
 const filelist = patterns
   .map(pattern => [
-    ...wildcard(pattern, item => {
+    ...wildkarte.expand(pattern, item => {
       if (item.stat.isDirectory()) {
         gitIgnore = loadGitignore(item.path, gitIgnore);
       }
-      return gitIgnore?.(item);
+      return gitIgnore?.(item) ?? false;
     }),
   ])
   .reduce((a, b) => a.concat(b))
@@ -405,7 +405,7 @@ if (options.watch && options.console) {
   }
 
   if (!options.watch) {
-    const result = await tsc4wsh(filelist);
+    const result = await tsc4wsh(filelist, options);
     process.exit(result ? 0 : 1);
   }
 
@@ -435,7 +435,7 @@ if (options.watch && options.console) {
             delete dependencies[f][s];
           }
         }
-        tsc4wsh(activated, dependencies, true);
+        tsc4wsh(activated, options, dependencies);
       }, 1000);
     });
   }
@@ -443,7 +443,7 @@ if (options.watch && options.console) {
 
 function loadGitignore(
   dirpath: string,
-  filterFunc?: (item: IItem) => boolean | undefined
+  filterFunc?: (item: wildkarte.IItem) => boolean | undefined
 ) {
   const gitignorePath = path.join(dirpath, '.gitignore');
   if (!fs.existsSync(gitignorePath)) {
@@ -480,12 +480,13 @@ function loadGitignore(
         pattern = pattern.substr(1);
       }
       // 名前だけかパスを含むかで正規表現への変換方法を変える
-      const re = nameOnly
-        ? wildcardToRegExp(pattern)!
-        : wildcardToRegExpForPath(pattern)!;
+      const re = wildkarte.toRegExp(
+        pattern,
+        nameOnly ? wildkarte.FOR_FILENAME : wildkarte.FOR_PATH
+      );
       return {directoryOnly, negative, nameOnly, re};
     });
-  return (item: IItem) => {
+  return (item: wildkarte.IItem) => {
     let state: boolean | undefined;
     // .gitignoreからの相対パス
     const rel = path.relative(dirpath, item.path).replace(/\\/g, '/');

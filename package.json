@@ -27,7 +27,9 @@
     "@types/activex-scripting": "^1.0.7",
     "@types/activex-shell": "^1.0.2",
     "@types/windows-script-host": "^5.8.3",
+    "optionalist": "^1.0.2",
     "typescript": "^3.9.7",
+    "wildkarte": "^1.0.0",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27"
   },

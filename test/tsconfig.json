@@ -15,8 +15,10 @@
             "es2018"
         ],
         "typeRoots": [
-      "../private-modules",
-      "../private-modules/@types"
+          "./node_modules",
+          "./node_modules/@types",
+          "../private-modules",
+          "../private-modules/@types"
         ]
     }
 }
