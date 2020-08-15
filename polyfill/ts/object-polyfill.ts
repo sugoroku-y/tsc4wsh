@@ -1,4 +1,3 @@
-// tslint:disable-next-line:interface-name
 interface ObjectConstructor {
   entries(o: object): Array<[string, any]>;
   values(obj: any): any[];
@@ -74,7 +73,6 @@ interface ObjectConstructor {
         );
       }
 
-      // tslint:disable-next-line: no-empty
       const F = function() {};
       F.prototype = proto;
       return new (F as any)();

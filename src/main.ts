@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as xmldom from 'xmldom';
-import {generateTSConfig, transpile} from './transpile';
+import xmldom from 'xmldom';
+import transpile from './transpile';
 import {
   IItem,
   wildcard,
@@ -57,7 +57,6 @@ function appendScriptElement(jobElement: Element, script: string) {
   const doc = jobElement.ownerDocument!;
   const scriptElement = doc.createElement('script');
   scriptElement.setAttribute('language', 'JScript');
-  // tslint:disable-next-line:max-line-length
   const reRuntime = /(?:^|\r?\n)[ \t]*\/{3}[ \t]*<wsh:runtime>[ \t]*\r?\n(?:[ \t]*\/{3}[^\r\n]*\r?\n)*?[ \t]*\/{3}[ \t]*<\/wsh:runtime>[ \t]*(?=$|\r?\n)/g;
   const content = script
     .replace(/^\ufeff/, '') // remove BOM
@@ -261,42 +260,54 @@ async function tsc4wsh(
 }
 
 const options = optionalist.parse({
+  [optionalist.helpString]: {
+    describ: `Windows Scripting Host向けTypeScriptコンパイラ`,
+  },
   output: {
     alias: 'o',
-    describe: `
-    出力先ディレクトリ、もしくは出力先ファイルを指定する。
-    拡張子'.wsf'を付けると出力先ファイルと見なす。
-    変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
+    example: 'outputDirOrFile',
+    describe: `出力先ディレクトリ、もしくは出力先ファイルを指定する。
+              拡張子'.wsf'を付けると出力先ファイルと見なす。
+              変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
   },
-  // tslint:disable-next-line:object-literal-sort-keys
   base: {
     alias: 'b',
-    describe: `
-    基準ディレクトリを指定する。`,
+    example: 'baseDir',
+    describe: `基準ディレクトリを指定する。`,
   },
   watch: {
     alias: 'w',
-    describe: `
-    ファイルの更新監視を開始するかどうか。`,
+    describe: `ファイルの更新監視を開始するかどうか。`,
     type: 'boolean',
   },
   help: {
     alias: 'h',
-    describe: `
-    このヘルプを表示する。`,
+    describe: `このヘルプを表示する。`,
     type: 'boolean',
+    alone: true,
   },
   init: {
     alias: 'i',
-    describe: `
-    tsconfig.jsonを生成する。`,
+    describe: `tsconfig.jsonを生成する。`,
     type: 'boolean',
+    alone: true,
   },
   console: {
     alias: 'c',
-    describe: `
-    変換結果をファイルではなく標準出力に表示する。`,
+    describe: `変換結果をファイルではなく標準出力に表示する。`,
     type: 'boolean',
+  },
+  [optionalist.unnamed]: {
+    example: 'filename',
+    describe: `コンパイルするファイル
+              ファイル名にはワイルドカードを指定可能。
+              - * はファイル名、ディレクトリ名の任意の0個以上複数文字にマッチ
+              - ? はファイル名、ディレクトリ名の任意の1文字にマッチ
+              - {AAA,BBB}はファイル名、ディレクトリ名のAAAかBBBにマッチ
+              - ** は下階層のすべてのファイル、ディレクトリにマッチ
+              ファイル名を指定しなかった場合には**\\*.tsが指定されたものと見なす。
+              -で始まるファイル名を使用したい場合には--を指定したあとにファイル名を指定する。
+              ただし、その場合--以降でその他のオプションは指定できない。`,
   },
 });
 
@@ -318,33 +329,19 @@ async function ensureDir(p: string) {
 }
 
 if (options.help) {
-  process.stderr.write(`
-USAGE:
-  npx tsc4wsh [filename...] [--output output] [--base basedir] [--watc] [--console]
-  npx tsc4wsh --init
-  npx tsc4wsh --help
-
-Version: ${
-    JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'))
-      .version
-  }
-
-  ファイル名にはワイルドカードを指定可能。
-  - * はファイル名、ディレクトリ名の任意の0個以上複数文字にマッチ
-  - ? はファイル名、ディレクトリ名の任意の1文字にマッチ
-  - {AAA,BBB}はファイル名、ディレクトリ名のAAAかBBBにマッチ
-  - ** は下階層のすべてのファイル、ディレクトリにマッチ
-  ファイル名を指定しなかった場合には**\\*.tsが指定されたものと見なす。
-
-${options[optionalist.helpString]}
-`);
+  process.stderr.write(options[optionalist.helpString]);
   process.exit(1);
+}
+
+if (options.init) {
+  transpile.generateTSConfig();
+  process.exit(0);
 }
 
 // ファイル指定なしの場合はカレントディレクトリ以下にあるすべてのtsファイルを対象とする
 const patterns = options[optionalist.unnamed].length > 0 ? options[optionalist.unnamed] : ['**/*.ts'];
 
-let gitIgnore = (item: IItem) => item.name === '.git';
+let gitIgnore: ( (item: IItem) => boolean | undefined) | undefined;
 // ワイルドカードを展開
 const filelist = patterns
   .map(pattern => [
@@ -352,7 +349,7 @@ const filelist = patterns
       if (item.stat.isDirectory()) {
         gitIgnore = loadGitignore(item.path, gitIgnore);
       }
-      return gitIgnore(item);
+      return gitIgnore?.(item);
     }),
   ])
   .reduce((a, b) => a.concat(b))
@@ -381,17 +378,9 @@ if (options.watch && options.console) {
 }
 
 (async () => {
-  if (options.init) {
-    await generateTSConfig();
-    process.exit(0);
-  }
-
   if (options.output) {
-    if (/\.wsf$/i.test(options.output)) {
-      ensureDir(options.output);
-    } else {
-      ensureDir(path.join(options.output, 'dummy.wsf'));
-    }
+    const output = /\.wsf$/i.test(options.output) ? options.output : path.join(options.output, 'dummy.wsf');
+    await ensureDir(output);
   }
 
   if (!options.watch) {
@@ -431,14 +420,8 @@ if (options.watch && options.console) {
   }
 })();
 
-function loadGitignore(dirpath: string): undefined | ((item: IItem) => boolean);
-function loadGitignore(
-  dirpath: string,
-  filterFunc: (item: IItem) => boolean
-): (item: IItem) => boolean;
-function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean) {
+function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean | undefined) {
   const gitignorePath = path.join(dirpath, '.gitignore');
-  // tslint:disable-next-line:label-position
   if (!fs.existsSync(gitignorePath)) {
     return filterFunc;
   }
@@ -484,7 +467,7 @@ function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean) {
     const rel = path.relative(dirpath, item.path).replace(/\\/g, '/');
     if (rel.startsWith('../')) {
       // .gitignoreのあるディレクトリ以下にあるファイル/ディレクトリではないのでスキップ
-      return filterFunc ? filterFunc(item) : false;
+      return filterFunc?.(item);
     }
     for (const pattern of gitignore) {
       // ディレクトリにだけマッチするものはディレクトリ以外のときはスキップ
@@ -508,7 +491,7 @@ function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean) {
     }
     if (state === undefined) {
       // 現在の.gitignoreにあるパターンすべてにマッチしない場合は親フォルダのパターンをチェック
-      return filterFunc ? filterFunc(item) : false;
+      return filterFunc?.(item);
     }
     return state;
   };

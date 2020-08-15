@@ -6,4 +6,3 @@
 /test/
 /*.tgz
 /private-modules/**/tsconfig.json
-tslint.json

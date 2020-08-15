@@ -405,7 +405,6 @@ declare namespace WindowsInstaller {
     SummaryInformation(max: number): ISummaryInfo; // Returns a SummaryInfo object that can be used to examine, update, and add properties to the summary information stream.
   }
 
-  // tslint:disable-next-line:interface-name
   export interface Installer {
     readonly Client: unknown;
     readonly ComponentClients: unknown;
@@ -547,7 +546,6 @@ declare namespace WindowsInstaller {
   }
 }
 
-// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'WindowsInstaller.Installer': WindowsInstaller.Installer;
 }

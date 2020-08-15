@@ -171,7 +171,6 @@ export function wildcard(
  */
 export function wildcard(
   pattern: string,
-  // tslint:disable-next-line:unified-signatures
   options:
     | {basedir?: string; filter?: (item: IItem) => any}
     | ((item: IItem) => any)

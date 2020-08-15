@@ -70,7 +70,6 @@ namespace filever {
     let hexhash = '';
     for (let i = 1; i <= 4; ++i) {
       const hash = record.IntegerData(i);
-      // tslint:disable-next-line:no-bitwise
       for (const h of [(hash >> 16) & 0xffff, hash & 0xffff]) {
         hexhash += h.toString(16).padStart(4, '0');
       }
@@ -289,7 +288,6 @@ namespace filever {
     WriteLine: (s: string) => void;
   } = WScriptUtil.Arguments.Named({
     key: ['Output', 'Out', 'O'],
-    // tslint:disable-next-line:object-literal-sort-keys
     conv: outputPath => {
       if (!outputPath) {
         return WScript.StdOut;

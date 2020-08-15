@@ -4,7 +4,6 @@ namespace Iterables {
   // IterableExも同様にGに省略
   type Ex<T> = IterableEx<T>;
 
-  // tslint:disable-next-line: no-shadowed-variable
   /**
    * Iterables のメソッドをメンバに持つIterable。
    *
@@ -219,7 +218,6 @@ namespace Iterables {
     callback: (r: S, e: T, i: number, x: X) => S,
     initialValue?: S
   ) {
-    // tslint:disable-next-line: prefer-const
     let iterable: I<T> = x;
     let initialIndex = 0;
     if (arguments.length <= 2) {

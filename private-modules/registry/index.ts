@@ -1,5 +1,4 @@
 // activex-interopではメソッドが定義されていないので追加
-// tslint:disable-next-line:interface-name
 interface SafeArray<T> {
   toArray(): T[];
   dimensions(): number;
@@ -52,7 +51,6 @@ namespace WbemScripting {
   }
 }
 
-// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'WbemScripting.SWbemLocator': WbemScripting.ISWbemLocator;
 }
@@ -192,7 +190,6 @@ class Registry {
       .map((name, index) => ({
         name,
         type: types[index],
-        // tslint:disable-next-line:object-literal-sort-keys
         low: name.toLowerCase(),
       }))
       .sort((a, b) => (a.low < b.low ? -1 : a.low > b.low ? 1 : 0));
@@ -311,7 +308,6 @@ class Registry {
       hDefKey,
       sSubKeyName,
       sValueName,
-      // tslint:disable-next-line:object-literal-sort-keys
       sValue: toSafeArray(sValue),
     });
   }

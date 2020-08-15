@@ -3,7 +3,6 @@
  *
  * @interface Error
  */
-// tslint:disable-next-line: interface-name
 interface Error {
   number: number;
   description: string;
@@ -14,19 +13,15 @@ namespace debugContext {
   export function toHexadecimal(n: number, digit: number): string {
     let buf = '';
     while (digit > 4) {
-      // tslint:disable-next-line: no-bitwise
       const sft = (((digit - 1) / 4) | 0) * 4;
-      // tslint:disable-next-line: no-bitwise
       buf += ((n >> (sft * 4)) & ((1 << ((digit - sft) * 4)) - 1))
         .toString(16)
         .padStart(digit - sft, '0');
       digit = sft;
-      // tslint:disable-next-line: no-bitwise
       n &= (1 << (digit * 4)) - 1;
     }
     return buf + n.toString(16).padStart(digit, '0');
   }
-  // tslint:disable-next-line: quotemark
   function quote(s: string, q: '"' | "'" = '"'): string {
     return (
       q +
@@ -51,7 +46,6 @@ namespace debugContext {
       q
     );
   }
-  // tslint:disable-next-line: ban-types
   function getFunctionName(f: Function) {
     return (
       (f.toString().match(/\bfunction\s+([^\s()]+)\s*\(/) || [])[1] ||
@@ -82,7 +76,7 @@ namespace debugContext {
         }
         const [prefix, suffix, ePrefix, eSuffix, separator] =
           o.length <= 3
-            ? ['[',                     ']', '',                 '',    ', '] // tslint:disable-line: prettier
+            ? ['[',                     ']', '',                 '',    ', ']
             : ['[\n', '  '.repeat(d) + ']', '  '.repeat(d + 1), ',\n', ''];
         return (
           prefix +
@@ -116,7 +110,7 @@ namespace debugContext {
       {
         const [prefix, suffix, ePrefix, eSuffix, separator] =
           names.length <= 3
-          ? ['{',                    '}', '',                 '',    ', '] // tslint:disable-line: prettier
+          ? ['{',                    '}', '',                 '',    ', ']
             : ['{\n', '  '.repeat(d) + '}', '  '.repeat(d + 1), ',\n', ''];
         return (
           prefix +
@@ -144,7 +138,6 @@ namespace debugContext {
       }
       if (/^\s*:stack\s*$/.test(expr)) {
         for (
-          // tslint:disable-next-line: no-arg
           let frame = arguments.callee.caller.caller;
           frame;
           frame = frame.caller
@@ -161,7 +154,6 @@ namespace debugContext {
         WScript.Quit(1);
       }
       try {
-        // tslint:disable-next-line: no-eval
         WScript.StdOut.WriteLine(inspect(eval(expr)));
       } catch (e) {
         WScript.StdOut.WriteLine(

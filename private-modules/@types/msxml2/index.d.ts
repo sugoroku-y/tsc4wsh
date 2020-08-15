@@ -191,7 +191,6 @@ declare namespace MSXML2 {
     NODE_NOTATION = 12,
   }
 
-  // tslint:disable-next-line:interface-name
   interface FILETIME {
     readonly dwHighDateTime: number;
     readonly dwLowDateTime: number;
@@ -422,7 +421,6 @@ declare namespace MSXML2 {
   }
 
   /** W3C-DOM XML Document 6.0 (Apartment) */
-  // tslint:disable-next-line:interface-name
   interface DOMDocument60 extends IXMLDOMDocument {
     /** the data type of the node */
     dataType: string | null;
@@ -453,7 +451,6 @@ declare namespace MSXML2 {
   }
 
   /** IMXNamespacePrefixes interface */
-  // tslint:disable-next-line:interface-name
   interface IMXNamespacePrefixes {
     (index: number): string;
     readonly length: number;
@@ -492,7 +489,6 @@ declare namespace MSXML2 {
   }
 
   /** XML Schema Item Collection */
-  // tslint:disable-next-line:interface-name
   interface ISchemaItemCollection {
     (index: number): ISchemaItem;
     readonly length: number;
@@ -502,7 +498,6 @@ declare namespace MSXML2 {
   }
 
   /** XML Schema String Collection */
-  // tslint:disable-next-line:interface-name
   interface ISchemaStringCollection {
     (index: number): string;
     readonly length: number;
@@ -768,7 +763,6 @@ declare namespace MSXML2 {
     hasFeature(feature: string, version: string): boolean;
   }
 
-  // tslint:disable-next-line:interface-name
   interface IXMLDOMNamedNodeMap<T extends IXMLDOMNode = IXMLDOMNode_Typed> {
     /** collection of nodes */
     (index: number): T;
@@ -800,7 +794,6 @@ declare namespace MSXML2 {
     setNamedItem(newItem: T): T;
   }
 
-  // tslint:disable-next-line:interface-name
   interface IXMLDOMNodeList<T extends IXMLDOMNode = IXMLDOMNode_Typed> {
     /** collection of nodes */
     (index: number): T;
@@ -920,7 +913,6 @@ declare namespace MSXML2 {
   }
 
   /** Microsoft HTML Writer 6.0 */
-  // tslint:disable-next-line:interface-name
   interface MXHTMLWriter60 {
     /** Determine whether or not to write the byte order mark */
     byteOrderMark: boolean;
@@ -951,7 +943,6 @@ declare namespace MSXML2 {
   }
 
   /** MX Namespace Manager 6.0 */
-  // tslint:disable-next-line:interface-name
   interface MXNamespaceManager60 {
     allowOverride: boolean;
     declarePrefix(prefix: string, namespaceURI: string): void;
@@ -968,7 +959,6 @@ declare namespace MSXML2 {
   }
 
   /** Microsoft XML Writer 6.0 */
-  // tslint:disable-next-line:interface-name
   interface MXXMLWriter60 {
     /** Determine whether or not to write the byte order mark */
     byteOrderMark: boolean;
@@ -999,7 +989,6 @@ declare namespace MSXML2 {
   }
 
   /** SAX Attributes 6.0 */
-  // tslint:disable-next-line:interface-name
   interface SAXAttributes60 {
     /** Add an attribute to the end of the list. */
     addAttribute(
@@ -1049,7 +1038,6 @@ declare namespace MSXML2 {
   }
 
   /** SAX XML Reader 6.0 */
-  // tslint:disable-next-line:interface-name
   interface SAXXMLReader60 {
     /** Set or get the base URL for the document. */
     baseURL: string;
@@ -1089,7 +1077,6 @@ declare namespace MSXML2 {
   }
 
   /** Server XML HTTP Request 6.0  */
-  // tslint:disable-next-line:interface-name
   interface ServerXMLHTTP60 {
     /** Register a complete event handler */
     readonly onreadystatechange: any;
@@ -1166,7 +1153,6 @@ declare namespace MSXML2 {
     waitForResponse(timeoutInSeconds?: any): boolean;
   }
 
-  // tslint:disable-next-line:interface-name class-name
   interface tagXHR_COOKIE {
     readonly dwFlags: number;
     readonly ftExpires: FILETIME;
@@ -1177,7 +1163,6 @@ declare namespace MSXML2 {
   }
 
   /** XML HTTP Request class 6.0 */
-  // tslint:disable-next-line:interface-name
   interface XMLHTTP60 {
     /** Register a complete event handler */
     readonly onreadystatechange: any;
@@ -1228,7 +1213,6 @@ declare namespace MSXML2 {
   }
 
   /** XML Schema Cache 6.0 */
-  // tslint:disable-next-line:interface-name
   interface XMLSchemaCache60 {
     /** Get namespaceURI for schema by index */
     (index: number): string;
@@ -1256,7 +1240,6 @@ declare namespace MSXML2 {
   }
 
   /** XSL Stylesheet Cache 6.0 */
-  // tslint:disable-next-line:interface-name
   interface XSLTemplate60 {
     /** stylesheet to use with processors */
     stylesheet: IXMLDOMNode;
@@ -1284,7 +1267,6 @@ declare namespace MSXML2 {
     | IXMLDOMNotation;
 }
 
-// tslint:disable-next-line:interface-name
 interface ActiveXObject {
   on(
     obj: MSXML2.DOMDocument60,
@@ -1293,7 +1275,6 @@ interface ActiveXObject {
   ): void;
 }
 
-// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'Msxml2.DOMDocument': MSXML2.DOMDocument60;
   'Msxml2.DOMDocument.6.0': MSXML2.DOMDocument60;
@@ -1309,9 +1290,7 @@ interface ActiveXObjectNameMap {
   'Msxml2.XSLTemplate': MSXML2.XSLTemplate60;
 }
 
-// tslint:disable-next-line:interface-name
 interface EnumeratorConstructor {
-  // tslint:disable-next-line:callable-types
   new <T extends MSXML2.IXMLDOMNode = MSXML2.IXMLDOMNode_Typed>(
     collection: MSXML2.IXMLDOMNodeList<T>
   ): Enumerator<T>;

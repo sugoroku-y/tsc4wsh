@@ -1,4 +1,3 @@
-// tslint:disable: max-classes-per-file
 
 function toString(v: number | boolean | string | null | undefined): string {
   return typeof v === 'string' ? '"' + v.replace(/[\\""]/g, '\\$&') : '' + v;
@@ -119,7 +118,6 @@ function expect<T>(v: T): TestResult<T> {
 
 function teardown() {
   WScript.Echo(
-    // tslint:disable-next-line: no-bitwise
     `Success: ${success} / ${total} : ${(((success / total) * 1000 + 0.5) | 0) /
       10}%`
   );

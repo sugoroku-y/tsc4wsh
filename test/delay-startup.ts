@@ -15,7 +15,6 @@ for (const file of Iterables.from(dir.Files)) {
   shortcuts[shortcut.TargetPath.toLowerCase()] = file.Path;
 }
 
-// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'WbemScripting.SWbemLocator': {
     ConnectServer(): {

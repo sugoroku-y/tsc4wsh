@@ -3889,7 +3889,6 @@ declare namespace VirtualBox {
     deregisterVBoxSVC(vboxSVC: IVBoxSVCRegistration, pid: number): void;
   } /* interface IVirtualBoxSDS */
 }
-// tslint:disable-next-line:interface-name
 interface ActiveXObjectNameMap {
   'VirtualBox.VirtualBox': VirtualBox.IVirtualBox;
   'VirtualBox.Session': VirtualBox.ISession;

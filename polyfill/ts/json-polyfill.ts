@@ -266,7 +266,6 @@
           // 文字列は""で括る
           string: s => enquote(s),
           // objectの場合はtoJSONがあれば呼び出す
-          // tslint:disable-next-line:object-literal-sort-keys
           object: o => {
             if (typeof o.toJSON === 'function') {
               const json = o.toJSON();
