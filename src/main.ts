@@ -22,7 +22,7 @@ function appendObjectElements(
   progids: {[id: string]: string}
 ) {
   const doc = jobElement.ownerDocument!;
-  // ソース中にdeclare condt fso: Scripting.FileSystemObbjectのような記述を見つけたら
+  // ソース中にdeclare const fso: Scripting.FileSystemObbjectのような記述を見つけたら
   // <object id="fso" progid="Scripting.FileSystemObbject">を追加する
   for (const id in progids) {
     if (!progids.hasOwnProperty(id)) {
@@ -214,39 +214,45 @@ async function tsc4wsh(
     }...\n`
   );
 
-  // 指定されたファイルを並列にコンパイル
-  await Promise.all(
-    filepaths.map(async filepath => {
-      process.stdout.write(`\t${filepath}\n`);
-      try {
-        // TSファイル以外は対象外
-        if (path.extname(filepath).toLowerCase() !== '.ts') {
-          throw new Error('サポートしていないファイルです。');
+  try {
+    // 指定されたファイルを並列にコンパイル
+    return (await Promise.all(
+      filepaths.map(async filepath => {
+        process.stdout.write(`  ${filepath}\n`);
+        try {
+          // TSファイル以外は対象外
+          if (path.extname(filepath).toLowerCase() !== '.ts') {
+            throw new Error('サポートしていないファイルです。');
+          }
+          const {script: transpiled, objectMap: progids} = await transpile(
+            filepath,
+            dependencies
+          );
+          const doc = makeWsfDom(transpiled, progids);
+          await writeWsf(filepath, doc);
+          return true;
+        } catch (ex) {
+          // エラーメッセージはすべて例外として受け取る
+          const message =
+            typeof ex.message !== 'string'
+              ? ex.toString()
+              : ex.message
+                  // LF/CRLFで始まっていなければLFを先頭に挿入
+                  .replace(/^(?!\r?\n)/, '\n')
+                  // LF/CRLFで終わっていなければLFを最後に追加
+                  .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
+                  // 各行の行頭にインデントを二つ挿入
+                  .replace(/^(?=.)/gm, `    `);
+          process.stderr.write(`    エラー: ${filepath}${message}`);
+          return false;
         }
-        const {script: transpiled, objectMap: progids} = await transpile(
-          filepath,
-          dependencies
-        );
-        const doc = makeWsfDom(transpiled, progids);
-        await writeWsf(filepath, doc);
-      } catch (ex) {
-        const message =
-          typeof ex.message !== 'string'
-            ? ''
-            : ex.message
-                // LF/CRLFで始まっていなければLFを先頭に挿入
-                .replace(/^(?!\r?\n)/, '\n')
-                // LF/CRLFで終わっていなければLFを最後に追加
-                .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
-                // 各行の行頭にタブを二つ挿入
-                .replace(/^(?=.)/gm, `\t\t`);
-        // エラーメッセージはすべて例外として受け取る
-        process.stderr.write(`\t\tエラー: ${filepath}${message}`);
-      }
-    })
-  );
-
-  process.stdout.write(`${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`);
+      })
+    )).every(r => r);
+  } finally {
+    process.stdout.write(
+      `${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`
+    );
+  }
 }
 
 const optimistParser = optimist.options({
@@ -386,8 +392,8 @@ if (options.watch && options.console) {
   }
 
   if (!options.watch) {
-    await tsc4wsh(filelist);
-    process.exit(0);
+    const result = await tsc4wsh(filelist);
+    process.exit(result ? 0 : 1);
   }
 
   let timerId: NodeJS.Timer | undefined;

@@ -47,7 +47,7 @@ VS Codeなどのエディターにはコンパイルエラーを指摘してく�
 
 すると以下のようなtsconfig.jsonが出力されます。
 
-``````json
+```json
 {
   "compilerOptions": {
     "target": "es3",

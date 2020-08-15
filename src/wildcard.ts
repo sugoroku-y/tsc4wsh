@@ -63,26 +63,6 @@ interface IItem {
   stat: fs.Stats;
 }
 
-function* recursiveFolderAndFiles(
-  dir: string,
-  filter?: (item: IItem) => any
-): IterableIterator<IItem> {
-  yield* (function* sub(item: IItem): IterableIterator<IItem> {
-    if (filter && filter(item)) {
-      return;
-    }
-    yield item;
-    if (!item.stat.isDirectory()) {
-      return;
-    }
-    for (const name of fs.readdirSync(item.path)) {
-      const fullpath = path.join(dir, name);
-      const stat = fs.statSync(fullpath);
-      const childItem = {path: fullpath, name, stat};
-      yield* sub(childItem);
-    }
-  })({path: dir, stat: fs.statSync(dir), name: path.basename(dir)});
-}
 /**
  * 指定されたパターンにマッチする全てのファイル/フォルダを順次返すイテレータを返す。
  * @param pattern {string} 検索するファイル/フォルダ名のパターン。
@@ -155,19 +135,25 @@ export function* wildcard(
 ) {
   const basedir =
     (options &&
-      (typeof options === 'string'
-        ? options
-        : typeof options !== 'function' && options.basedir)) ||
+      ((typeof options === 'string' && options) ||
+        (typeof options === 'object' && options.basedir))) ||
+    '.';
+  filter =
+    filter ||
+    (options &&
+      ((typeof options === 'function' && options) ||
+        (typeof options === 'object' && options.filter))) ||
     undefined;
-  if (!filter && options) {
-    filter =
-      typeof options === 'function'
-        ? options
-        : typeof options === 'object'
-        ? options.filter
-        : undefined;
+
+  function makeItem(dirpath: string, name: string, directoryOnly: boolean) {
+    const fpath = path.join(dirpath, name);
+    const stat = fs.statSync(fpath);
+    if (directoryOnly && !stat.isDirectory()) {
+      return undefined;
+    }
+    return {path: fpath, name, stat};
   }
-  const fullpath = path.resolve(basedir || '.', pattern);
+  const fullpath = path.resolve(basedir, pattern);
   const {root} = path.parse(fullpath);
   const pathes = fullpath
     .substr(root.length)
@@ -175,76 +161,76 @@ export function* wildcard(
     .map((pathAtom, index, array) => {
       // \で終わっているようなパターンはそのディレクトリ自体を返す
       if (pathAtom === '') {
-        return function*(f: string) {
-          const stat = fs.statSync(f);
-          yield {path: f, name: path.basename(f), stat};
+        return function*(item: IItem) {
+          yield item;
         };
       }
       const last = index + 1 === array.length;
       // **はすべてのフォルダ(途中にあった場合)、もしくはファイルとフォルダ(最後にあった場合)を返す
       if (pathAtom === '**') {
-        return function*(ff: string) {
-          for (const item of recursiveFolderAndFiles(ff, filter)) {
-            if (!last && item.stat.isDirectory()) {
-              continue;
+        return function* recursive(item: IItem): IterableIterator<IItem> {
+          if (filter && filter(item)) {
+            return;
+          }
+          yield item;
+          if (!item.stat.isDirectory()) {
+            return;
+          }
+          for (const name of fs.readdirSync(item.path)) {
+            const child = makeItem(item.path, name, !last);
+            if (child) {
+              yield* recursive(child);
             }
-            yield item;
           }
         };
       }
       // ワイルドカードを含む場合はそのパターンにあったファイルかフォルダを返す
       if (/[*?{]/.test(pathAtom)) {
-        const atomPattern = wildcardToRegExp(pathAtom);
-        if (!atomPattern) {
-          throw new Error('');
-        }
-        return function*(ff: string) {
-          yield* fs
-            .readdirSync(ff)
-            .map(name => {
-              const childFullpath = path.join(ff, name);
-              return {
-                name,
-                path: childFullpath,
-                stat: fs.statSync(childFullpath),
-              };
-            })
-            .filter(
-              p => (last || p.stat.isDirectory()) && atomPattern.test(p.name)
-            );
+        const atomPattern = wildcardToRegExp(pathAtom)!;
+        return function*(item: IItem) {
+          for (const name of fs.readdirSync(item.path)) {
+            if (!atomPattern.test(name)) {
+              continue;
+            }
+            // 途中のパターンはディレクトリだけを返す
+            const child = makeItem(item.path, name, !last);
+            if (child) {
+              yield child;
+            }
+          }
         };
       }
       // ワイルドカードを含まない場合はそのパスをつなげて存在していればそのファイル、もしくはフォルダを返す
-      return function*(ff: string) {
-        const lastpath = path.resolve(ff, pathAtom);
+      return function*(item: IItem) {
+        const fpath = path.resolve(item.path, pathAtom);
         // 存在していなければ返さない
-        if (!fs.existsSync(lastpath)) {
+        if (!fs.existsSync(fpath)) {
           return;
         }
-        const stat = fs.statSync(lastpath);
+        const stat = fs.statSync(fpath);
         // このパターンが途中にあって、見つかったのがファイルなら返さない
         if (!last && !stat.isDirectory()) {
           return;
         }
-        yield {path: lastpath, name: path.basename(lastpath), stat};
+        yield {path: fpath, name: path.basename(fpath), stat};
       };
     });
   yield* (function* traverse(
-    ff: string,
+    item: IItem,
     index: number
   ): IterableIterator<IItem> {
     // 最後のパターンなら見つかったファイル、フォルダをすべて返す
     if (index + 1 === pathes.length) {
-      yield* pathes[index](ff);
+      yield* pathes[index](item);
       return;
     }
-    for (const item of pathes[index](ff)) {
+    for (const child of pathes[index](item)) {
       // パターンの途中なのでディレクトリ以外は無視
-      if (!item.stat.isDirectory()) {
+      if (!child.stat.isDirectory()) {
         continue;
       }
       // このディレクトリを基点にして検索
-      yield* traverse(item.path, index + 1);
+      yield* traverse(child, index + 1);
     }
-  })(root, 0);
+  })({path: root, name: root, stat: fs.statSync(root)}, 0); // ルートだけは名前がないことがあるのでパスそのものを名前とする
 }
