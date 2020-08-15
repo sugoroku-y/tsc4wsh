@@ -51,6 +51,8 @@ namespace transpile {
       strictNullChecks: true,
       // デフォルトで読み込む定義ファイル
       types: ['windows-script-host', 'activex-scripting', 'activex-adodb'],
+      // エラー発生時は出力しない
+      noEmitOnError: true,
     });
     // 無ければ補完する設定値
     // libの指定が無ければes2018を指定
@@ -183,6 +185,17 @@ namespace transpile {
     fileName: string,
     dependencies?: {[filepath: string]: {[filepath: string]: true}}
   ) {
+    // node_modules以下のソースファイルが取り込まれないので定義ファイル以外は出力用と見なされるように小細工
+    // ※Typescriptのバージョンアップによって要変更の可能性あり
+    (ts as any).getSourceFilesToEmit = function getSourceFilesToEmit(
+      host: {getSourceFiles(): ts.SourceFile[]},
+      _targetSourceFile: ts.SourceFile,
+      _forceDtsEmit: boolean
+    ) {
+      return host
+        .getSourceFiles()
+        .filter(sourceFile => !sourceFile.isDeclarationFile);
+    };
     const [config, tsconfigPath] = loadTsConfigFile(fileName);
     const adjustedConfig = adjustConfig(
       (config && config.compilerOptions) || {}
@@ -212,7 +225,7 @@ namespace transpile {
     const objectMap = generateObjectMap(program);
     const emitResult = program.emit(
       undefined,
-      (filename, data, writeByteOrderMark, onError) => {
+      (_, data) => {
         script += data;
       }
     );
@@ -236,7 +249,6 @@ namespace transpile {
       throw new Error(errorMessages.join('\n'));
     }
 
-    // Symbol.forはforが予約語なので書き方を変える
     return {script, objectMap};
   }
 }

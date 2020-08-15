@@ -142,10 +142,21 @@ const polyfill = fs.promises.readFile(
 async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
   const script =
     (await polyfill) +
+    // 'use strict';が有効になるようにfunctionで囲む
+    '(function () {\n' +
     // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
-    transpiled.replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
-    // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
-    .replace(/\\u([0-9a-f]{4})/ig, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    transpiled
+      .replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
+      // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
+      .replace(/(?:\\u[0-9a-f]{4})+/ig, hexEncoded =>
+        String.fromCharCode(
+          ...hexEncoded
+            .split('\\u')
+            .splice(1)
+            .map(hex => parseInt(hex, 16))
+        )
+      ) +
+    '})();';
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
   const jobElement = doc.documentElement!;
@@ -220,38 +231,40 @@ async function tsc4wsh(
 
   try {
     // 指定されたファイルを並列にコンパイル
-    return (await Promise.all(
-      filepaths.map(async filepath => {
-        process.stdout.write(`  ${filepath}\n`);
-        try {
-          // TSファイル以外は対象外
-          if (path.extname(filepath).toLowerCase() !== '.ts') {
-            throw new Error('サポートしていないファイルです。');
+    return (
+      await Promise.all(
+        filepaths.map(async filepath => {
+          process.stdout.write(`  ${filepath}\n`);
+          try {
+            // TSファイル以外は対象外
+            if (path.extname(filepath).toLowerCase() !== '.ts') {
+              throw new Error('サポートしていないファイルです。');
+            }
+            const {script: transpiled, objectMap: progids} = transpile(
+              filepath,
+              dependencies
+            );
+            const doc = await makeWsfDom(transpiled, progids);
+            await writeWsf(filepath, doc);
+            return true;
+          } catch (ex) {
+            // エラーメッセージはすべて例外として受け取る
+            const message =
+              typeof ex.message !== 'string'
+                ? ex.toString()
+                : ex.message
+                    // LF/CRLFで始まっていなければLFを先頭に挿入
+                    .replace(/^(?!\r?\n)/, '\n')
+                    // LF/CRLFで終わっていなければLFを最後に追加
+                    .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
+                    // 各行の行頭にインデントを二つ挿入
+                    .replace(/^(?=.)/gm, `    `);
+            process.stderr.write(`    エラー: ${filepath}${message}`);
+            return false;
           }
-          const {script: transpiled, objectMap: progids} = transpile(
-            filepath,
-            dependencies
-          );
-          const doc = await makeWsfDom(transpiled, progids);
-          await writeWsf(filepath, doc);
-          return true;
-        } catch (ex) {
-          // エラーメッセージはすべて例外として受け取る
-          const message =
-            typeof ex.message !== 'string'
-              ? ex.toString()
-              : ex.message
-                  // LF/CRLFで始まっていなければLFを先頭に挿入
-                  .replace(/^(?!\r?\n)/, '\n')
-                  // LF/CRLFで終わっていなければLFを最後に追加
-                  .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
-                  // 各行の行頭にインデントを二つ挿入
-                  .replace(/^(?=.)/gm, `    `);
-          process.stderr.write(`    エラー: ${filepath}${message}`);
-          return false;
-        }
-      })
-    )).every(r => r);
+        })
+      )
+    ).every(r => r);
   } finally {
     process.stdout.write(
       `${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`
@@ -340,9 +353,12 @@ if (options.init) {
 }
 
 // ファイル指定なしの場合はカレントディレクトリ以下にあるすべてのtsファイルを対象とする
-const patterns = options[optionalist.unnamed].length > 0 ? options[optionalist.unnamed] : ['**/*.ts'];
+const patterns =
+  options[optionalist.unnamed].length > 0
+    ? options[optionalist.unnamed]
+    : ['**/*.ts'];
 
-let gitIgnore: ( (item: IItem) => boolean | undefined) | undefined;
+let gitIgnore: ((item: IItem) => boolean | undefined) | undefined;
 // ワイルドカードを展開
 const filelist = patterns
   .map(pattern => [
@@ -365,9 +381,7 @@ if (filelist.length === 0) {
 
 if (options.output && /\.wsf$/i.test(options.output) && filelist.length > 1) {
   process.stderr.write(
-    `複数のソースファイルが指定されましたが、出力先にファイルが指定されています。: ${
-      options.output
-    }\n`
+    `複数のソースファイルが指定されましたが、出力先にファイルが指定されています。: ${options.output}\n`
   );
   process.exit(1);
 }
@@ -380,7 +394,9 @@ if (options.watch && options.console) {
 
 (async () => {
   if (options.output) {
-    const output = /\.wsf$/i.test(options.output) ? options.output : path.join(options.output, 'dummy.wsf');
+    const output = /\.wsf$/i.test(options.output)
+      ? options.output
+      : path.join(options.output, 'dummy.wsf');
     await ensureDir(output);
   }
 
@@ -421,7 +437,10 @@ if (options.watch && options.console) {
   }
 })();
 
-function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean | undefined) {
+function loadGitignore(
+  dirpath: string,
+  filterFunc?: (item: IItem) => boolean | undefined
+) {
   const gitignorePath = path.join(dirpath, '.gitignore');
   if (!fs.existsSync(gitignorePath)) {
     return filterFunc;
