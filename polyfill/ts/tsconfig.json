@@ -8,6 +8,7 @@
     "strict": true,
     "strictNullChecks": true,
     "types": ["windows-script-host", "activex-scripting"],
+    "removeComments": true,
     "esModuleInterop": true
   },
   "files": ["./index.ts"]

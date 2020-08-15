@@ -1,6 +1,6 @@
 {
   "name": "tsc4wsh",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./lib/main.js",
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
     "@types/activex-shell": "^1.0.1",
     "@types/windows-script-host": "^5.8.2",
     "optimist": "^0.6.1",
-    "typescript": "^3.3.1",
+    "typescript": "~3.1.6",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27"
   },
