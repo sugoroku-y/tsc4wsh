@@ -1,15 +1,15 @@
 namespace Generator {
-  // IterableIteratorは長いのでIIに省略
-  type II<T> = IterableIterator<T>;
+  // Iterableは長いのでIIに省略
+  type II<T> = Iterable<T>;
 
   // tslint:disable-next-line: no-shadowed-variable
-  class Generator<T> implements IterableIterator<T> {
-    constructor(private readonly i: IterableIterator<T>) {}
-    public next() {
-      return this.i.next();
+  class Generator<T> implements II<T> {
+    private readonly i: II<T>;
+    constructor(param: II<T> | (() => IterableIterator<T>)) {
+      this.i = typeof param === 'function' ? param() : param;
     }
     public [Symbol.iterator]() {
-      return this.i;
+      return this.i[Symbol.iterator]();
     }
     public forEach(callback: (value: T, index: number) => any) {
       forEach(this.i, callback);
@@ -90,29 +90,25 @@ namespace Generator {
     ii: II<T>,
     callback: (value: T, index: number) => any
   ) {
-    return new Generator(
-      (function*() {
-        let index = 0;
-        for (const e of ii) {
-          if (callback(e, index++)) {
-            yield e;
-          }
+    return new Generator(function*() {
+      let index = 0;
+      for (const e of ii) {
+        if (callback(e, index++)) {
+          yield e;
         }
-      })()
-    );
+      }
+    });
   }
   export function map<T, T2>(
     ii: II<T>,
     callback: (value: T, index: number) => T2
   ) {
-    return new Generator(
-      (function*() {
-        let index = 0;
-        for (const e of ii) {
-          yield callback(e, index++);
-        }
-      })()
-    );
+    return new Generator(function*() {
+      let index = 0;
+      for (const e of ii) {
+        yield callback(e, index++);
+      }
+    });
   }
   export function reduce<T>(
     ii: II<T>,
@@ -124,10 +120,11 @@ namespace Generator {
     initialValue: T2
   ): T2;
   export function reduce<T, T2>(
-    ii: II<T>,
+    i: II<T>,
     callback: (r: T2, e: T, index: number) => T2,
     initialValue?: T2
   ) {
+    const ii = i[Symbol.iterator]();
     let index = 0;
     let ir = ii.next();
     let result: T2;
@@ -158,13 +155,11 @@ namespace Generator {
   export function concat<T extends Array<II<any>>>(
     ...generators: T
   ): Generator<T extends Array<II<infer R>> ? R : never> {
-    return new Generator(
-      (function*() {
-        for (const generator of generators) {
-          yield* generator;
-        }
-      })()
-    );
+    return new Generator(function*() {
+      for (const generator of generators) {
+        yield* generator;
+      }
+    });
   }
 
   // type EnumeratorType<T> = EnumeratorConstructor extends (new(c: T) => Enumerator<infer R>) ? R : never;
@@ -180,36 +175,41 @@ namespace Generator {
   export function from<T>(collection: T): Generator<EnumeratorType<T>>;
   export function from(collection: any) {
     if (Array.isArray(collection)) {
-      return new Generator(
-        (function*() {
-          yield* collection;
-        })()
-      );
+      return new Generator({
+        [Symbol.iterator]() {
+          let i = 0;
+          return {
+            next() {
+              return i < collection.length
+                ? {done: false, value: collection[i++]}
+                : ({done: true} as IteratorResult<any>);
+            },
+          };
+        },
+      });
     }
-    const e = new Function(
-      'try {return new Enumerator(arguments[0]);}catch(ex){return null;}'
-    )(collection);
-    if (e) {
-      return new Generator(
-        (function*() {
-          for (; !e.atEnd(); e.moveNext()) {
-            yield e.item();
-          }
-        })()
-      );
-    }
-    throw new Error('Unsupported collection type: ' + typeof collection);
+    return new Generator({
+      [Symbol.iterator]() {
+        const e = new Enumerator(collection as any);
+        return {
+          next() {
+            if (e.atEnd()) {
+              return {done: true} as IteratorResult<any>;
+            }
+            const value = e.item();
+            e.moveNext();
+            return {done: false, value};
+          },
+        };
+      },
+    });
   }
 
-  export function of<T>(): IterableIterator<T extends any[] ? never : T>;
+  export function of<T>(): II<T extends any[] ? never : T>;
   export function of<T extends any[]>(
     ...args: T
-  ): IterableIterator<T extends Array<infer R> ? R : never>;
+  ): II<T extends Array<infer R> ? R : never>;
   export function of<T extends any[]>(...args: T) {
-    return new Generator<any>(
-      (function*() {
-        yield* args;
-      })()
-    );
+    return from(args);
   }
 }

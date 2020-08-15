@@ -369,6 +369,35 @@ namespace filever {
     param => (param && fsoU.wildcardToRegExp(param)) || undefined
   );
 
+  let shellappdesktopCache: Shell32.Folder3 | null | undefined;
+  function ShellappDesktop() {
+    if (shellappdesktopCache !== undefined) {
+      return shellappdesktopCache;
+    }
+    shellappdesktopCache = shellapp.NameSpace(
+      Shell32.ShellSpecialFolderConstants.ssfDESKTOP
+    );
+    return shellappdesktopCache || (shellappdesktopCache = null);
+  }
+
+  function GetExtendedProperty(
+    file: Scripting.Folder | Scripting.File,
+    propertyName: string
+  ): string | null {
+    const desktop = ShellappDesktop();
+    if (!desktop) {
+      return '-';
+    }
+    const item = desktop.ParseName(file.Path);
+    if (!item) {
+      return '-';
+    }
+    const c = item.ExtendedProperty(propertyName);
+    if (!c) {
+      return '-';
+    }
+    return c;
+  }
   /**
    * 表示されるファイルの情報
    */
@@ -377,6 +406,13 @@ namespace filever {
   } = {
     // ビルド日時。ビルド日時の取得できないファイル、ディレクトリの場合は`-`
     build: file => GetBuildDate(file) || '-',
+    // バージョンリソースの
+    company: file =>
+      (fsoU.isFile(file) && GetExtendedProperty(file, 'System.Company')) || '-',
+    // バージョンリソースの著作権欄
+    copyright: file =>
+      (fsoU.isFile(file) && GetExtendedProperty(file, 'System.Copyright')) ||
+      '-',
     // ファイルの存在するディレクトリ(ディレクトリの場合はそのディレクトリ自身)のフルパス。
     directory: file => (fsoU.isFolder(file) ? file : file.ParentFolder).Path,
     // フルパス。
@@ -389,6 +425,12 @@ namespace filever {
     name: file => (fsoU.isFolder(file) ? '-' : file.Name),
     // 相対パス。基準となるディレクトリは/BaseDirで指定する。
     relative: file => fsoU.relativePath(file.Path, basedir),
+    // directoryの相対パス版。基準となるディレクトリは/BaseDirで指定する。
+    reldir: file =>
+      fsoU.relativePath(
+        (fsoU.isFolder(file) ? file : file.ParentFolder).Path,
+        basedir
+      ),
     // 電子署名済みの場合は署名者。署名に不備があれば不備の内容。ディレクトリの場合は`-`
     sign: file => (fsoU.isFile(file) ? checkSignature(file) : '-'),
     // ファイルサイズ(3桁区切り)、ディレクトリの場合は`-`
@@ -415,6 +457,9 @@ namespace filever {
   COLUMNS.h = COLUMNS.hash;
   COLUMNS.g = COLUMNS.sign;
   COLUMNS.b = COLUMNS.build;
+  COLUMNS.rd = COLUMNS.reldir;
+  COLUMNS.cp = COLUMNS.company;
+  COLUMNS.cr = COLUMNS.copyright;
 
   function column(
     name: string,
@@ -472,6 +517,9 @@ USAGE:
       $relative
         The relative path of the file or the directory.
         Alias: $rel $r
+      $reldir
+        The relative path of the parent directory if it is a file, or its own relative path if it is a directory.
+        Alias: $rd
       $timestamp
         The full path of the file or the directory.
         Alias: $time $t
@@ -484,6 +532,12 @@ USAGE:
       $sign
         The signer if the file is digitally signed, the error message if the signature it is incomplete. '-' if it is a directory.
         Alias: $g
+      $company
+        The company in the file version resource, or '-' if it is a directory, or with out the version resource.
+        Alias: $cp
+      $copyright
+        The copyright in the file version resource, or '-' if it is a directory, or with out the version resource.
+        Alias: $cr
 /Output:"output file"
       The file to output into.
       If omitted, output into standard output.

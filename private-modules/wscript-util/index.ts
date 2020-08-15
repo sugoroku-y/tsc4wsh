@@ -35,7 +35,7 @@ namespace WScriptUtil {
       return conv ? conv(value) : (value as any);
     }
     export function Switch(keys: string | string[]): boolean {
-      for (const key of keys) {
+      for (const key of Array.isArray(keys) ? keys : [keys]) {
         if (WScript.Arguments.Named.Exists(key)) {
           return true;
         }

@@ -55,9 +55,60 @@ export function wildcardToRegExp(pattern: string): RegExp | undefined {
 }
 
 /**
+ * ワイルドカードのパターン文字列を正規表現に変換する。
+ *
+ * 複数階層に渡るワイルドカードをサポートする。
+ *
+ * @param pattern {string} ワイルドカードのパターン文字列。
+ * @return {RegExp} ワイルドカードのパターンから変換した正規表現。
+ */
+export function wildcardToRegExpForPath(pattern: string): RegExp | undefined {
+  if (!pattern) {
+    return undefined;
+  }
+  let depth = 0;
+  const regex =
+    '^' +
+    pattern.replace(/(\*\*\/?)|[\^$()\[\]{}+.*?,]/g, (ch, recursive) => {
+      if (recursive) {
+        return recursive === '**' ? '(?:[^/]+/)*[^/]+' : '(?:[^/]+/)*';
+      }
+      switch (ch) {
+        // *は0個以上のすべての文字にマッチ
+        case '*':
+          return '.*';
+        // ?は1つのすべての文字にマッチ
+        case '?':
+          return '.';
+        // {AAA,BBB}はAAAとBBBにマッチ(ネストも可))
+        case '{':
+          ++depth;
+          return '(?:';
+        case '}':
+          if (depth <= 0) {
+            throw new Error('Unmatched `}`');
+          }
+          --depth;
+          return ')';
+        // {}の中にない,はただの,として扱う
+        case ',':
+          return depth > 0 ? '|' : ',';
+        // その他の正規表現で使われる文字は\でエスケープ
+        default:
+          return '\\' + ch;
+      }
+    }) +
+    '$';
+  if (depth > 0) {
+    throw new Error('Unmatched `{`');
+  }
+  return new RegExp(regex, 'i');
+}
+
+/**
  * ファイルやディレクトリの情報を扱うインターフェイス
  */
-interface IItem {
+export interface IItem {
   path: string;
   name: string;
   stat: fs.Stats;

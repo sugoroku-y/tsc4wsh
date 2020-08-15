@@ -21,11 +21,13 @@ const cachedProgid: {[name: string]: string} = {
 };
 (function(this: any) {
   const args: string[] = [];
-  const g = Generator.from(WScript.Arguments);
+  const g = Generator.from(WScript.Arguments)[Symbol.iterator]();
   for (let ir = g.next(); !ir.done; ir = g.next()) {
     const arg = ir.value;
     if (arg === '--') {
-      args.push(...g);
+      for (ir = g.next(); !ir.done; ir = g.next()) {
+        args.push(ir.value);
+      }
       break;
     }
     switch (arg) {

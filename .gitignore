@@ -64,3 +64,4 @@ typings/
 /test/*.wsf
 /*.tgz
 /polyfill/index.js
+test/signtool.exe

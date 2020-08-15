@@ -5,12 +5,18 @@ import * as path from 'path';
 import {promisify} from 'util';
 import * as xmldom from 'xmldom';
 import {generateTSConfig, transpile} from './transpile';
-import {wildcard} from './wildcard';
+import {
+  IItem,
+  wildcard,
+  wildcardToRegExp,
+  wildcardToRegExpForPath,
+} from './wildcard';
 
 const fsExists = promisify(fs.exists);
 const fsMkdir = promisify(fs.mkdir);
 const fsWriteFile = promisify(fs.writeFile);
 const fsReadFile = promisify(fs.readFile);
+const fsStat = promisify(fs.stat);
 
 /**
  * job要素にobject要素を追加する
@@ -340,17 +346,16 @@ ${optimistParser.help()}
 // ファイル指定なしの場合はカレントディレクトリ以下にあるすべてのtsファイルを対象とする
 const patterns = options._.length > 0 ? options._ : ['**/*.ts'];
 
+let gitIgnore = (item: IItem) => item.name === '.git';
 // ワイルドカードを展開
 const filelist = patterns
   .map(pattern => [
-    ...wildcard(
-      pattern,
-      item =>
-        item.stat.isDirectory() &&
-        (item.name === '.git' ||
-          item.name === '.svn' ||
-          item.name === 'node_modules')
-    ),
+    ...wildcard(pattern, item => {
+      if (item.stat.isDirectory()) {
+        gitIgnore = loadGitignore(item.path, gitIgnore);
+      }
+      return gitIgnore(item);
+    }),
   ])
   .reduce((a, b) => a.concat(b))
   .map(item => item.path);
@@ -427,3 +432,86 @@ if (options.watch && options.console) {
     });
   }
 })();
+
+function loadGitignore(dirpath: string): undefined | ((item: IItem) => boolean);
+function loadGitignore(
+  dirpath: string,
+  filterFunc: (item: IItem) => boolean
+): (item: IItem) => boolean;
+function loadGitignore(dirpath: string, filterFunc?: (item: IItem) => boolean) {
+  const gitignorePath = path.join(dirpath, '.gitignore');
+  // tslint:disable-next-line:label-position
+  if (!fs.existsSync(gitignorePath)) {
+    return filterFunc;
+  }
+  if (!fs.statSync(gitignorePath).isFile()) {
+    return filterFunc;
+  }
+  const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+  const gitignore = gitignoreContent
+    .split(/(?:\r?\n)+/)
+    // #で始まる行はコメント
+    .filter(line => line && !/^#/.test(line))
+    .map(line => {
+      let pattern = line;
+      let directoryOnly = false;
+      let negative = false;
+      // /で終わっていればディレクトリだけにマッチ
+      if (/\/$/.test(pattern)) {
+        pattern = pattern.replace(/\/+/, '');
+        directoryOnly = true;
+      }
+      // !で始まっていればそれまでにマッチしていたものがあっても除外
+      if (/^!/.test(pattern)) {
+        pattern = pattern.substr(1);
+        negative = true;
+      }
+      // 先頭に\があれば次の文字をエスケープ
+      pattern = pattern.replace(/^\\/, '');
+      // /を含むパターンは.gitignoreのあるディレクトリからの相対パス
+      const nameOnly = !pattern.includes('/');
+      // 先頭の/は除外して正規表現に変換
+      if (/^\//.test(pattern)) {
+        pattern = pattern.substr(1);
+      }
+      // 名前だけかパスを含むかで正規表現への変換方法を変える
+      const re = nameOnly
+        ? wildcardToRegExp(pattern)!
+        : wildcardToRegExpForPath(pattern)!;
+      return {directoryOnly, negative, nameOnly, re};
+    });
+  return (item: IItem) => {
+    let state: boolean | undefined;
+    // .gitignoreからの相対パス
+    const rel = path.relative(dirpath, item.path).replace(/\\/g, '/');
+    if (rel.startsWith('../')) {
+      // .gitignoreのあるディレクトリ以下にあるファイル/ディレクトリではないのでスキップ
+      return filterFunc ? filterFunc(item) : false;
+    }
+    for (const pattern of gitignore) {
+      // ディレクトリにだけマッチするものはディレクトリ以外のときはスキップ
+      if (pattern.directoryOnly && !item.stat.isDirectory()) {
+        continue;
+      }
+      // パターンにマッチしないものはスキップ
+      if (pattern.nameOnly) {
+        // 名前だけにマッチするものは名前だけをチェック
+        if (!pattern.re.test(item.name)) {
+          continue;
+        }
+      } else {
+        // .gitignoreからの相対パスでチェック
+        if (!pattern.re.test(rel)) {
+          continue;
+        }
+      }
+      // パターンにマッチしたら反転かどうかによって状態を変更
+      state = !pattern.negative;
+    }
+    if (state === undefined) {
+      // 現在の.gitignoreにあるパターンすべてにマッチしない場合は親フォルダのパターンをチェック
+      return filterFunc ? filterFunc(item) : false;
+    }
+    return state;
+  };
+}

@@ -1,4 +1,4 @@
-{
+(function(this: any) {
   Array.isArray =
     Array.isArray ||
     function isArray(obj: any) {
@@ -270,4 +270,4 @@
     function keys(this: any[]) {
       return this.map((_, index) => index);
     };
-}
+})();
