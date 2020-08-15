@@ -2,7 +2,7 @@
 ///   <description>
 ///     tsc4wshのデバッグ用スクリプト
 ///   </description>
-///   <named name="?" type="simple" required="false" helpstring="使い方(これ)を表示します。" />
+///   <named name="?" type="simple" required="false" helpstring="使い方(これ)を表示します。 />
 ///   <named name="base" type="string" required="true" helpstring="相対パスやワイルドカードの基準となるディレクトリ" />
 ///   <unnamed name="filename" many="true" required="true" helpstring="処理するファイル。ワイルドカード指定可。"/>
 ///   <example>
@@ -17,7 +17,7 @@
 /// <reference types="wscript-util" />
 /// <reference types="filesystemobject-util" />
 
-namespace test {
+namespace testError {
   const fsoU = Scripting.FileSystemObject.Utils;
   declare const fso: Scripting.FileSystemObject;
 

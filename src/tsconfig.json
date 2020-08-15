@@ -12,10 +12,5 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "esModuleInterop": true
-  },
-  "exclude": [
-    "/test/**/*.ts",
-    "/node_modules/**/*.ts"
-  ],
-  
+  }
 }
