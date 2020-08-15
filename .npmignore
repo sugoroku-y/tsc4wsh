@@ -1,0 +1,8 @@
+/.gitignore
+/.vscode/
+/lib/*.js.map
+/src/
+/polyfill/ts/
+/test/
+/*.tgz
+/private-modules/**/tsconfig.json

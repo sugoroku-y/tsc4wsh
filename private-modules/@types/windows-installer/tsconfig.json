@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es5"
+    ],
+    "types": [
+      "windows-script-host"
+    ]
+  }
+}

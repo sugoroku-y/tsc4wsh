@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es3",
+    "module": "none",
+    "lib": ["es2018"],
+    "outFile": "../index.js",
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "types": ["windows-script-host", "activex-scripting"],
+    "esModuleInterop": true
+  },
+  "files": ["./index.ts"]
+}

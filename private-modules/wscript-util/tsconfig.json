@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "es3",
+    "module": "none",
+    "lib": ["es2018"],
+    "downlevelIteration": true,
+    "typeRoots": ["..", "../@types"],
+    "types": ["windows-script-host", "activex-scripting"]
+  }
+}

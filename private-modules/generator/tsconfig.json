@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["es2018"],
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "types": ["windows-script-host"],
+    "typeRoots": [
+      ".."
+    ],
+    "outFile": "./",
+    "esModuleInterop": true
+  }
+}

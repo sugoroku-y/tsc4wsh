@@ -1,0 +1,41 @@
+{
+  "name": "tsc4wsh",
+  "version": "1.0.0",
+  "main": "./lib/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sugoroku-y/tsc4wsh.git"
+  },
+  "scripts": {
+    "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
+    "build:src": "tsc --build src/tsconfig.json",
+    "build": "run-s build:polyfill build:src",
+    "watch:polyfill": "tsc --build polyfill/ts/tsconfig.json --watch",
+    "watch:src": "tsc --build src/tsconfig.json --watch",
+    "watch": "run-p watch:polyfill watch:src"
+  },
+  "author": {
+    "name": "YEBISUYA Sugoroku",
+    "email": "yebisuya@gmail.com"
+  },
+  "license": "NYSL",
+  "dependencies": {
+    "@types/activex-adodb": "^6.1.6",
+    "@types/activex-scripting": "^1.0.6",
+    "@types/activex-shell": "^1.0.1",
+    "@types/windows-script-host": "^5.8.2",
+    "optimist": "^0.6.1",
+    "typescript": "^3.3.1",
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.27"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.19",
+    "@types/optimist": "0.0.29",
+    "@types/xmldom": "^0.1.29",
+    "npm-run-all": "^4.1.5"
+  },
+  "bin": {
+    "tsc4wsh": "./bin/tsc4wsh.js"
+  }
+}

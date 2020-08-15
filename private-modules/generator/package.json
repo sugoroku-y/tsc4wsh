@@ -1,0 +1,17 @@
+{
+  "name": "generator",
+  "version": "0.0.1",
+  "description": "Utilities for generators",
+  "main": "./Generator.ts",
+  "scripts": {
+    "build:test": "tsc4wsh test/test-all.ts",
+    "test": "cscript //nologo test/test-all.wsf"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/activex-scripting": "^1.0.6",
+    "@types/windows-script-host": "^5.8.2",
+    "typescript": "~3.1.6"
+  }
+}
