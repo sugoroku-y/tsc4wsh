@@ -93,7 +93,7 @@ declare namespace DOM3 {
     hasChildNodes(): boolean;
     cloneNode(deep: boolean): Node;
     selectNodes(query: string): NodeList;
-    singleSelectNode(query: string): Node;
+    selectSingleNode(query: string): Node;
     readonly baseName: string;
     readonly namespaceURI: string;
     readonly prefix: string;
