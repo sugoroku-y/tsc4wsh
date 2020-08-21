@@ -137,6 +137,7 @@ declare namespace DOM3 {
     removeAttributeNode(oldAttr: Attr): Attr;
     getElementsByTagName(name: string): NodeList;
     normalize(): void;
+    dataType: string;
   }
   export interface Attr extends NodeBase {
     readonly nodeType: NodeType.ATTRIBUTE_NODE;
