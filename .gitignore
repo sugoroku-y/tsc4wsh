@@ -65,3 +65,4 @@ typings/
 /*.tgz
 /polyfill/index.js
 test/signtool.exe
+/test/temp/
