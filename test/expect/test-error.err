@@ -1,0 +1,12 @@
+    エラー: test/test-error.ts
+    [xmldom error]	element parse error: Error: [xmldom warning]	attribute space is required"helpstring"!!
+    @#[line:6,col:3]
+    @#[line:6,col:3]
+    |   <description>
+    |     tsc4wshのデバッグ用スクリプト
+    |   </description>
+    |   <named name="?" type="simple" required="false" helpstring="使い方(これ)を表示します。 />
+        ^
+    |   <named name="base" type="string" required="true" helpstring="相対パスやワイルドカードの基準となるディレクトリ" />
+    |   <unnamed name="filename" many="true" required="true" helpstring="処理するファイル。ワイルドカード指定可。"/>
+    |   <example>

@@ -10,6 +10,7 @@
     "url": "https://github.com/sugoroku-y/tsc4wsh.git"
   },
   "scripts": {
+    "test": "jest --coverage",
     "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
     "build:src": "tsc --build src/tsconfig.json",
     "build": "run-s build:polyfill build:src",
@@ -34,6 +35,7 @@
     "xpath": "0.0.27"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.10",
     "@types/node": "^10.14.8",
     "@types/optimist": "0.0.29",
     "@types/xmldom": "^0.1.29",
@@ -47,8 +49,28 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "jest": "^26.4.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.2.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/src/tsc4wsh.test.ts"
+    ],
+    "transform": {
+      "\\.ts$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "src/tsconfig.json"
+      }
+    },
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/tsc4wsh.ts",
+      "src/transpile.ts"
+    ]
   },
   "bin": {
     "tsc4wsh": "./bin/tsc4wsh.js"

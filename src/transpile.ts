@@ -57,7 +57,7 @@ function adjustConfig(config: {[key: string]: any}) {
 export function generateTSConfig() {
   const config = {compilerOptions: adjustConfig({})};
   // private-modulesをtypeRootsに指定
-  const p = path.resolve('.');
+  const p = process.cwd();
   const p1 = path.join(__dirname, '../private-modules');
   const p2 = path.join(p1, '@types');
   config.compilerOptions.typeRoots = [

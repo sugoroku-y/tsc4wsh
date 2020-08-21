@@ -2,7 +2,7 @@
 /// <reference types="iterables" />
 /// <reference types="filesystemobject-util" />
 /// <reference types="windows-installer" />
-/// <reference types="msxml2" />
+/// <reference types="dom3" />
 /// <reference types="activex-shell" />
 
 namespace filever {
@@ -41,7 +41,7 @@ namespace filever {
     }
     if (/\.msp$/i.test(filepath)) {
       const xml = installer.ExtractPatchXMLData(filepath);
-      const doc = WScript.CreateObject('Msxml2.DOMDocument.6.0');
+      const doc = WScript.CreateObject('MSXML2.DOMDocument.6.0');
       doc.async = false;
       doc.setProperty(
         'SelectionNamespaces',
@@ -202,7 +202,7 @@ namespace filever {
   }
 
   // ADODB.Streamが返すバイナリストリームをJavaScriptで扱えるように変換するため、dataType: 'bin.hex'を使う
-  const el = WScript.CreateObject('Msxml2.DOMDocument.6.0').createElement('t');
+  const el = WScript.CreateObject('MSXML2.DOMDocument.6.0').createElement('t');
   // ADODB.Streamからバイナリデータを読み込む
   function readStream(
     stream: ADODB.Stream,

@@ -42,4 +42,5 @@ namespace test {
       );
     }
   }
+  WScriptUtil.validateParameters();
 }
