@@ -1,4 +1,4 @@
-/// <reference types="msxml2" />
+/// <reference types="dom3" />
 /// <reference types="iterables" />
 
 //
@@ -56,11 +56,11 @@ namespace WScriptUtil {
       return WScript.Quit(0);
     }
 
-    const doc = WScript.CreateObject('Msxml2.DOMDocument.6.0');
+    const doc = WScript.CreateObject('MSXML2.DOMDocument.6.0');
     doc.load(WScript.ScriptFullName);
     let hasError = false;
     for (const node of Iterables.from(doc.selectNodes('/job/runtime/named'))) {
-      if (node.nodeType !== MSXML2.DOMNodeType.NODE_ELEMENT) {
+      if (node.nodeType !== DOM3.ELEMENT_NODE) {
         continue;
       }
       const name = node.getAttribute('name');
@@ -110,7 +110,7 @@ namespace WScriptUtil {
     const unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
     if (
       unnamedElement &&
-      unnamedElement.nodeType === MSXML2.DOMNodeType.NODE_ELEMENT
+      unnamedElement.nodeType === DOM3.ELEMENT_NODE
     ) {
       const isMany = unnamedElement.getAttribute('many') === 'true';
       const required = (value =>
