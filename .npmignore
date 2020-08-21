@@ -1,8 +1,12 @@
 /.gitignore
 /.vscode/
 /lib/*.js.map
+/lib/*.test.js
 /src/
 /polyfill/ts/
 /test/
 /*.tgz
 /private-modules/**/tsconfig.json
+/private-modules/**/package-lock.json
+/coverage/
+/.travis.yml
