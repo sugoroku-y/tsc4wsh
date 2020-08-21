@@ -248,6 +248,7 @@ declare namespace DOM3 {
     readonly ondataavailable: any;
     readonly onreadystatechange: any;
     readonly ontransformnode: any;
+    setProperty(name: string, value: string): void;
   }
   export interface DocumentType extends NodeBase {
     readonly nodeType: NodeType.DOCUMENT_TYPE_NODE;
