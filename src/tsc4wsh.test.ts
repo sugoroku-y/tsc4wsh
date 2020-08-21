@@ -1,5 +1,6 @@
 /* global test, expect */
 import * as fs from 'fs';
+import * as path from 'path';
 import {tsc4wsh, setOutput, setError} from './tsc4wsh';
 import {generateTSConfig} from './transpile';
 
@@ -72,11 +73,16 @@ test('generateTSConfig', async () => {
     }
   }
   const cwdsave = process.cwd();
-  process.chdir('test/temp');
   try {
+    process.chdir('test/temp');
     generateTSConfig();
     expect(
-      JSON.parse(await fs.promises.readFile('tsconfig.json', 'utf8'))
+      JSON.parse(
+        await fs.promises.readFile(
+          path.resolve(process.cwd(), 'tsconfig.json'),
+          'utf8'
+        )
+      )
     ).toEqual({
       compilerOptions: {
         target: 'es3',

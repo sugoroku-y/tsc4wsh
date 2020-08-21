@@ -65,7 +65,7 @@ export function generateTSConfig() {
     path.relative(p, p2).replace(/\\/g, '/'),
   ];
   ts.sys.writeFile(
-    path.resolve('tsconfig.json'),
+    path.resolve(p, 'tsconfig.json'),
     JSON.stringify(config, undefined, 2)
   );
 }
