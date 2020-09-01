@@ -4,6 +4,9 @@
 
 This is a TypeScript compiler for Windows Scripting Host.
 
+[![Build Status](https://travis-ci.org/sugoroku-y/tsc4wsh.svg?branch=develop)](https://travis-ci.org/sugoroku-y/tsc4wsh)
+[![NYSL](http://img.shields.io/badge/license-NYSL-blue.svg?style=flat)](LICENSE)
+
 ## 使い方
 
 ### インストール
