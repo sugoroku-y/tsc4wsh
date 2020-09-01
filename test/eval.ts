@@ -1,5 +1,5 @@
 /// <reference types="iterables" />
-/// <reference types="debugContext" />
+/// <reference types="debug-context" />
 
 /**
  * このスクリプトの使用方法を表示する
