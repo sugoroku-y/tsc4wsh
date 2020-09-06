@@ -247,6 +247,7 @@ async function writeWsf(
   });
   if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
+    /* istanbul ignore next */
     stdout.write(`\t\t変化なし: ${outputPath}\n`);
   } else {
     await fs.promises.writeFile(outputPath, content, 'utf8');
