@@ -34,7 +34,7 @@
     "@typescript-eslint/parser": "^4.0.1",
     "optionalist": "^1.0.2",
     "typescript": "^4.0.2",
-    "wildkarte": "^1.0.0",
+    "wildkarte": "^1.1.0",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27"
   },

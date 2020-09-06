@@ -93,33 +93,35 @@ const patterns =
     ? options[optionalist.unnamed]
     : ['**/*.ts'];
 
-let gitIgnore: ((item: wildkarte.IItem) => boolean | undefined) | undefined;
-// ワイルドカードを展開
-const filelist = patterns
-  .map(pattern => [
-    ...wildkarte.expand(pattern, item => {
-      if (item.stat.isDirectory()) {
-        gitIgnore = loadGitignore(item.path, gitIgnore);
+function concat(
+  ...generators: Array<(start: string) => AsyncGenerator<string, void>>
+): (start: string) => Promise<string[]> {
+  return async function (start: string) {
+    const result: string[] = [];
+    for (const g of generators) {
+      for await (const path of g(start)) {
+        result.push(path);
       }
-      return gitIgnore?.(item) ?? false;
-    }),
-  ])
-  .reduce((a, b) => a.concat(b))
-  .map(item => item.path);
-
-if (filelist.length === 0) {
-  stderr.write(
-    `ファイルが見つかりません。: \n${patterns.map(s => `    ${s}\n`).join('')}`
-  );
-  process.exit(1);
+    }
+    return result;
+  };
 }
 
-if (options.output && /\.wsf$/i.test(options.output) && filelist.length > 1) {
-  stderr.write(
-    `複数のソースファイルが指定されましたが、出力先にファイルが指定されています。: ${options.output}\n`
-  );
-  process.exit(1);
-}
+let gitIgnore: ((item: {path: string; stat: fs.Stats}) => boolean) | undefined;
+// ワイルドカードを展開
+const filelistP = concat(
+  ...patterns.map(pattern =>
+    wildkarte.expand(pattern, {
+      ignoreFiles: item => {
+        if (item.stat.isDirectory()) {
+          gitIgnore = loadGitignore(item.path, gitIgnore);
+        }
+        return gitIgnore?.(item) ?? false;
+      },
+    })
+  )
+)(process.cwd());
+
 if (options.watch && options.console) {
   stderr.write(
     `ファイル更新監視時は変換結果の出力先に標準出力を指定できません。\n`
@@ -128,6 +130,22 @@ if (options.watch && options.console) {
 }
 
 (async () => {
+  const filelist = await filelistP;
+  if (filelist.length === 0) {
+    stderr.write(
+      `ファイルが見つかりません。: \n${patterns
+        .map(s => `    ${s}\n`)
+        .join('')}`
+    );
+    process.exit(1);
+  }
+  if (options.output && /\.wsf$/i.test(options.output) && filelist.length > 1) {
+    stderr.write(
+      `複数のソースファイルが指定されましたが、出力先にファイルが指定されています。: ${options.output}\n`
+    );
+    process.exit(1);
+  }
+
   if (options.output) {
     const output = /\.wsf$/i.test(options.output)
       ? options.output
@@ -174,8 +192,8 @@ if (options.watch && options.console) {
 
 function loadGitignore(
   dirpath: string,
-  filterFunc?: (item: wildkarte.IItem) => boolean | undefined
-) {
+  filterFunc?: (item: {path: string; stat: fs.Stats}) => boolean
+): ((item: {path: string; stat: fs.Stats}) => boolean) | undefined {
   const gitignorePath = path.join(dirpath, '.gitignore');
   if (!fs.existsSync(gitignorePath)) {
     return filterFunc;
@@ -211,19 +229,16 @@ function loadGitignore(
         pattern = pattern.substr(1);
       }
       // 名前だけかパスを含むかで正規表現への変換方法を変える
-      const re = wildkarte.toRegExp(
-        pattern,
-        nameOnly ? wildkarte.FOR_FILENAME : wildkarte.FOR_PATH
-      );
+      const re = wildkarte.toRegExp(pattern);
       return {directoryOnly, negative, nameOnly, re};
     });
-  return (item: wildkarte.IItem) => {
+  return (item: {path: string; stat: fs.Stats}) => {
     let state: boolean | undefined;
     // .gitignoreからの相対パス
     const rel = path.relative(dirpath, item.path).replace(/\\/g, '/');
     if (rel.startsWith('../')) {
       // .gitignoreのあるディレクトリ以下にあるファイル/ディレクトリではないのでスキップ
-      return filterFunc?.(item);
+      return filterFunc?.(item) ?? false;
     }
     for (const pattern of gitignore) {
       // ディレクトリにだけマッチするものはディレクトリ以外のときはスキップ
@@ -233,7 +248,7 @@ function loadGitignore(
       // パターンにマッチしないものはスキップ
       if (pattern.nameOnly) {
         // 名前だけにマッチするものは名前だけをチェック
-        if (!pattern.re.test(item.name)) {
+        if (!pattern.re.test(path.basename(item.path))) {
           continue;
         }
       } else {
@@ -247,7 +262,7 @@ function loadGitignore(
     }
     if (state === undefined) {
       // 現在の.gitignoreにあるパターンすべてにマッチしない場合は親フォルダのパターンをチェック
-      return filterFunc?.(item);
+      return filterFunc?.(item) ?? false;
     }
     return state;
   };
