@@ -15,7 +15,7 @@
     "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
     "build:src": "tsc --build src/tsconfig.json",
     "build": "run-s build:polyfill build:src",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "watch:polyfill": "tsc --build polyfill/ts/tsconfig.json --watch",
     "watch:src": "tsc --build src/tsconfig.json --watch",
     "watch": "run-p watch:polyfill watch:src"
