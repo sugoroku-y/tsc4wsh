@@ -30,6 +30,8 @@
     "@types/activex-scripting": "^1.0.7",
     "@types/activex-shell": "^1.0.2",
     "@types/windows-script-host": "^5.8.3",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
     "optionalist": "^1.0.2",
     "typescript": "^4.0.2",
     "wildkarte": "^1.0.0",
