@@ -245,6 +245,7 @@ async function writeWsf(
     /* istanbul ignore next */
     throw err;
   });
+  /* istanbul ignore next */
   if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
     /* istanbul ignore next */
