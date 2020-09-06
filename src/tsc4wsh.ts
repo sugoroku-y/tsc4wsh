@@ -1,3 +1,4 @@
+/* globals Node Document Element */
 import * as fs from 'fs';
 import * as path from 'path';
 import xmldom from 'xmldom';
@@ -9,12 +10,14 @@ interface IWriteStream {
 }
 export let stdout: IWriteStream = {
   write(s) {
+    /* istanbul ignore next */
     process.stdout.write(s);
   },
   close() {},
 };
 export let stderr: IWriteStream = {
   write(s) {
+    /* istanbul ignore next */
     process.stderr.write(s);
   },
   close() {},
@@ -41,8 +44,9 @@ function appendObjectElements(
   // ソース中にdeclare const fso: Scripting.FileSystemObbjectのような記述を見つけたら
   // <object id="fso" progid="Scripting.FileSystemObbject">を追加する
   for (const id in progids) {
-    // eslint-disable-next-line no-prototype-builtins
+    /* istanbul ignore next */ // eslint-disable-next-line no-prototype-builtins
     if (!progids.hasOwnProperty(id)) {
+      /* istanbul ignore next */
       continue;
     }
     const progid = progids[id];
@@ -117,7 +121,9 @@ function appendScriptElement(jobElement: Element, script: string) {
       const runtimeElement = (() => {
         // 既にあればそのまま使用
         const elements = jobElement.getElementsByTagName('runtime');
+        /* istanbul ignore next */
         if (elements.length) {
+          /* istanbul ignore next */
           return elements[0];
         }
         // 無ければ作成
@@ -204,28 +210,39 @@ async function writeWsf(
     serializer.serializeToString(doc) +
     '\n';
   // コンソールモードの場合は標準出力に表示して終了
+  /* istanbul ignore next */
   if (options.console) {
+    /* istanbul ignore next */
     stdout.write(`${filepath}:\n`);
+    /* istanbul ignore next */
     stdout.write(content);
+    /* istanbul ignore next */
     stdout.write('\n');
+    /* istanbul ignore next */
     return;
   }
   const outputPath =
     // outputの指定が無ければソースファイルの拡張子をWSFに変えたものに出力
     !options.output
-      ? filepath.replace(/\.ts$/, '.wsf')
+      ? /* istanbul ignore next */
+        filepath.replace(/\.ts$/, '.wsf')
       : // outputに拡張子WSFのファイル名が指定されていればそのまま使用
+      /* istanbul ignore next */
       /\.wsf$/i.test(options.output)
-      ? options.output
+      ? /* istanbul ignore next */
+        options.output
       : // outputに拡張子WSFが指定されていなければディレクトリと見なして
         // そこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
+        /* istanbul ignore next */
         path.join(options.output, path.basename(filepath, '.ts') + '.wsf');
   const existent = await fs.promises.readFile(outputPath, 'utf8').catch(err => {
+    /* istanbul ignore next */
     if (err.code === 'ENOENT') {
       // 存在してなかった場合には空のファイルと同じ扱い
       return '';
     }
     // その他のエラーはエラーとして扱う
+    /* istanbul ignore next */
     throw err;
   });
   if (existent === content) {
@@ -250,6 +267,7 @@ export async function tsc4wsh(
 ) {
   stdout.write(
     `${new Date().toLocaleTimeString()} - tsc4wsh 開始 ${
+      /* istanbul ignore next */
       options.watch ? ' (監視中)' : ''
     }...\n`
   );
@@ -262,7 +280,9 @@ export async function tsc4wsh(
           stdout.write(`  ${filepath}\n`);
           try {
             // TSファイル以外は対象外
+            /* istanbul ignore next */
             if (path.extname(filepath).toLowerCase() !== '.ts') {
+              /* istanbul ignore next */
               throw new Error('サポートしていないファイルです。');
             }
             const {script: transpiled, objectMap: progids} = transpile(
@@ -276,7 +296,8 @@ export async function tsc4wsh(
             // エラーメッセージはすべて例外として受け取る
             const message =
               typeof ex.message !== 'string'
-                ? ex.toString()
+                ? /* istanbul ignore next */
+                  ex.toString()
                 : ex.message
                     // LF/CRLFで始まっていなければLFを先頭に挿入
                     .replace(/^(?!\r?\n)/, '\n')
