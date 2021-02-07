@@ -158,25 +158,7 @@ const polyfill = fs.promises.readFile(
 );
 
 async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
-  const script =
-    (await polyfill) +
-    // 'use strict';が有効になるようにfunctionで囲む
-    '(function () {\n' +
-    // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
-    transpiled
-      .replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
-      // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
-      .replace(/\]\]>/g, ']]\\x3e')
-      // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
-      .replace(/(?:\\u[0-9a-f]{4})+/gi, hexEncoded =>
-        String.fromCharCode(
-          ...hexEncoded
-            .split('\\u')
-            .splice(1)
-            .map(hex => parseInt(hex, 16))
-        )
-      ) +
-    '})();';
+  const script = (await polyfill) + transpiled;
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
   const jobElement = doc.documentElement!;

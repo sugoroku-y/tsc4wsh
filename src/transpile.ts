@@ -1,37 +1,48 @@
 import * as path from 'path';
 import ts from 'typescript';
 
-function loadTsConfigFile(source: string): [any, string | null] {
+function findFileInUpper(source: string, filename: string): string | undefined {
   let dirpath = source;
   while (true) {
     const newdirpath = path.dirname(dirpath);
-    /* istanbul ignore next 見つからなかった場合のテストは省略 */
     if (dirpath === newdirpath) {
       // ルートまで行っても見つからなかった
-      /* istanbul ignore next */
-      return [null, null];
+      // istanbul ignore next
+      return undefined;
     }
     dirpath = newdirpath;
-    const tsconfig = path.join(dirpath, 'tsconfig.json');
-    // ts.readConfigFileではファイルが存在しないのか、存在していて読み込み時にエラーになったのか区別が付けられないので、先に存在確認する
-    /* istanbul ignore next 通常は見つかるはずなのでテスト省略 */
-    if (!ts.sys.fileExists(tsconfig)) {
-      // 存在していなければ次
-      /* istanbul ignore next */
-      continue;
-    }
-
-    const {config, error} = ts.readConfigFile(tsconfig, ts.sys.readFile);
-    /* istanbul ignore next どういう時にエラーになるか分からないのでテスト省略 */
-    if (error) {
-      /* istanbul ignore next */
-      throw new Error(error.toString());
-    }
-    /* istanbul ignore next どういうときにconfigがundefinedになるか分からないのでテスト省略 */
-    if (config) {
-      return [config, tsconfig];
+    const packageJson = path.join(dirpath, 'package.json');
+    if (ts.sys.fileExists(packageJson)) {
+      return packageJson;
     }
   }
+}
+
+function loadPackageJson(source: string): [string | undefined, any] {
+  const packageJson = findFileInUpper(source, 'package.json');
+  if (packageJson) {
+    const content = ts.sys.readFile(packageJson, 'utf8');
+    if (content) {
+      return [packageJson, JSON.parse(content)];
+    }
+  }
+  // istanbul ignore next
+  return [undefined, undefined];
+}
+
+function loadTsConfigFile(source: string): [any, string | null] {
+  const tsconfig = findFileInUpper(source, 'tsconfig.json');
+  if (!tsconfig) {
+    // istanbul ignore next
+    return [null, null];
+  }
+  const {config, error} = ts.readConfigFile(tsconfig, ts.sys.readFile);
+  // istanbul ignore next どういう時にエラーになるか分からないのでテスト省略
+  if (error) {
+    // istanbul ignore next
+    throw new Error(error.toString());
+  }
+  return [config, tsconfig];
 }
 
 function adjustConfig(config: {[key: string]: any}) {
@@ -223,6 +234,47 @@ export function transpile(fileNames: string[]) {
     path.join(__dirname, '../private-modules/@types')
   );
   const program = ts.createProgram(fileNames, compilerOptions);
+
+  // 参照しているライブラリが実装を含んでいた場合、実装スクリプトを追加する
+  let pkgscripts = '';
+  for (const source of program.getSourceFiles()) {
+    if (fileNames.includes(source.fileName)) {
+      continue;
+    }
+    const [pkgpath, pkg] = loadPackageJson(source.fileName);
+    if (!pkgpath || !pkg) {
+      // istanbul ignore next
+      continue;
+    }
+    if (!pkg.types || !pkg.main) {
+      continue;
+    }
+    // typesプロパティをpackage.jsonからの相対パスとして検索、`.d.ts`が末尾になければ追加
+    const typesPath = path
+      .join(
+        path.dirname(pkgpath),
+        (pkg.types as string).endsWith('.d.ts')
+          ? pkg.types
+          : pkg.types + '.d.ts'
+      )
+      .replaceAll('\\', '/');
+    // ソースファイルと一致しなければ無視
+    if (typesPath !== source.fileName) {
+      continue;
+    }
+    // 実装スクリプトを追加
+    const mainPath = path.join(path.dirname(pkgpath), pkg.main);
+
+    const pkgscript = ts.sys
+      .readFile(mainPath, 'utf8')
+      ?.replace(/\r\n/g, '\n')
+      .replace(/^(?!\n)/, '\n')
+      .replace(/[^\n]$/, '$&\n');
+    if (pkgscript !== undefined) {
+      pkgscripts += pkgscript;
+    }
+  }
+
   let script = '';
   const objectMap = generateObjectMap(program);
   const emitResult = program.emit(undefined, (_, data) => {
@@ -253,6 +305,27 @@ export function transpile(fileNames: string[]) {
     /* istanbul ignore next */
     throw new Error(errorMessages.join('\n'));
   }
+
+  script =
+    // 参照しているライブラリの実装スクリプト
+    pkgscripts +
+    // 'use strict';が有効になるようにfunctionで囲む
+    '(function () {\n' +
+    // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
+    script
+      .replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
+      // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
+      .replace(/\]\]>/g, ']]\\x3e')
+      // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
+      .replace(/(?:\\u[0-9a-f]{4})+/gi, hexEncoded =>
+        String.fromCharCode(
+          ...hexEncoded
+            .split('\\u')
+            .splice(1)
+            .map(hex => parseInt(hex, 16))
+        )
+      ) +
+    '})();';
 
   return {script, objectMap};
 }
