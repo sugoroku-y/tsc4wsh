@@ -284,7 +284,12 @@
                 '[' +
                 indent(depth + 1) +
                 o
-                  .map((json, i) => sub(p ? p('' + i, json) : json, depth + 1))
+                  .map(
+                    (json, i) =>
+                      sub(p ? p('' + i, json) : json, depth + 1) ||
+                      // 空文字列に変換される値はnullとして扱う
+                      'null'
+                  )
                   .join(',' + indent(depth + 1)) +
                 indent(depth) +
                 ']'
@@ -297,13 +302,10 @@
                   ACCEPT_TYPES[typeof sv] &&
                   (!validKeys || validKeys.includes(k))
               )
-              .map(
-                ([k, sv]) =>
-                  `${enquote(k)}:${space ? ' ' : ''}${sub(
-                    p ? p(k, sv) : sv,
-                    depth + 1
-                  )}`
-              );
+              .map(([k, sv]) => [enquote(k), sub(p ? p(k, sv) : sv, depth + 1)])
+              // 空文字列に変換される値は無視
+              .filter(([, sv]) => !!sv)
+              .map((k, sv) => `${k}:${space ? ' ' : ''}${sv}`);
             // 空のオブジェクトは間に改行を入れない
             if (entries.length === 0) {
               return '{}';
