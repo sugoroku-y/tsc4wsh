@@ -1,47 +1,49 @@
-/* global test, expect */
 import * as fs from 'fs';
 import * as path from 'path';
 import {tsc4wsh, setOutput, setError} from './tsc4wsh';
 import {generateTSConfig} from './transpile';
 
-let stdoutText = '';
-setOutput({
-  write(s: string) {
-    stdoutText += s;
-  },
-  close() {},
-});
-let stderrText = '';
-setError({
-  write(s: string) {
-    stderrText += s;
-  },
-  close() {},
-});
+describe('tsc4wsh', () => {
+  let stdoutText = '';
+  let stderrText = '';
 
-for (const name of [
-  'delay-startup',
-  'eval',
-  'filever',
-  'msiinfo',
-  'test-reference',
-  'test',
-  'test-error',
-]) {
-  stdoutText = '';
-  stderrText = '';
-  const tsfile = `test/${name}.ts`;
-  const wsffile = `test/${name}.wsf`;
-  const expectwsffile = `test/expect/${name}.wsf`;
-  const expectoutfile = `test/expect/${name}.out`;
-  const expecterrfile = `test/expect/${name}.err`;
-  const existExpect = fs.existsSync(expectwsffile);
-  const existOut = fs.existsSync(expectoutfile);
-  const existErr = fs.existsSync(expecterrfile);
-  if (fs.existsSync(wsffile) && Math.random() < 0.5) {
-    fs.unlinkSync(wsffile);
-  }
-  test(name, async () => {
+  beforeAll(() => {
+    stdoutText = '';
+    stderrText = '';
+    setOutput({
+      write(s: string) {
+        stdoutText += s;
+      },
+      close() {},
+    });
+    setError({
+      write(s: string) {
+        stderrText += s;
+      },
+      close() {},
+    });
+  });
+  test.each`
+    filename
+    ${'delay-startup'}
+    ${'eval'}
+    ${'filever'}
+    ${'msiinfo'}
+    ${'test-reference'}
+    ${'test'}
+    ${'test-error'}
+  `('transpile $filename', async ({filename}: {filename: string}) => {
+    const tsfile = `test/${filename}.ts`;
+    const wsffile = `test/${filename}.wsf`;
+    const expectwsffile = `test/expect/${filename}.wsf`;
+    const expectoutfile = `test/expect/${filename}.out`;
+    const expecterrfile = `test/expect/${filename}.err`;
+    const existExpect = fs.existsSync(expectwsffile);
+    const existOut = fs.existsSync(expectoutfile);
+    const existErr = fs.existsSync(expecterrfile);
+    if (fs.existsSync(wsffile)) {
+      fs.unlinkSync(wsffile);
+    }
     expect(await tsc4wsh([tsfile], {})).toBe(existExpect);
     if (existExpect) {
       expect(await fs.promises.readFile(wsffile, 'utf8')).toBe(
@@ -63,7 +65,8 @@ for (const name of [
       //   await fs.promises.writeFile(expecterrfile, stderrText, 'utf8');
     }
   });
-}
+});
+
 test('generateTSConfig', async () => {
   try {
     await fs.promises.mkdir('test/temp');
@@ -93,7 +96,7 @@ test('generateTSConfig', async () => {
         strict: true,
         strictNullChecks: true,
         types: ['windows-script-host', 'activex-scripting', 'activex-adodb'],
-        lib: ['es2018'],
+        lib: ['ESNext'],
         typeRoots: ['../../private-modules', '../../private-modules/@types'],
       },
     });

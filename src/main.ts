@@ -16,7 +16,11 @@ const options = optionalist.parse({
     describe: `
       出力先ディレクトリ、もしくは出力先ファイルを指定する。
       拡張子'.wsf'を付けると出力先ファイルと見なす。
-      変換対象を複数指定した場合、出力先にファイルを指定するとエラーとなる。`,
+      出力先にディレクトリを指定した場合は、先頭のファイルの拡張子を
+      '.wsf'にしたものを出力先ファイルとする。
+      先頭のファイルにワイルドカードを指定した場合は、
+      最初に見つかったファイルが出力先ファイル名の元になるので、
+      想定していないファイル名になることがあることに注意。`,
   },
   base: {
     alias: 'b',
@@ -107,21 +111,6 @@ function concat(
   };
 }
 
-let gitIgnore: ((item: {path: string; stat: fs.Stats}) => boolean) | undefined;
-// ワイルドカードを展開
-const filelistP = concat(
-  ...patterns.map(pattern =>
-    wildkarte.expand(pattern, {
-      ignoreFiles: item => {
-        if (item.stat.isDirectory()) {
-          gitIgnore = loadGitignore(item.path, gitIgnore);
-        }
-        return gitIgnore?.(item) ?? false;
-      },
-    })
-  )
-)(process.cwd());
-
 if (options.watch && options.console) {
   stderr.write(
     `ファイル更新監視時は変換結果の出力先に標準出力を指定できません。\n`
@@ -130,18 +119,15 @@ if (options.watch && options.console) {
 }
 
 (async () => {
-  const filelist = await filelistP;
+  // ワイルドカードを展開
+  const filelist = await concat(
+    ...patterns.map(pattern => wildkarte.expand(pattern))
+  )(process.cwd());
   if (filelist.length === 0) {
     stderr.write(
       `ファイルが見つかりません。: \n${patterns
         .map(s => `    ${s}\n`)
         .join('')}`
-    );
-    process.exit(1);
-  }
-  if (options.output && /\.wsf$/i.test(options.output) && filelist.length > 1) {
-    stderr.write(
-      `複数のソースファイルが指定されましたが、出力先にファイルが指定されています。: ${options.output}\n`
     );
     process.exit(1);
   }
@@ -160,110 +146,19 @@ if (options.watch && options.console) {
 
   let timerId: ReturnType<typeof setTimeout> | undefined;
   let scheduled: {[filepath: string]: true} = {};
-  const dependencies: {[filepath: string]: {[filepath: string]: true}} = {};
-  await tsc4wsh(filelist, dependencies);
-  for (const filepath of Object.keys(dependencies)) {
+  await tsc4wsh(filelist, options);
+  for (const filepath of filelist) {
     fs.watch(filepath, () => {
       if (timerId) {
         clearTimeout(timerId);
       }
-      const map = dependencies[filepath];
-      if (!map) {
-        return;
-      }
-      for (const source of Object.keys(map)) {
-        scheduled[source] = true;
-      }
+      scheduled[filepath] = true;
       timerId = setTimeout(() => {
         timerId = undefined;
         const activated = Object.keys(scheduled);
         scheduled = {};
-        // ビルドするファイルの依存関係をクリア
-        for (const f of Object.keys(dependencies)) {
-          for (const s of activated) {
-            delete dependencies[f][s];
-          }
-        }
-        tsc4wsh(activated, options, dependencies);
+        tsc4wsh(activated, options);
       }, 1000);
     });
   }
 })();
-
-function loadGitignore(
-  dirpath: string,
-  filterFunc?: (item: {path: string; stat: fs.Stats}) => boolean
-): ((item: {path: string; stat: fs.Stats}) => boolean) | undefined {
-  const gitignorePath = path.join(dirpath, '.gitignore');
-  if (!fs.existsSync(gitignorePath)) {
-    return filterFunc;
-  }
-  if (!fs.statSync(gitignorePath).isFile()) {
-    return filterFunc;
-  }
-  const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
-  const gitignore = gitignoreContent
-    .split(/(?:\r?\n)+/)
-    // #で始まる行はコメント
-    .filter(line => line && !/^#/.test(line))
-    .map(line => {
-      let pattern = line;
-      let directoryOnly = false;
-      let negative = false;
-      // /で終わっていればディレクトリだけにマッチ
-      if (/\/$/.test(pattern)) {
-        pattern = pattern.replace(/\/+/, '');
-        directoryOnly = true;
-      }
-      // `!`で始まっていればそれまでにマッチしていたものがあっても除外
-      if (/^!/.test(pattern)) {
-        pattern = pattern.substr(1);
-        negative = true;
-      }
-      // 先頭に\があれば次の文字をエスケープ
-      pattern = pattern.replace(/^\\/, '');
-      // /を含むパターンは.gitignoreのあるディレクトリからの相対パス
-      const nameOnly = !pattern.includes('/');
-      // 先頭の/は除外して正規表現に変換
-      if (/^\//.test(pattern)) {
-        pattern = pattern.substr(1);
-      }
-      // 名前だけかパスを含むかで正規表現への変換方法を変える
-      const re = wildkarte.toRegExp(pattern);
-      return {directoryOnly, negative, nameOnly, re};
-    });
-  return (item: {path: string; stat: fs.Stats}) => {
-    let state: boolean | undefined;
-    // .gitignoreからの相対パス
-    const rel = path.relative(dirpath, item.path).replace(/\\/g, '/');
-    if (rel.startsWith('../')) {
-      // .gitignoreのあるディレクトリ以下にあるファイル/ディレクトリではないのでスキップ
-      return filterFunc?.(item) ?? false;
-    }
-    for (const pattern of gitignore) {
-      // ディレクトリにだけマッチするものはディレクトリ以外のときはスキップ
-      if (pattern.directoryOnly && !item.stat.isDirectory()) {
-        continue;
-      }
-      // パターンにマッチしないものはスキップ
-      if (pattern.nameOnly) {
-        // 名前だけにマッチするものは名前だけをチェック
-        if (!pattern.re.test(path.basename(item.path))) {
-          continue;
-        }
-      } else {
-        // .gitignoreからの相対パスでチェック
-        if (!pattern.re.test(rel)) {
-          continue;
-        }
-      }
-      // パターンにマッチしたら反転かどうかによって状態を変更
-      state = !pattern.negative;
-    }
-    if (state === undefined) {
-      // 現在の.gitignoreにあるパターンすべてにマッチしない場合は親フォルダのパターンをチェック
-      return filterFunc?.(item) ?? false;
-    }
-    return state;
-  };
-}

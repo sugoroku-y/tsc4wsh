@@ -149,13 +149,6 @@ function appendScriptElement(jobElement: Element, script: string) {
   return scriptElement;
 }
 
-// ソースファイルの依存関係を記憶するためのインターフェイス
-interface IDependencies {
-  [filepath: string]: {
-    [filepath: string]: true;
-  };
-}
-
 const dom = new xmldom.DOMImplementation();
 const serializer = new xmldom.XMLSerializer();
 // ポリフィルを追加(TypeScriptで記述してコンパイルしたもの)
@@ -264,8 +257,7 @@ async function writeWsf(
  */
 export async function tsc4wsh(
   filepaths: string[],
-  options: {console?: boolean; output?: string; watch?: boolean},
-  dependencies?: IDependencies
+  options: {console?: boolean; output?: string; watch?: boolean}
 ) {
   stdout.write(
     `${new Date().toLocaleTimeString()} - tsc4wsh 開始 ${
@@ -275,44 +267,39 @@ export async function tsc4wsh(
   );
 
   try {
-    // 指定されたファイルを並列にコンパイル
-    return (
-      await Promise.all(
-        filepaths.map(async filepath => {
-          stdout.write(`  ${filepath}\n`);
-          try {
-            // TSファイル以外は対象外
-            /* istanbul ignore next */
-            if (path.extname(filepath).toLowerCase() !== '.ts') {
-              /* istanbul ignore next */
-              throw new Error('サポートしていないファイルです。');
-            }
-            const {script: transpiled, objectMap: progids} = transpile(
-              filepath,
-              dependencies
-            );
-            const doc = await makeWsfDom(transpiled, progids);
-            await writeWsf(filepath, doc, options);
-            return true;
-          } catch (ex) {
-            // エラーメッセージはすべて例外として受け取る
-            const message =
-              typeof ex.message !== 'string'
-                ? /* istanbul ignore next */
-                  ex.toString()
-                : ex.message
-                    // LF/CRLFで始まっていなければLFを先頭に挿入
-                    .replace(/^(?!\r?\n)/, '\n')
-                    // LF/CRLFで終わっていなければLFを最後に追加
-                    .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
-                    // 各行の行頭にインデントを二つ挿入
-                    .replace(/^(?=.)/gm, `    `);
-            stderr.write(`    エラー: ${filepath}${message}`);
-            return false;
-          }
-        })
-      )
-    ).every(r => r);
+    // 指定されたファイルをコンパイル
+    stdout.write(`  ${filepaths.join(', ')}\n`);
+    try {
+      // TSファイル以外は対象外
+      /* istanbul ignore next */
+      if (
+        filepaths.some(
+          filepath => path.extname(filepath).toLowerCase() !== '.ts'
+        )
+      ) {
+        /* istanbul ignore next */
+        throw new Error('サポートしていないファイルです。');
+      }
+      const {script: transpiled, objectMap: progids} = transpile(filepaths);
+      const doc = await makeWsfDom(transpiled, progids);
+      await writeWsf(filepaths[0], doc, options);
+      return true;
+    } catch (ex) {
+      // エラーメッセージはすべて例外として受け取る
+      const message =
+        typeof ex.message !== 'string'
+          ? /* istanbul ignore next */
+            ex.toString()
+          : ex.message
+              // LF/CRLFで始まっていなければLFを先頭に挿入
+              .replace(/^(?!\r?\n)/, '\n')
+              // LF/CRLFで終わっていなければLFを最後に追加
+              .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
+              // 各行の行頭にインデントを二つ挿入
+              .replace(/^(?=.)/gm, `    `);
+      stderr.write(`    エラー: ${filepaths[0]}${message}`);
+      return false;
+    }
   } finally {
     stdout.write(`${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`);
   }

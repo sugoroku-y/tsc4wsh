@@ -54,9 +54,10 @@ function adjustConfig(config: {[key: string]: any}) {
     noEmitOnError: true,
   });
   // 無ければ補完する設定値
-  // libの指定が無ければes2018を指定
+  // libの指定が無ければESNextを指定
   if (!config.lib) {
-    config.lib = ['es2018'];
+    // istanbule ignore next
+    config.lib = ['ESNext'];
   }
   return config;
 }
@@ -189,10 +190,7 @@ function generateObjectMap(program: ts.Program) {
   return objectMap;
 }
 
-export function transpile(
-  fileName: string,
-  dependencies?: {[filepath: string]: {[filepath: string]: true}}
-) {
+export function transpile(fileNames: string[]) {
   // node_modules以下のソースファイルが取り込まれないので定義ファイル以外は出力用と見なされるように小細工
   // ※Typescriptのバージョンアップによって要変更の可能性あり
   (ts as any).getSourceFilesToEmit = function getSourceFilesToEmit(
@@ -204,11 +202,11 @@ export function transpile(
       .getSourceFiles()
       .filter(sourceFile => !sourceFile.isDeclarationFile);
   };
-  const [config, tsconfigPath] = loadTsConfigFile(fileName);
+  const [config, tsconfigPath] = loadTsConfigFile(fileNames[0]);
   /* istanbul ignore next */
   const adjustedConfig = adjustConfig(config?.compilerOptions ?? {});
   /* istanbul ignore next */
-  const tsbasedir = path.dirname(tsconfigPath || fileName);
+  const tsbasedir = path.dirname(tsconfigPath || fileNames[0]);
   const {
     options: compilerOptions,
     errors: coError,
@@ -224,15 +222,7 @@ export function transpile(
     path.join(__dirname, '../private-modules'),
     path.join(__dirname, '../private-modules/@types')
   );
-  const program = ts.createProgram([fileName], compilerOptions);
-  /* istanbul ignore next 依存関係のあるスクリプトのテストは省略 */
-  if (dependencies) {
-    /* istanbul ignore next */
-    for (const source of program.getSourceFiles()) {
-      /* istanbul ignore next */
-      (dependencies[source.fileName] ??= {})[fileName] = true;
-    }
-  }
+  const program = ts.createProgram(fileNames, compilerOptions);
   let script = '';
   const objectMap = generateObjectMap(program);
   const emitResult = program.emit(undefined, (_, data) => {
