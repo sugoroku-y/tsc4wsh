@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es3",
+        "target": "ES3",
         "module": "none",
         "outFile": "./dummy.js",
         "downlevelIteration": true,
@@ -12,7 +12,7 @@
             "activex-adodb"
         ],
         "lib": [
-            "es2018"
+            "ESNext"
         ],
         "typeRoots": [
             "..\\..",

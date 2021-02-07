@@ -1,16 +1,24 @@
 {
   "compilerOptions": {
-    "lib": ["es2018"],
+    "target": "ES3",
+    "lib": ["ESNext"],
     "downlevelIteration": true,
     "strict": true,
     "strictNullChecks": true,
-    "types": ["windows-script-host"],
+    "types": [
+      "windows-script-host",
+      "activex-scripting"
+    ],
     "typeRoots": [
       "..",
-      "../../node_modules/@types",
-      "../../node_modules"
+      "../@types/",
+      "../../node_modules",
+      "../../node_modules/@types"
     ],
-    "outFile": "./",
-    "esModuleInterop": true
-  }
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "index.ts"
+  ]
 }

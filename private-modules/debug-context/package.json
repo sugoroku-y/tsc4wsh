@@ -1,7 +1,8 @@
 {
-  "name": "@types/windows-installer",
+  "name": "debug-context",
   "version": "1.0.0",
   "description": "",
+  "types": "index",
   "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@types/windows-script-host": "*",
+    "@types/activex-scripting": "*",
     "activex-helpers": "*"
   }
 }

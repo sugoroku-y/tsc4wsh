@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2018"],
+    "lib": ["ESNext"],
     "downlevelIteration": true,
     "strict": true,
     "strictNullChecks": true,
@@ -8,7 +8,7 @@
     "typeRoots": [
       ".."
     ],
-    "outFile": "./",
-    "esModuleInterop": true
+    "declaration": true,
+    "emitDeclarationOnly": true
   }
 }

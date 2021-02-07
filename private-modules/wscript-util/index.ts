@@ -42,7 +42,7 @@ namespace WScriptUtil {
       }
       return false;
     }
-    export function Unnamed() {
+    export function Unnamed(): Iterable<string> {
       return Iterables.from(WScript.Arguments.Unnamed);
     }
   }

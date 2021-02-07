@@ -2,7 +2,8 @@
   "name": "registry",
   "version": "0.0.1",
   "description": "Utilities for registry",
-  "main": "./index.ts",
+  "types": "index",
+  "main": "",
   "author": "",
   "license": "MIT",
   "devDependencies": {

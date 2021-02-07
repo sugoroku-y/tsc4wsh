@@ -5,7 +5,7 @@
     "lib": ["ESNext"],
     "downlevelIteration": true,
     "typeRoots": ["..", "../@types"],
-    "types": ["windows-script-host", "activex-scripting"],
+    "types": ["windows-script-host", "activex-scripting", "activex-adodb"],
     "declaration": true,
     "emitDeclarationOnly": true
   }
