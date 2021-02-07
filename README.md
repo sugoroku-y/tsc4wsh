@@ -68,7 +68,8 @@ VS Codeなどのエディターにはコンパイルエラーを指摘してく�
       "activex-adodb"
     ],
     "lib": [
-      "es2018"
+      "ESNext"
+
     ],
     "typeRoots": [
       "node_modules/tsc4wsh/private-modules",
