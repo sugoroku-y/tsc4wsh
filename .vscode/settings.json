@@ -2,5 +2,14 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "eslint.format.enable": true,
   "eslint.onIgnoredFiles": "warn",
-  "eslint.alwaysShowStatus": true
+  "eslint.alwaysShowStatus": true,
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": true,
+      "strings": false,
+      "other": true
+    },
+    "editor.formatOnSave": false
+  }
 }
