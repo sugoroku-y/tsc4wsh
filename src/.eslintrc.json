@@ -1,6 +1,7 @@
 {
   "root": true,
     "env": {
+        "jest/globals": true,
         "es2020": true,
         "node": true
     },
@@ -15,6 +16,7 @@
         "sourceType": "module"
     },
     "plugins": [
+        "jest",
         "@typescript-eslint"
     ],
     "rules": {
