@@ -1,6 +1,7 @@
 /// <reference types="windows-installer" />
 /// <reference types="filesystemobject-util" />
 /// <reference types="iterables" />
+/// <reference types="activex-helpers" />
 
 namespace msiinfo {
   declare const fso: Scripting.FileSystemObject;
@@ -33,19 +34,13 @@ namespace msiinfo {
         'SELECT `Value` FROM `Property` WHERE `Property`=?'
       );
       const param = installer.CreateRecord(1);
-      const setParam = new Function(
-        'param',
-        'index',
-        'value',
-        'param.StringData(index)=value'
-      );
-      setParam(param, 1, 'ProductVersion');
+      ActiveXObject.set(param, 'StringData', [1], 'ProductVersion');
       view.Execute(param);
       const productVersion = view.Fetch().StringData(1);
-      setParam(param, 1, 'ProductCode');
+      ActiveXObject.set(param, 'StringData', [1], 'ProductCode');
       view.Execute(param);
       const productCode = view.Fetch().StringData(1);
-      setParam(param, 1, 'UpgradeCode');
+      ActiveXObject.set(param, 'StringData', [1], 'UpgradeCode');
       view.Execute(param);
       const upgradeCode = view.Fetch().StringData(1);
 

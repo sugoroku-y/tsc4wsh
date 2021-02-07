@@ -257,9 +257,10 @@ export function transpile(fileNames: string[]) {
           ? pkg.types
           : pkg.types + '.d.ts'
       )
-      .replaceAll('\\', '/');
+      .replace(/\\/g, '/');
     // ソースファイルと一致しなければ無視
     if (typesPath !== source.fileName) {
+      // istanbul ignore next
       continue;
     }
     // 実装スクリプトを追加
