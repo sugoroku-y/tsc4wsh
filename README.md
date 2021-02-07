@@ -8,7 +8,7 @@ This is a TypeScript compiler for Windows Scripting Host.
 [![NPM monthly download](https://img.shields.io/npm/dm/tsc4wsh.svg?style=flat)](https://www.npmjs.com/package/tsc4wsh)
 [![NPM total download](https://img.shields.io/npm/dt/tsc4wsh.svg?style=flat)](https://www.npmjs.com/package/tsc4wsh)
 [![Build Status](https://travis-ci.org/sugoroku-y/tsc4wsh.svg?branch=develop)](https://travis-ci.org/sugoroku-y/tsc4wsh)
-[![NYSL](http://img.shields.io/badge/license-NYSL-blue.svg?style=flat)](LICENSE)
+[![MIT](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 ## 使い方
 
