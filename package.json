@@ -24,7 +24,7 @@
     "name": "YEBISUYA Sugoroku",
     "email": "yebisuya@gmail.com"
   },
-  "license": "NYSL",
+  "license": "MIT",
   "dependencies": {
     "@types/activex-adodb": "^6.1.7",
     "@types/activex-scripting": "^1.0.7",
