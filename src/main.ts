@@ -121,7 +121,7 @@ if (options.watch && options.console) {
 (async () => {
   // ワイルドカードを展開
   const filelist = await concat(
-    ...patterns.map(pattern => wildkarte.expand(pattern))
+    ...patterns.map(pattern => wildkarte.expand(pattern.replace(/\\/g, `/`)))
   )(process.cwd());
   if (filelist.length === 0) {
     stderr.write(
