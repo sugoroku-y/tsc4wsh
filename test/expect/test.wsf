@@ -924,7 +924,10 @@ var __read = (this && this.__read) || function (o, n) {
                                 var _b = __read(_a, 2), sv = _b[1];
                                 return !!sv;
                             })
-                                .map(function (k, sv) { return k + ":" + (space ? ' ' : '') + sv; });
+                                .map(function (_a) {
+                                var _b = __read(_a, 2), k = _b[0], sv = _b[1];
+                                return k + ":" + (space ? ' ' : '') + sv;
+                            });
                             if (entries.length === 0) {
                                 return '{}';
                             }
