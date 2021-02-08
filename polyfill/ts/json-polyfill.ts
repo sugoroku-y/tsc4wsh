@@ -305,7 +305,7 @@
               .map(([k, sv]) => [enquote(k), sub(p ? p(k, sv) : sv, depth + 1)])
               // 空文字列に変換される値は無視
               .filter(([, sv]) => !!sv)
-              .map((k, sv) => `${k}:${space ? ' ' : ''}${sv}`);
+              .map(([k, sv]) => `${k}:${space ? ' ' : ''}${sv}`);
             // 空のオブジェクトは間に改行を入れない
             if (entries.length === 0) {
               return '{}';
