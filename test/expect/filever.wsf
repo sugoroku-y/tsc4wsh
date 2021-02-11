@@ -1032,6 +1032,13 @@ var Iterables;
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
         };
+        IterableEx.prototype.concat = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return concat.apply(void 0, __spread([this], args));
+        };
         return IterableEx;
     }());
     /**
@@ -1046,15 +1053,15 @@ var Iterables;
         var e_1, _a;
         var i = 0;
         try {
-            for (var x_1 = __values(x), x_1_1 = x_1.next(); !x_1_1.done; x_1_1 = x_1.next()) {
-                var e = x_1_1.value;
+            for (var _b = __values(x), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var e = _c.value;
                 callback(e, i++, x);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (x_1_1 && !x_1_1.done && (_a = x_1["return"])) _a.call(x_1);
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
             finally { if (e_1) throw e_1.error; }
         }
@@ -1076,8 +1083,8 @@ var Iterables;
         var e_2, _a;
         var i = 0;
         try {
-            for (var x_2 = __values(x), x_2_1 = x_2.next(); !x_2_1.done; x_2_1 = x_2.next()) {
-                var e = x_2_1.value;
+            for (var _b = __values(x), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var e = _c.value;
                 if (callback(e, i++, x)) {
                     return true;
                 }
@@ -1086,7 +1093,7 @@ var Iterables;
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (x_2_1 && !x_2_1.done && (_a = x_2["return"])) _a.call(x_2);
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
             finally { if (e_2) throw e_2.error; }
         }
@@ -1109,8 +1116,8 @@ var Iterables;
         var e_3, _a;
         var i = 0;
         try {
-            for (var x_3 = __values(x), x_3_1 = x_3.next(); !x_3_1.done; x_3_1 = x_3.next()) {
-                var e = x_3_1.value;
+            for (var _b = __values(x), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var e = _c.value;
                 if (!callback(e, i++, x)) {
                     return false;
                 }
@@ -1119,7 +1126,7 @@ var Iterables;
         catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (x_3_1 && !x_3_1.done && (_a = x_3["return"])) _a.call(x_3);
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
             finally { if (e_3) throw e_3.error; }
         }
@@ -1128,36 +1135,36 @@ var Iterables;
     Iterables.every = every;
     function filter(x, callback) {
         return new IterableEx(function () {
-            var i, x_4, x_4_1, e, e_4_1;
-            var e_4, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var i, _a, _b, e, e_4_1;
+            var e_4, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         i = 0;
-                        _b.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _b.trys.push([1, 6, 7, 8]);
-                        x_4 = __values(x), x_4_1 = x_4.next();
-                        _b.label = 2;
+                        _d.trys.push([1, 6, 7, 8]);
+                        _a = __values(x), _b = _a.next();
+                        _d.label = 2;
                     case 2:
-                        if (!!x_4_1.done) return [3 /*break*/, 5];
-                        e = x_4_1.value;
+                        if (!!_b.done) return [3 /*break*/, 5];
+                        e = _b.value;
                         if (!callback(e, i++, x)) return [3 /*break*/, 4];
                         return [4 /*yield*/, e];
                     case 3:
-                        _b.sent();
-                        _b.label = 4;
+                        _d.sent();
+                        _d.label = 4;
                     case 4:
-                        x_4_1 = x_4.next();
+                        _b = _a.next();
                         return [3 /*break*/, 2];
                     case 5: return [3 /*break*/, 8];
                     case 6:
-                        e_4_1 = _b.sent();
+                        e_4_1 = _d.sent();
                         e_4 = { error: e_4_1 };
                         return [3 /*break*/, 8];
                     case 7:
                         try {
-                            if (x_4_1 && !x_4_1.done && (_a = x_4["return"])) _a.call(x_4);
+                            if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                         }
                         finally { if (e_4) throw e_4.error; }
                         return [7 /*endfinally*/];
@@ -1180,35 +1187,35 @@ var Iterables;
      */
     function map(x, callback) {
         return new IterableEx(function () {
-            var i, x_5, x_5_1, e, e_5_1;
-            var e_5, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var i, _a, _b, e, e_5_1;
+            var e_5, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         i = 0;
-                        _b.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _b.trys.push([1, 6, 7, 8]);
-                        x_5 = __values(x), x_5_1 = x_5.next();
-                        _b.label = 2;
+                        _d.trys.push([1, 6, 7, 8]);
+                        _a = __values(x), _b = _a.next();
+                        _d.label = 2;
                     case 2:
-                        if (!!x_5_1.done) return [3 /*break*/, 5];
-                        e = x_5_1.value;
+                        if (!!_b.done) return [3 /*break*/, 5];
+                        e = _b.value;
                         return [4 /*yield*/, callback(e, i++, x)];
                     case 3:
-                        _b.sent();
-                        _b.label = 4;
+                        _d.sent();
+                        _d.label = 4;
                     case 4:
-                        x_5_1 = x_5.next();
+                        _b = _a.next();
                         return [3 /*break*/, 2];
                     case 5: return [3 /*break*/, 8];
                     case 6:
-                        e_5_1 = _b.sent();
+                        e_5_1 = _d.sent();
                         e_5 = { error: e_5_1 };
                         return [3 /*break*/, 8];
                     case 7:
                         try {
-                            if (x_5_1 && !x_5_1.done && (_a = x_5["return"])) _a.call(x_5);
+                            if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                         }
                         finally { if (e_5) throw e_5.error; }
                         return [7 /*endfinally*/];
@@ -1223,7 +1230,7 @@ var Iterables;
         var iterable = x;
         var initialIndex = 0;
         if (arguments.length <= 2) {
-            var itr_1 = x[Symbol.iterator]();
+            var itr_1 = iterable[Symbol.iterator]();
             var ir = itr_1.next();
             if (ir.done) {
                 throw new Error('Reduce of empty Iterable with no initial value');
@@ -1236,7 +1243,7 @@ var Iterables;
                 _a);
             initialValue = ir.value; // arguments.length <= 2 なら ir.value is S(=T)
         }
-        var r = initialValue; // arguments.length > 2 なら initialValue is S(not null)
+        var r = initialValue; // arguments.length > 2 なら initialValue is S(not nullish)
         var i = initialIndex;
         try {
             for (var iterable_1 = __values(iterable), iterable_1_1 = iterable_1.next(); !iterable_1_1.done; iterable_1_1 = iterable_1.next()) {
@@ -1265,7 +1272,19 @@ var Iterables;
      * @returns {string} Iterableの返す各要素を文字列に変換し、結合した文字列を返す。
      */
     function join(x, sep) {
-        return map(x, function (e) { return e.toString(); }).reduce(function (r, c) { return r + sep + c; });
+        var _a;
+        sep !== null && sep !== void 0 ? sep : (sep = ',');
+        var itr = x[Symbol.iterator]();
+        var _b = itr.next(), value = _b.value, done = _b.done;
+        if (done) {
+            return '';
+        }
+        var result = String(value);
+        while (((_a = itr.next(), value = _a.value, done = _a.done), !done)) {
+            result += sep;
+            result += String(value);
+        }
+        return result;
     }
     Iterables.join = join;
     /**
@@ -1321,7 +1340,6 @@ var Iterables;
         return typeof collection[Symbol.iterator] === 'function';
     }
     function from(collection) {
-        var _a;
         // もともとIterableExの場合はそのまま返す
         if (isIterableEx(collection)) {
             return collection;
@@ -1331,21 +1349,26 @@ var Iterables;
         isIterable(collection)
             ? collection
             : // それ以外はEnumeratorを生成してみてコンストラクタに引数として渡す
-             (_a = {},
-                _a[Symbol.iterator] = function () {
-                    var e = new Enumerator(collection);
-                    return {
-                        next: function () {
-                            if (e.atEnd()) {
-                                return { done: true };
-                            }
-                            var value = e.item();
-                            e.moveNext();
-                            return { done: false, value: value };
+                function () {
+                    var e;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                e = new Enumerator(collection);
+                                _a.label = 1;
+                            case 1:
+                                if (!!e.atEnd()) return [3 /*break*/, 4];
+                                return [4 /*yield*/, e.item()];
+                            case 2:
+                                _a.sent();
+                                _a.label = 3;
+                            case 3:
+                                e.moveNext();
+                                return [3 /*break*/, 1];
+                            case 4: return [2 /*return*/];
                         }
-                    };
-                },
-                _a));
+                    });
+                });
     }
     Iterables.from = from;
     function of() {
@@ -1376,7 +1399,6 @@ var Iterables;
 })(Iterables || (Iterables = {}));
 /// <reference types="dom3" />
 /// <reference types="iterables" />
-//
 var WScriptUtil;
 (function (WScriptUtil) {
     var Arguments;
@@ -1496,8 +1518,7 @@ var WScriptUtil;
             finally { if (e_10) throw e_10.error; }
         }
         var unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
-        if (unnamedElement &&
-            unnamedElement.nodeType === DOM3.ELEMENT_NODE) {
+        if (unnamedElement && unnamedElement.nodeType === DOM3.ELEMENT_NODE) {
             var isMany = unnamedElement.getAttribute('many') === 'true';
             var required = (function (value) {
                 return !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value;
@@ -1519,7 +1540,6 @@ var WScriptUtil;
     }
     WScriptUtil.validateParameters = validateParameters;
 })(WScriptUtil || (WScriptUtil = {}));
-/// <reference types="activex-scripting" />
 /// <reference types="iterables" />
 var Scripting;
 (function (Scripting) {
