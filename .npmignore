@@ -8,5 +8,6 @@
 /*.tgz
 /private-modules/**/tsconfig.json
 /private-modules/**/package-lock.json
+/private-modules/**/test/
 /coverage/
 /.travis.yml

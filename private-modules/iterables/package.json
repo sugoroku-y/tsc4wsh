@@ -1,19 +1,9 @@
 {
-  "name": "iterables",
-  "version": "0.0.1",
-  "description": "Utilities for generators",
+  "private": true,
   "types": "index",
   "main": "",
   "scripts": {
     "pretest": "node ../../lib/main.js test/test-all.ts",
     "test": "cscript //nologo test/test-all.wsf"
-  },
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/activex-adodb": "^6.1.7",
-    "@types/activex-scripting": "^1.0.6",
-    "@types/windows-script-host": "^5.8.2",
-    "typescript": "~3.1.6"
   }
 }

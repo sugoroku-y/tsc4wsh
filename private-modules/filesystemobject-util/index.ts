@@ -1,4 +1,3 @@
-/// <reference types="activex-scripting" />
 /// <reference types="iterables" />
 
 namespace Scripting.FileSystemObject.Utils {
@@ -235,7 +234,7 @@ namespace Scripting.FileSystemObject.Utils {
       .split(/\\+/)
       .map((pathAtom, index, array) => {
         if (pathAtom === '') {
-          return function*(f: Scripting.Folder) {
+          return function* (f: Scripting.Folder) {
             yield f;
           };
         }
@@ -245,7 +244,7 @@ namespace Scripting.FileSystemObject.Utils {
         }
         if (/[*?{]/.test(pathAtom)) {
           const atomPattern = wildcardToRegExp(pathAtom);
-        return function*(ff: Scripting.Folder) {
+          return function* (ff: Scripting.Folder) {
             for (const f of Iterables.from(ff.SubFolders)) {
               if (atomPattern && atomPattern.test(f.Name)) {
                 yield f;
@@ -260,7 +259,7 @@ namespace Scripting.FileSystemObject.Utils {
           }
         };
       }
-      return function*(ff: Scripting.Folder) {
+        return function* (ff: Scripting.Folder) {
           const lastpath = fso.BuildPath(ff.Path, pathAtom);
         if (fso.FolderExists(lastpath)) {
           yield fso.GetFolder(lastpath);

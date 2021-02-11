@@ -3,6 +3,8 @@ namespace Iterables {
   type I<T> = Iterable<T>;
   // IterableExも同様にGに省略
   type Ex<T> = IterableEx<T>;
+  // Iterableの型パラメータ
+  type IType<II> = II extends I<infer R> ? R : never;
 
   /**
    * Iterables のメソッドをメンバに持つIterable。
@@ -19,35 +21,38 @@ namespace Iterables {
     public [Symbol.iterator]() {
       return this.i[Symbol.iterator]();
     }
-    public forEach(callback: (e: T, i: number, x: Ex<T>) => any) {
+    public forEach(callback: (e: T, i: number, x: this) => unknown) {
       forEach(this, callback);
     }
-    public some(callback: (e: T, i: number, x: Ex<T>) => boolean) {
+    public some(callback: (e: T, i: number, x: this) => unknown) {
       return some(this, callback);
     }
-    public every(callback: (e: T, i: number, x: Ex<T>) => boolean) {
+    public every(callback: (e: T, i: number, x: this) => unknown) {
       return every(this, callback);
     }
     public filter<S extends T>(
-      callback: (e: T, i: number, x: Ex<T>) => e is S
+      callback: (e: T, i: number, x: this) => e is S
     ): Ex<S>;
-    public filter(callback: (e: T, i: number, x: Ex<T>) => any): Ex<T>;
-    public filter(callback: (e: T, i: number, x: Ex<T>) => any) {
+    public filter(callback: (e: T, i: number, x: this) => any): Ex<T>;
+    public filter(callback: (e: T, i: number, x: this) => any) {
       return filter(this, callback);
     }
-    public map<S>(callback: (e: T, i: number, x: I<T>) => S) {
+    public map<S>(callback: (e: T, i: number, x: this) => S) {
       return map(this, callback);
     }
-    public reduce(callback: (r: T, e: T, i: number, x: Ex<T>) => T): T;
+    public reduce(callback: (r: T, e: T, i: number, x: this) => T): T;
     public reduce<S>(
-      callback: (r: S, e: T, i: number, ie: Ex<T>) => S,
+      callback: (r: S, e: T, i: number, x: this) => S,
       initialValue: S
     ): S;
-    public reduce<S>(...args: [(r: S, e: T, i: number, x: Ex<T>) => S, S?]): S {
+    public reduce<S>(...args: [(r: S, e: T, i: number, x: this) => S, S?]): S {
       return reduce(this, ...(args as Required<typeof args>));
     }
-    public join(sep: string) {
+    public join(sep?: string) {
       return join(this, sep);
+    }
+    public concat<ARGS extends Iterable<unknown>[]>(...args: ARGS): Ex<([this, ...ARGS] extends I<infer R>[] ? R : never)> {
+      return concat(this, ...args);
     }
   }
 
@@ -59,13 +64,13 @@ namespace Iterables {
    * @param {X} x コールバックを呼び出す要素を返すIterableを指定する。
    * @param {(e: T, i: number, x: X) => any} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    */
-  export function forEach<T, X extends I<T>>(
-    x: I<T>,
-    callback: (e: T, i: number, x: X) => any
+  export function forEach<X extends I<unknown>, T extends IType<X>>(
+    x: X,
+    callback: (e: T, i: number, x: X) => unknown
   ): void {
     let i = 0;
-    for (const e of x) {
-      callback(e, i++, x as X);
+    for (const e of x as I<T>) {
+      callback(e, i++, x);
     }
   }
   /**
@@ -80,13 +85,13 @@ namespace Iterables {
    * @param {(e: T, i: number, x: X) => boolean} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {boolean} Iterableの返す各要素に対してコールバックを呼び出し、一つでもtruthyな値を返すものがあればtrueを返す。いずれの要素もfalsyな値を返した場合はfalseを返す。
    */
-  export function some<T, X extends I<T>>(
-    x: I<T>,
-    callback: (e: T, i: number, x: X) => boolean
+  export function some<X extends I<unknown>, T extends IType<X>>(
+    x: X,
+    callback: (e: T, i: number, x: X) => unknown
   ): boolean {
     let i = 0;
-    for (const e of x) {
-      if (callback(e, i++, x as X)) {
+    for (const e of x as I<T>) {
+      if (callback(e, i++, x)) {
         return true;
       }
     }
@@ -104,13 +109,13 @@ namespace Iterables {
    * @param {(e: T, i: number, x: X) => boolean} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {boolean} Iterableの返す各要素に対してコールバックを呼び出し、一つでもfalsyな値を返すものがあればfalseを返す。いずれの要素もtruthyな値を返した場合はtrueを返す。
    */
-  export function every<T, X extends I<T>>(
-    x: I<T>,
-    callback: (e: T, i: number, x: X) => boolean
+  export function every<X extends I<unknown>, T extends IType<X>>(
+    x: X,
+    callback: (e: T, i: number, x: X) => unknown
   ): boolean {
     let i = 0;
-    for (const e of x) {
-      if (!callback(e, i++, x as X)) {
+    for (const e of x as I<T>) {
+      if (!callback(e, i++, x)) {
         return false;
       }
     }
@@ -127,8 +132,8 @@ namespace Iterables {
    * @param {(e: T, i: number, x: X) => e is S} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {IterableEx<S>} Iterableの返す各要素に対してコールバックを呼び出し、truthyな値を返した要素のみを返すIterableExを生成して返す。
    */
-  export function filter<T, S extends T, X extends I<T>>(
-    x: I<T>,
+  export function filter<X extends I<unknown>, T extends IType<X>, S extends T>(
+    x: X,
     callback: (e: T, i: number, x: X) => e is S
   ): Ex<S>;
   /**
@@ -141,19 +146,19 @@ namespace Iterables {
    * @param {(e: T, i: number, x: X) => any} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {IterableEx<T>} Iterableの返す各要素に対してコールバックを呼び出し、truthyな値を返した要素のみを返すIterableExを生成して返す。
    */
-  export function filter<T, X extends I<T>>(
-    x: I<T>,
-    callback: (e: T, i: number, x: X) => any
+  export function filter<X extends I<unknown>, T extends IType<X>>(
+    x: X,
+    callback: (e: T, i: number, x: X) => unknown
   ): Ex<T>;
-  export function filter<T, X extends I<T>>(
-    x: I<T>,
-    callback: (e: T, i: number, x: X) => any
-  ) {
-    return new IterableEx(function*() {
+  export function filter<X extends I<unknown>, T extends IType<X>>(
+    x: X,
+    callback: (e: T, i: number, x: X) => unknown
+  ): Ex<T> {
+    return new IterableEx<T>(function* () {
       let i = 0;
-      for (const e of x) {
-        if (callback(e, i++, x as X)) {
-          yield e;
+      for (const e of x as I<T>) {
+        if (callback(e, i++, x)) {
+          yield e as T;
         }
       }
     });
@@ -169,14 +174,14 @@ namespace Iterables {
    * @param {(e: T, i: number, x: X) => S} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {IterableEx<T>} Iterableの返す各要素に対してコールバックを呼び出し、コールバックの返す値を要素とするIterableExを生成して返す。
    */
-  export function map<T, X extends I<T>, S>(
-    x: I<T>,
+  export function map<X extends I<unknown>, T extends IType<X>, S>(
+    x: X,
     callback: (e: T, i: number, x: X) => S
   ) {
-    return new IterableEx(function*() {
+    return new IterableEx(function* () {
       let i = 0;
-      for (const e of x) {
-        yield callback(e, i++, x as X);
+      for (const e of x as I<T>) {
+        yield callback(e, i++, x);
       }
     });
   }
@@ -191,8 +196,8 @@ namespace Iterables {
    * @param {(r: T, e: T, i: number, x: X) => T} callback 引数で指定したIterableの各要素を渡して呼び出すコールバックを指定する。
    * @returns {T} 最後に呼び出されたコールバックの返値を返す。
    */
-  export function reduce<T, X extends I<T>>(
-    x: I<T>,
+  export function reduce<X extends I<unknown>, T extends IType<X>>(
+    x: X,
     callback: (r: T, e: T, i: number, x: X) => T
   ): T;
   /**
@@ -208,20 +213,20 @@ namespace Iterables {
    * @param {S} initialValue コールバックの第1引数として最初に渡される値を指定する。
    * @returns {S} 最後に呼び出されたコールバックの返値を返す。
    */
-  export function reduce<T, S, X extends I<T>>(
-    x: I<T>,
+  export function reduce<X extends I<unknown>, T extends IType<X>, S>(
+    x: X,
     callback: (r: S, e: T, i: number, x: X) => S,
     initialValue: S
   ): S;
-  export function reduce<T, S, X extends I<T>>(
-    x: I<T>,
+  export function reduce<X extends I<unknown>, T extends IType<X>, S>(
+    x: X,
     callback: (r: S, e: T, i: number, x: X) => S,
     initialValue?: S
   ) {
-    let iterable: I<T> = x;
+    let iterable = x as I<T>;
     let initialIndex = 0;
     if (arguments.length <= 2) {
-      const itr = x[Symbol.iterator]();
+      const itr = iterable[Symbol.iterator]();
       const ir = itr.next();
       if (ir.done) {
         throw new Error('Reduce of empty Iterable with no initial value');
@@ -232,12 +237,12 @@ namespace Iterables {
           return itr;
         },
       };
-      initialValue = ir.value as any; // arguments.length <= 2 なら ir.value is S(=T)
+      initialValue = ir.value as S; // arguments.length <= 2 なら ir.value is S(=T)
     }
-    let r: S = initialValue!; // arguments.length > 2 なら initialValue is S(not null)
+    let r: S = initialValue!; // arguments.length > 2 なら initialValue is S(not nullish)
     let i = initialIndex;
     for (const e of iterable) {
-      r = callback(r, e, i++, x as X);
+      r = callback(r, e, i++, x);
     }
     return r;
   }
@@ -251,11 +256,19 @@ namespace Iterables {
    * @param {string} sep 結合する際に各要素間に挿入する文字列を指定する。
    * @returns {string} Iterableの返す各要素を文字列に変換し、結合した文字列を返す。
    */
-  export function join<T extends {toString(): string}, X extends I<T>>(
-    x: I<T>,
-    sep: string
-  ): string {
-    return map(x, e => e.toString()).reduce((r, c) => r + sep + c);
+  export function join<T>(x: I<T>, sep?: string): string {
+    sep ??= ',';
+    const itr = x[Symbol.iterator]();
+    let {value, done} = itr.next();
+    if (done) {
+      return '';
+    }
+    let result = String(value);
+    while ((({value, done} = itr.next()), !done)) {
+      result += sep;
+      result += String(value);
+    }
+    return result;
   }
 
   /**
@@ -269,20 +282,28 @@ namespace Iterables {
   export function concat<T extends Array<I<any>>>(
     ...generators: T
   ): Ex<T extends Array<I<infer R>> ? R : never> {
-    return new IterableEx(function*() {
+    return new IterableEx(function* () {
       for (const generator of generators) {
         yield* generator;
       }
     });
   }
 
-  type EnumeratorType<T> = T extends {Item(index: any): infer R}
-    ? R
-    : T extends {item(index: any): infer R}
-    ? R
-    : T extends Scripting.Dictionary<infer R>
-    ? R
-    : never;
+  // type EnumeratorType<T> = EnumeratorConstructor extends {new (col: T): Enumerator<infer R>} ? R : never;
+  // ↑ではうまくいかない(Tに何入れてもunknownになる)
+  type EnumeratorType<T> =
+    // SafeArrayにはItemメソッドがないので特別扱い
+    T extends SafeArray<infer R>
+          ? R
+      : // Scripting.DictionaryにはItemメソッドがあるがEnumeratorが返すのはKeyの値なので特別扱い
+      T extends Scripting.Dictionary<infer R, unknown>
+      ? R
+      : // Item/itemメソッドがあればその返値の型
+      T extends {Item(index: any): infer R}
+          ? R
+      : T extends {item(index: any): infer R}
+          ? R
+          : never;
 
   function isIterable(collection: any): collection is I<any> {
     return typeof collection[Symbol.iterator] === 'function';
@@ -305,7 +326,7 @@ namespace Iterables {
    * @param {(T[] | Iterable<T> | IterableEx<T>)} collection IterableExの元になるコレクションを指定する。
    * @returns {IterableEx<T>} collectionから生成されたIterableExを返す。
    */
-  export function from<T>(collection: T): Ex<EnumeratorType<T>>;
+  export function from<X, T extends EnumeratorType<X>>(collection: X): Ex<T>;
   export function from(collection: any) {
     // もともとIterableExの場合はそのまま返す
     if (isIterableEx(collection)) {
@@ -316,20 +337,22 @@ namespace Iterables {
       isIterable(collection)
         ? collection
         : // それ以外はEnumeratorを生成してみてコンストラクタに引数として渡す
-          {
-            [Symbol.iterator]() {
+          function* () {
+            for (
+              
+              
               const e = new Enumerator(collection as any);
-              return {
-                next() {
-                  if (e.atEnd()) {
-                    return {done: true} as IteratorResult<any>;
-                  }
-                  const value = e.item();
-                  e.moveNext();
-                  return {done: false, value};
-                },
-              };
-            },
+        
+        
+                        !e.atEnd();
+          
+          
+                    e.moveNext()
+            
+            
+            ) {
+              yield e.item();
+            }
           }
     );
   }
@@ -340,7 +363,7 @@ namespace Iterables {
    * @template T IterableExが返す要素の型を指定する。省略時はany。
    * @returns {IterableEx<T extends any[] ? never : T>} 空のIterableExを返す。
    */
-  export function of<T = any>(): Ex<T>;
+  export function of<T = never>(): Ex<T>;
   /**
    * 引数に渡された値をそのまま返すIterableExを生成する。
    * @export

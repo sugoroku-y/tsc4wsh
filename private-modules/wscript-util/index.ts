@@ -1,7 +1,6 @@
 /// <reference types="dom3" />
 /// <reference types="iterables" />
 
-//
 namespace WScriptUtil {
   export namespace Arguments {
     export function Named<T = string | undefined>(
@@ -108,10 +107,7 @@ namespace WScriptUtil {
       }
     }
     const unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
-    if (
-      unnamedElement &&
-      unnamedElement.nodeType === DOM3.ELEMENT_NODE
-    ) {
+    if (unnamedElement && unnamedElement.nodeType === DOM3.ELEMENT_NODE) {
       const isMany = unnamedElement.getAttribute('many') === 'true';
       const required = (value =>
         !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value)(

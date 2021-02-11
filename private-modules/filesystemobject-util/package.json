@@ -1,16 +1,5 @@
 {
-  "name": "filesystemobject-util",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
   "types": "index",
-  "main": "",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@types/activex-scripting": "*",
-    "activex-helpers": "*"
-  }
+  "main": ""
 }

@@ -1,5 +1,5 @@
-/// <reference types="../@types/dom3" />
-/// <reference types="../iterables" />
+/// <reference types="dom3" />
+/// <reference types="iterables" />
 
 interface RegExpConstructor {
   lastIndex: number;

@@ -55,7 +55,11 @@ class TestResult<T> {
       }
     }
   }
-  public toThrow(checker?: (ex: any) => boolean | RegExp) {
+  public toThrow(): void;
+  public toThrow(checker: (ex: unknown) => boolean): void;
+  public toThrow(checker: RegExp): void;
+  public toThrow(checker: string): void;
+  public toThrow(checker?: ((ex: any) => boolean) | RegExp | string) {
     ++total;
     if (typeof this.actual !== 'function') {
       throw new IllegalTest('not thrown, because it is not function');
@@ -65,20 +69,36 @@ class TestResult<T> {
     } catch (ex) {
       if (checker) {
         if (checker instanceof RegExp) {
-          const exString = ex.message || ex.Message || ex.toString();
+          const exString: string =
+
+           
+                       ex.message ?? ex.Message ?? ex.toString?.() ?? String(ex);
           if (!checker.test(exString)) {
-            throw new TestFailed(`message not matched: ${exString}`);
+            throw new TestFailed(
+              
+              
+              `message not matched(${checker}): ${exString}`
+            
+            
+            );
           }
-        } else if (typeof checker === 'function') {
+        } else if (typeof checker === 'string') {
+          const exString: string =
+           
+            ex.message ?? ex.Message ?? ex.toString?.() ?? String(ex);
+          if (!exString.includes(checker)) {
+            throw new TestFailed(
+              
+              `message not matched(${checker}): ${exString}`
+            
+            );
+          }
+        } else {
           if (!checker(ex)) {
             throw new TestFailed(
               `The exception not passed the check: ${checker.toString()}`
             );
           }
-        } else {
-          throw new IllegalTest(
-            `Unsupported checker: ${(checker as any).toString()}`
-          );
         }
       }
       ++success;

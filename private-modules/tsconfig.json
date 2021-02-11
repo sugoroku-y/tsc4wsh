@@ -7,15 +7,16 @@
     ],
     "downlevelIteration": true,
     "typeRoots": [
-      "../..",
-      "../../@types"
+      ".",
+      "@types"
     ],
     "types": [
       "windows-script-host",
       "activex-scripting",
       "activex-adodb"
-    ],
-    "strict": true,
-    "strictNullChecks": true
-  }
+    ]
+  },
+  "include": [
+    "**/*.ts"
+  ]
 }

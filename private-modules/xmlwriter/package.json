@@ -1,14 +1,5 @@
 {
-  "name": "xmlwriter",
-  "version": "0.0.1",
-  "description": "Writer for XML",
+  "private": true,
   "types": "index",
-  "main": "",
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/activex-scripting": "^1.0.6",
-    "@types/windows-script-host": "^5.8.2",
-    "typescript": "~3.1.6"
-  }
+  "main": ""
 }
