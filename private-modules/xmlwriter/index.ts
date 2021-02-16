@@ -17,18 +17,18 @@ namespace XmlWriter {
     throw new Error(`Unknown node type: ${(node as any).nodeType}`);
   }
   const nodeTypeString: {[type in DOM3.NodeType]: string} = {
-    [DOM3.ATTRIBUTE_NODE]: 'ATTRIBUTE',
-    [DOM3.CDATA_SECTION_NODE]: 'CDATA SECTION',
-    [DOM3.COMMENT_NODE]: 'COMMENT',
-    [DOM3.DOCUMENT_NODE]: 'DOCUMENT',
-    [DOM3.DOCUMENT_FRAGMENT_NODE]: 'DOCUMENT FRAGMENT',
-    [DOM3.DOCUMENT_TYPE_NODE]: 'DOCTYPE',
-    [DOM3.ELEMENT_NODE]: 'ELEMENT',
-    [DOM3.ENTITY_NODE]: 'ENTITY',
-    [DOM3.ENTITY_REFERENCE_NODE]: 'ENTITY REFERENCE',
-    [DOM3.NOTATION_NODE]: 'NOTATION',
-    [DOM3.PROCESSING_INSTRUCTION_NODE]: 'PI',
-    [DOM3.TEXT_NODE]: 'TEXT',
+    [DOM3.NodeType.ATTRIBUTE_NODE]: 'ATTRIBUTE',
+    [DOM3.NodeType.CDATA_SECTION_NODE]: 'CDATA SECTION',
+    [DOM3.NodeType.COMMENT_NODE]: 'COMMENT',
+    [DOM3.NodeType.DOCUMENT_NODE]: 'DOCUMENT',
+    [DOM3.NodeType.DOCUMENT_FRAGMENT_NODE]: 'DOCUMENT FRAGMENT',
+    [DOM3.NodeType.DOCUMENT_TYPE_NODE]: 'DOCTYPE',
+    [DOM3.NodeType.ELEMENT_NODE]: 'ELEMENT',
+    [DOM3.NodeType.ENTITY_NODE]: 'ENTITY',
+    [DOM3.NodeType.ENTITY_REFERENCE_NODE]: 'ENTITY REFERENCE',
+    [DOM3.NodeType.NOTATION_NODE]: 'NOTATION',
+    [DOM3.NodeType.PROCESSING_INSTRUCTION_NODE]: 'PI',
+    [DOM3.NodeType.TEXT_NODE]: 'TEXT',
   };
   declare const stream: ADODB.Stream;
   export function writeToFileByUtf8N(content: string, filepath: string): void {
@@ -64,7 +64,7 @@ namespace XmlWriter {
     if (prefix && !namespaceURI) {
       throw new Error(`宣言されてない名前空間の接頭語への参照です: ${prefix}`);
     }
-    if (nodeType === DOM3.ATTRIBUTE_NODE && !prefix) {
+    if (nodeType === DOM3.NodeType.ATTRIBUTE_NODE && !prefix) {
       return map;
     }
     prefix = prefix || '';
@@ -90,22 +90,22 @@ namespace XmlWriter {
       return '\n';
     }
     switch (node.nodeType) {
-      case DOM3.TEXT_NODE:
-      case DOM3.ENTITY_REFERENCE_NODE:
+      case DOM3.NodeType.TEXT_NODE:
+      case DOM3.NodeType.ENTITY_REFERENCE_NODE:
         switch (node.previousSibling?.nodeType) {
-          case DOM3.TEXT_NODE:
-          case DOM3.ENTITY_REFERENCE_NODE:
+          case DOM3.NodeType.TEXT_NODE:
+          case DOM3.NodeType.ENTITY_REFERENCE_NODE:
             return '';
         }
         if (
-          node.nodeType === DOM3.TEXT_NODE &&
+          node.nodeType === DOM3.NodeType.TEXT_NODE &&
           !/^\S(?:[\s\S]*\S)?$/.test(node.data)
         ) {
           return '';
         }
     }
     if (
-      node.previousSibling?.nodeType == DOM3.TEXT_NODE &&
+      node.previousSibling?.nodeType == DOM3.NodeType.TEXT_NODE &&
       !/\S/.test(node.previousSibling.data)
     ) {
       return '';
@@ -138,7 +138,7 @@ namespace XmlWriter {
       encoding: options?.encoding,
     };
     const {encoding, standalone} =
-      doc.firstChild?.nodeType === DOM3.PROCESSING_INSTRUCTION_NODE &&
+      doc.firstChild?.nodeType === DOM3.NodeType.PROCESSING_INSTRUCTION_NODE &&
       doc.firstChild.nodeName === 'xml' &&
       /^version="1.0"( encoding="([^\"]*)")?( standalone="(yes|no)")?$/.test(
         doc.firstChild.data
@@ -165,14 +165,14 @@ namespace XmlWriter {
         let xml = '';
         for (const node of Iterables.from(self.childNodes)) {
           switch (node.nodeType) {
-            case DOM3.CDATA_SECTION_NODE:
+            case DOM3.NodeType.CDATA_SECTION_NODE:
               xml += insertIndent(node, indent, depth);
               xml += '<![CDATA[' + node.data + ']' + ']>';
               break;
-            case DOM3.TEXT_NODE:
+            case DOM3.NodeType.TEXT_NODE:
               switch (node.previousSibling?.nodeType) {
-                case DOM3.TEXT_NODE:
-                case DOM3.ENTITY_REFERENCE_NODE:
+                case DOM3.NodeType.TEXT_NODE:
+                case DOM3.NodeType.ENTITY_REFERENCE_NODE:
                   break;
                 default:
                   if (/^\S(?:[\s\S]*\S)?$/.test(node.data)) {
@@ -182,10 +182,10 @@ namespace XmlWriter {
               }
               xml += escapeXml(node.data);
               break;
-            case DOM3.ENTITY_REFERENCE_NODE:
+            case DOM3.NodeType.ENTITY_REFERENCE_NODE:
               switch (node.previousSibling?.nodeType) {
-                case DOM3.TEXT_NODE:
-                case DOM3.ENTITY_REFERENCE_NODE:
+                case DOM3.NodeType.TEXT_NODE:
+                case DOM3.NodeType.ENTITY_REFERENCE_NODE:
                   break;
                 default:
                   xml += insertIndent(node, indent, depth);
@@ -193,11 +193,11 @@ namespace XmlWriter {
               }
               xml += `&${node.nodeName};`;
               break;
-            case DOM3.COMMENT_NODE:
+            case DOM3.NodeType.COMMENT_NODE:
               xml += insertIndent(node, indent, depth);
               xml += node.data ? '<!--' + node.data + '-->' : '<!-->';
               break;
-            case DOM3.PROCESSING_INSTRUCTION_NODE:
+            case DOM3.NodeType.PROCESSING_INSTRUCTION_NODE:
               if (
                 depth === 0 &&
                 node.nodeName === 'xml' &&
@@ -208,7 +208,7 @@ namespace XmlWriter {
               xml += insertIndent(node, indent, depth);
               xml += `<?${node.nodeName} ${node.nodeValue}?>`;
               break;
-            case DOM3.ELEMENT_NODE:
+            case DOM3.NodeType.ELEMENT_NODE:
               {
                 const currentIndent = insertIndent(node, indent, depth);
                 xml += currentIndent;
@@ -231,7 +231,7 @@ namespace XmlWriter {
                 } else if (
                   Iterables.from(node.childNodes).every(
                     child =>
-                      [DOM3.TEXT_NODE, DOM3.ENTITY_REFERENCE_NODE].indexOf(
+                      [DOM3.NodeType.TEXT_NODE, DOM3.NodeType.ENTITY_REFERENCE_NODE].indexOf(
                         child.nodeType
                       ) >= 0
                   )
@@ -248,12 +248,12 @@ namespace XmlWriter {
               break;
             default:
               neverNode(node);
-            case DOM3.ATTRIBUTE_NODE:
-            case DOM3.DOCUMENT_NODE:
-            case DOM3.DOCUMENT_FRAGMENT_NODE:
-            case DOM3.DOCUMENT_TYPE_NODE:
-            case DOM3.NOTATION_NODE:
-            case DOM3.ENTITY_NODE:
+            case DOM3.NodeType.ATTRIBUTE_NODE:
+            case DOM3.NodeType.DOCUMENT_NODE:
+            case DOM3.NodeType.DOCUMENT_FRAGMENT_NODE:
+            case DOM3.NodeType.DOCUMENT_TYPE_NODE:
+            case DOM3.NodeType.NOTATION_NODE:
+            case DOM3.NodeType.ENTITY_NODE:
               throw new Error(
                 `サポート対象外の種類のノードです。: ${
                   nodeTypeString[node.nodeType] || 'UNKNOWN:' + node.nodeType

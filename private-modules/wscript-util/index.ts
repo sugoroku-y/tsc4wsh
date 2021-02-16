@@ -59,7 +59,7 @@ namespace WScriptUtil {
     doc.load(WScript.ScriptFullName);
     let hasError = false;
     for (const node of Iterables.from(doc.selectNodes('/job/runtime/named'))) {
-      if (node.nodeType !== DOM3.ELEMENT_NODE) {
+      if (node.nodeType !== DOM3.NodeType.ELEMENT_NODE) {
         continue;
       }
       const name = node.getAttribute('name');
@@ -107,7 +107,10 @@ namespace WScriptUtil {
       }
     }
     const unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
-    if (unnamedElement && unnamedElement.nodeType === DOM3.ELEMENT_NODE) {
+    if (
+      unnamedElement &&
+      unnamedElement.nodeType === DOM3.NodeType.ELEMENT_NODE
+    ) {
       const isMany = unnamedElement.getAttribute('many') === 'true';
       const required = (value =>
         !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value)(

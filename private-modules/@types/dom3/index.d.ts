@@ -1,43 +1,30 @@
 declare namespace DOM3 {
   export const enum NodeType {
+    /** &lt;element/&gt; */
     ELEMENT_NODE = 1,
+    /** attribute="" */
     ATTRIBUTE_NODE = 2,
+    /** text */
     TEXT_NODE = 3,
+    /** &lt;![CDATA[ CData Section ]]&gt; */
     CDATA_SECTION_NODE = 4,
+    /** &amp;entity-reference; */
     ENTITY_REFERENCE_NODE = 5,
+    /** entity */
     ENTITY_NODE = 6,
+    /** &lt;?processing-instruction?&gt; */
     PROCESSING_INSTRUCTION_NODE = 7,
+    /** &lt;!-- comment --&gt; */
     COMMENT_NODE = 8,
+    /** document */
     DOCUMENT_NODE = 9,
+    /** doctype */
     DOCUMENT_TYPE_NODE = 10,
+    /** fragment */
     DOCUMENT_FRAGMENT_NODE = 11,
+    /** notation */
     NOTATION_NODE = 12,
   }
-  /** &lt;element/> */
-  export const ELEMENT_NODE = NodeType.ELEMENT_NODE;
-  /** attribute="" */
-  export const ATTRIBUTE_NODE = NodeType.ATTRIBUTE_NODE;
-  /** text */
-  export const TEXT_NODE = NodeType.TEXT_NODE;
-  /** &lt;![CDATA[ CData Section ]]&gt; */
-  export const CDATA_SECTION_NODE = NodeType.CDATA_SECTION_NODE;
-  /** &entity-reference; */
-  export const ENTITY_REFERENCE_NODE = NodeType.ENTITY_REFERENCE_NODE;
-  /** entity */
-  export const ENTITY_NODE = NodeType.ENTITY_NODE;
-  /** &lt;?processing-instruction?> */
-  export const PROCESSING_INSTRUCTION_NODE =
-    NodeType.PROCESSING_INSTRUCTION_NODE;
-  /** &lt;!-- comment --> */
-  export const COMMENT_NODE = NodeType.COMMENT_NODE;
-  /** document */
-  export const DOCUMENT_NODE = NodeType.DOCUMENT_NODE;
-  /** doctype */
-  export const DOCUMENT_TYPE_NODE = NodeType.DOCUMENT_TYPE_NODE;
-  /** fragment */
-  export const DOCUMENT_FRAGMENT_NODE = NodeType.DOCUMENT_FRAGMENT_NODE;
-  /** notation */
-  export const NOTATION_NODE = NodeType.NOTATION_NODE;
 
   export const enum READYSTATE {
     LOADING = 1,
