@@ -1468,7 +1468,7 @@ var WScriptUtil;
         try {
             for (var _b = __values(Iterables.from(doc.selectNodes('/job/runtime/named'))), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var node = _c.value;
-                if (node.nodeType !== DOM3.ELEMENT_NODE) {
+                if (node.nodeType !== 1 /* ELEMENT_NODE */) {
                     continue;
                 }
                 var name = node.getAttribute('name');
@@ -1518,7 +1518,8 @@ var WScriptUtil;
             finally { if (e_10) throw e_10.error; }
         }
         var unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
-        if (unnamedElement && unnamedElement.nodeType === DOM3.ELEMENT_NODE) {
+        if (unnamedElement &&
+            unnamedElement.nodeType === 1 /* ELEMENT_NODE */) {
             var isMany = unnamedElement.getAttribute('many') === 'true';
             var required = (function (value) {
                 return !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value;
