@@ -14,7 +14,7 @@
       ],
       "cwd": "${workspaceFolder}/",
       "args": [
-        "test\\**\\*.ts"
+        "test/test-error.ts"
       ],
       "preLaunchTask": "watch"
     },

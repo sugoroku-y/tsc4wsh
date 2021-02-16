@@ -60,7 +60,7 @@ function adjustConfig(config: {[key: string]: any}) {
     strict: true,
     strictNullChecks: true,
     // デフォルトで読み込む定義ファイル
-    types: ['windows-script-host', 'activex-scripting', 'activex-adodb'],
+    types: ['wsh', 'windows-script-host', 'activex-scripting', 'activex-adodb'],
     // エラー発生時は出力しない
     noEmitOnError: true,
   });
@@ -237,7 +237,32 @@ export function transpile(fileNames: string[]) {
 
   // 参照しているライブラリが実装を含んでいた場合、実装スクリプトを追加する
   let pkgscripts = '';
+  // WshRuntimeという名前のテンプレートリテラルがあればruntime要素の中身としてWSFに書き込む
+  const runtimes: string[] = [];
+  // VBScriptという名前のテンプレートリテラルがあればVBScriptとしてWSFに書き込む
+  const vbscripts: string[] = [];
   for (const source of program.getSourceFiles()) {
+    // ソースの一番外側のスコープにあるステートメントからWshRuntime/VBScriptテンプレートリテラルを探す
+    for (let i = 0; i < source.statements.length; ++i) {
+      const statement = source.statements[i];
+      if (
+        ts.isExpressionStatement(statement) &&
+        ts.isTaggedTemplateExpression(statement.expression) &&
+        ts.isIdentifier(statement.expression.tag) &&
+        ['WshRuntime', 'VBScript'].includes(statement.expression.tag.text) &&
+        ts.isNoSubstitutionTemplateLiteral(statement.expression.template) &&
+        statement.expression.template.rawText
+      ) {
+        if (statement.expression.tag.text === 'WshRuntime') {
+          runtimes.push(statement.expression.template.rawText);
+        } else {
+          vbscripts.push(statement.expression.template.rawText);
+        }
+        // 見つけたら強引にステートメントを削除
+        ((source.statements as unknown) as unknown[]).splice(i, 1);
+        --i;
+      }
+    }
     if (fileNames.includes(source.fileName)) {
       continue;
     }
@@ -328,5 +353,5 @@ export function transpile(fileNames: string[]) {
       ) +
     '})();';
 
-  return {script, objectMap};
+  return {script, objectMap, runtimes, vbscripts};
 }

@@ -64,8 +64,15 @@ function appendObjectElements(
  * ついでにruntime要素も追加する。
  * @param jobElement script要素を追加するjob要素
  * @param script script要素の中身にするスクリプト
+ * @param runtimes runtime要素の中身
+ * @param vbscripts script要素の中身にするVBScript
  */
-function appendScriptElement(jobElement: Element, script: string) {
+function appendScriptElement(
+  jobElement: Element,
+  script: string,
+  runtimes: string[],
+  vbscripts: string[]
+) {
   const locator = {
     columnNumber: 0,
     lineNumber: 0,
@@ -78,71 +85,80 @@ function appendScriptElement(jobElement: Element, script: string) {
     locator,
   });
   const doc = jobElement.ownerDocument!;
-  const scriptElement = doc.createElement('script');
-  scriptElement.setAttribute('language', 'JScript');
-  const reRuntime = /(?:^|\r?\n)[ \t]*\/{3}[ \t]*<wsh:runtime>[ \t]*\r?\n(?:[ \t]*\/{3}[^\r\n]*\r?\n)*?[ \t]*\/{3}[ \t]*<\/wsh:runtime>[ \t]*(?=$|\r?\n)/g;
   const content = script
     .replace(/^\ufeff/, '') // remove BOM
     .replace(/\r\n/g, '\n') // CRLF -> LF
     .replace(/^(?!\n)/, '\n') // insert LF to BOS
-    .replace(/[^\n]$/, '$&\n') // append LF to EOS
-    // `/// <wsh:runtime>`～ `/// </wsh:runtime>` をwsfファイルのruntime要素に出力
-    .replace(reRuntime, rtContent => {
-      const runtime = rtContent
-        // 行頭の`///`は削除
-        .replace(/^[ \t]*\/{3} ?/gm, '')
-        // 要素名のプリフィックスwshは取り除く
-        .replace(/(<\/?)wsh:/g, '$1');
-      // XMLとしてパーズする
-      const runtimeDoc = (() => {
-        try {
-          return parser.parseFromString(runtime);
-        } catch (ex) {
-          // runtime要素のparseに失敗したらエラー箇所を表示
-          const lines = runtime.split(/\r?\n/);
-          const pre = lines
-            .slice(Math.max(locator.lineNumber - 4, 0), locator.lineNumber)
-            .map(s => '| ' + s + '\n')
-            .join('');
-          const post = lines
-            .slice(
-              locator.lineNumber,
-              Math.min(locator.lineNumber + 3, lines.length)
-            )
-            .map(s => '| ' + s + '\n')
-            .join('');
-          throw new Error(
-            `${ex.message}\n${pre}${' '.repeat(
-              2 + locator.columnNumber - 1
-            )}^\n${post}`
-          );
-        }
-      })();
-      const runtimeElement = (() => {
-        // 既にあればそのまま使用
-        const elements = jobElement.getElementsByTagName('runtime');
-        /* istanbul ignore next */
-        if (elements.length) {
-          /* istanbul ignore next */
-          return elements[0];
-        }
-        // 無ければ作成
-        const element = doc.createElement('runtime');
-        jobElement.appendChild(element);
-        jobElement.appendChild(doc.createTextNode('\n'));
-        return element;
-      })();
-      for (
-        let child: Node | null = runtimeDoc.documentElement!.firstChild;
-        child;
-        child = child.nextSibling
-      ) {
-        runtimeElement.appendChild(doc.importNode(child, true));
+    .replace(/[^\n]$/, '$&\n'); // append LF to EOS
+  // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
+  if (runtimes.length) {
+    // `` WshRuntime`～` `` をXMLとしてパーズする
+    const runtime = `<WshRuntime>${runtimes.join('')}</WshRuntime>`;
+    const runtimeDoc = (() => {
+      try {
+        return parser.parseFromString(runtime);
+      } catch (ex) {
+        // runtime要素のparseに失敗したらエラー箇所を表示
+        const lines = runtime.split(/\r?\n/);
+        // エラー箇所より前(最大)3行
+        const pre = lines
+          .slice(Math.max(locator.lineNumber - 4, 0), locator.lineNumber)
+          .map(s => '| ' + s)
+          .join('\n');
+        // エラー箇所より後(最大)3行
+        const post = lines
+          .slice(
+            locator.lineNumber,
+            Math.min(locator.lineNumber + 3, lines.length)
+          )
+          .map(s => '| ' + s)
+          .join('\n');
+        throw new Error(
+          `${pre}
+${' '.repeat(2 + locator.columnNumber - 1)}^${ex.message
+            .replace(/\[xmldom (\w+)\]/g, '[$1]')
+            .replace(/^@#\[line:\d+,col:\d+\]$/gm, '')
+            .replace(/\s+/g, ' ')
+            .split(/:\s*Error:\s*/)
+            .join('\n' + ' '.repeat(2 + locator.columnNumber))}
+${post}
+`
+        );
       }
-      // `/// <wsh:runtime>`自体が出力コードに残らないように削除
-      return '';
-    });
+    })();
+    const runtimeElement = (() => {
+      // 既にあればそのまま使用
+      const elements = jobElement.getElementsByTagName('runtime');
+      /* istanbul ignore next */
+      if (elements.length) {
+        /* istanbul ignore next */
+        return elements[0];
+      }
+      // 無ければ作成
+      const element = doc.createElement('runtime');
+      jobElement.appendChild(element);
+      jobElement.appendChild(doc.createTextNode('\n'));
+      return element;
+    })();
+    for (
+      let child: Node | null = runtimeDoc.documentElement!.firstChild;
+      child;
+      child = child.nextSibling
+    ) {
+      runtimeElement.appendChild(doc.importNode(child, true));
+    }
+  }
+  // VBScript用script要素を追加
+  for (const content of vbscripts) {
+    const scriptElement = doc.createElement('script');
+    scriptElement.setAttribute('language', 'VBScript');
+    scriptElement.appendChild(doc.createCDATASection(content));
+    jobElement.appendChild(scriptElement);
+    jobElement.appendChild(doc.createTextNode('\n'));
+  }
   // scriptはCDATAセクションで追加する
+  const scriptElement = doc.createElement('script');
+  scriptElement.setAttribute('language', 'JScript');
   scriptElement.appendChild(doc.createCDATASection(content));
   jobElement.appendChild(scriptElement);
   jobElement.appendChild(doc.createTextNode('\n'));
@@ -157,7 +173,12 @@ const polyfill = fs.promises.readFile(
   'utf-8'
 );
 
-async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
+async function makeWsfDom(
+  transpiled: string,
+  progids: {[id: string]: string},
+  runtimes: string[],
+  vbscripts: string[]
+) {
   const script = (await polyfill) + transpiled;
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
@@ -166,7 +187,7 @@ async function makeWsfDom(transpiled: string, progids: {[id: string]: string}) {
   // object要素の追加
   appendObjectElements(jobElement, progids);
   // script要素の追加(あればruntime要素も)
-  appendScriptElement(jobElement, script);
+  appendScriptElement(jobElement, script, runtimes, vbscripts);
   return doc;
 }
 
@@ -262,8 +283,8 @@ export async function tsc4wsh(
         /* istanbul ignore next */
         throw new Error('サポートしていないファイルです。');
       }
-      const {script: transpiled, objectMap: progids} = transpile(filepaths);
-      const doc = await makeWsfDom(transpiled, progids);
+      const {script, objectMap, runtimes, vbscripts} = transpile(filepaths);
+      const doc = await makeWsfDom(script, objectMap, runtimes, vbscripts);
       await writeWsf(filepaths[0], doc, options);
       return true;
     } catch (ex) {

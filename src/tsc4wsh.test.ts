@@ -95,7 +95,12 @@ test('generateTSConfig', async () => {
         downlevelIteration: true,
         strict: true,
         strictNullChecks: true,
-        types: ['windows-script-host', 'activex-scripting', 'activex-adodb'],
+        types: [
+          'wsh',
+          'windows-script-host',
+          'activex-scripting',
+          'activex-adodb',
+        ],
         lib: ['ESNext'],
         typeRoots: ['../../private-modules', '../../private-modules/@types'],
       },
