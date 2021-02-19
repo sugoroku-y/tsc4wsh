@@ -1,5 +1,4 @@
 /// <reference types="iterables" />
-/// <reference path="./test.ts" />
 
 {
   const I = Iterables;

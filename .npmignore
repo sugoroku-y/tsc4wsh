@@ -9,5 +9,6 @@
 /private-modules/**/tsconfig.json
 /private-modules/**/package-lock.json
 /private-modules/**/test/
+/private-modules/**/*.test.ts
 /coverage/
 /.travis.yml

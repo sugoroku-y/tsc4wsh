@@ -241,6 +241,8 @@ export function transpile(fileNames: string[]) {
   const runtimes: string[] = [];
   // VBScriptという名前のテンプレートリテラルがあればVBScriptとしてWSFに書き込む
   const vbscripts: string[] = [];
+  // @onendが付いた関数は最後に呼び出す
+  const onend: string[] = [];
   for (const source of program.getSourceFiles()) {
     // ソースの一番外側のスコープにあるステートメントからWshRuntime/VBScriptテンプレートリテラルを探す
     for (let i = 0; i < source.statements.length; ++i) {
@@ -261,6 +263,55 @@ export function transpile(fileNames: string[]) {
         // 見つけたら強引にステートメントを削除
         ((source.statements as unknown) as unknown[]).splice(i, 1);
         --i;
+        continue;
+      }
+      // ソースの一番外側のスコープで宣言されている引数を持たない名前付き関数
+      if (
+        ts.isFunctionDeclaration(statement) &&
+        statement.name &&
+        statement.parameters.length === 0
+      ) {
+        // 関数の前のコメントから@～を抽出
+        const tags: {[name: string]: string} = {};
+        // functionの前のコメント部分を抽出
+        const re = /\/\/[ \t]*([^\r\n]*?)[ \t]*\r?\n|\/\**\s*(.*?)\s*\*\/|\s+|(.)/gs;
+        re.lastIndex = statement.pos;
+        let matched;
+        while ((matched = re.exec(source.text))) {
+          const [, lineComment, blockComment, notFound] = matched;
+          if (notFound) {
+            // コメント以外が見つかったので終了
+            break;
+          }
+          if (lineComment !== undefined) {
+            // 一行コメント
+            const [, tagname, parameters] =
+              /^@(\w+)(?:\((.*)\))?$/.exec(lineComment) ?? [];
+            if (tagname) {
+              tags[tagname] = parameters;
+            }
+            continue;
+          }
+          if (blockComment !== undefined) {
+            // ブロックコメント
+            for (const line of blockComment
+              // 1行ごとに分割
+              .split(/\r?\n/)
+              // 行頭の*と空白、行末の空白を除去
+              .map(line => line.replace(/^\s*\*\s*|\s+$/g, ''))) {
+              const [, tagname, parameters] =
+                /^@(\w+)(?:\((.*)\))?$/.exec(line) ?? [];
+              if (tagname) {
+                tags[tagname] = parameters;
+              }
+            }
+            continue;
+          }
+        }
+        // @onendがあったらその関数をスクリプトの最後に呼び出し
+        if ('onend' in tags) {
+          onend.push(statement.name.text);
+        }
       }
     }
     if (fileNames.includes(source.fileName)) {
@@ -351,6 +402,8 @@ export function transpile(fileNames: string[]) {
             .map(hex => parseInt(hex, 16))
         )
       ) +
+    // @onendが付けられた関数をスクリプトの最後で呼び出す
+    onend.map(funcname => funcname + '();\n').join('') +
     '})();';
 
   return {script, objectMap, runtimes, vbscripts};

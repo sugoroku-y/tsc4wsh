@@ -1,5 +1,4 @@
 /// <reference types="iterables" />
-/// <reference path="./test.ts" />
 
 namespace Iterables_from_test {
   const I = Iterables;

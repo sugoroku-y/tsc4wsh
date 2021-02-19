@@ -26,7 +26,18 @@ declare function vbsInputBox(msg: string, title: string): string;
 
 WScript.Echo(vbsInputBox('何か入力して下さい。', 'InputBoxのテスト'));
 
-namespace test {
+/**
+ * @onend
+ */
+function onendfunc1() {
+    WScript.Echo('test1 on end');
+}
+// @onend
+function onendfunc2() {
+    WScript.Echo('test2 on end');
+}
+
+namespace test1 {
   const fsoU = Scripting.FileSystemObject.Utils;
   declare const fso: Scripting.FileSystemObject;
 

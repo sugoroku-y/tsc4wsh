@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "scripts": {
-    "pretest": "node ../../../lib/main.js test-all.ts",
-    "test": "cscript //nologo test-all.wsf"
-  }
-}

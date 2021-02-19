@@ -11,6 +11,8 @@
   },
   "scripts": {
     "test": "jest --coverage",
+    "pretest:wsh": "node lib/main.js test/wshtest.ts polyfill/**/*.test.ts private-modules/**/*.test.ts test/**/*.test.ts",
+    "test:wsh": "cscript //nologo test/wshtest.wsf",
     "pretest": "npm run build:polyfill",
     "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
     "build:src": "tsc --build src/tsconfig.json",

@@ -10,7 +10,8 @@
             "wsh",
             "windows-script-host",
             "activex-scripting",
-            "activex-adodb"
+            "activex-adodb",
+            "wshtest"
         ],
         "lib": [
             "es2018"

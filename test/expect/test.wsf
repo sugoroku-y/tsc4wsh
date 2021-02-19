@@ -2080,8 +2080,18 @@ var Scripting;
 /// <reference types="wscript-util" />
 /// <reference types="filesystemobject-util" />
 WScript.Echo(vbsInputBox('何か入力して下さい。', 'InputBoxのテスト'));
-var test;
-(function (test) {
+/**
+ * @onend
+ */
+function onendfunc1() {
+    WScript.Echo('test1 on end');
+}
+// @onend
+function onendfunc2() {
+    WScript.Echo('test2 on end');
+}
+var test1;
+(function (test1) {
     var e_18, _a, e_19, _b;
     var fsoU = Scripting.FileSystemObject.Utils;
     var output = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], function (outputPath) {
@@ -2117,7 +2127,9 @@ var test;
         finally { if (e_18) throw e_18.error; }
     }
     WScriptUtil.validateParameters();
-})(test || (test = {}));
+})(test1 || (test1 = {}));
+onendfunc1();
+onendfunc2();
 })();
 ]]></script>
 </job>
