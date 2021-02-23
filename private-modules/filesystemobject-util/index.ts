@@ -26,10 +26,8 @@ namespace Scripting.FileSystemObject.Utils {
   }
   export function filesAndSubFolders(folder: Folder) {
     return sort([
-      ...Iterables.concat(
-        Iterables.from(folder.Files),
-        Iterables.from(folder.SubFolders)
-      ),
+      ...Iterables.from(folder.Files),
+      ...Iterables.from(folder.SubFolders)
     ]);
   }
   export function getItem(path: string) {
@@ -42,29 +40,30 @@ namespace Scripting.FileSystemObject.Utils {
     return undefined;
   }
   export function splitPath(path: string): string[] {
+    const filename = /[^\\]+$/.exec(path)?.[0];
+    path = filename ? path.slice(0, -filename.length) : path;
+
     const splited: string[] = [];
-    const match = /^(?:([A-Z]):|\\{2,}([^\\]+)\\+([^\\]+))?(\\+|$)?/i.exec(
+    const root = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(
       path
-    );
-    if (match) {
-      if (match[1]) {
-        if (!match[4]) {
-          throw new Error(`ドライブ指定時には絶対パスで指定してください`);
-        }
-        splited.push(`${match[1]}:\\`);
-      } else if (match[2]) {
-        splited.push(`\\\\${match[2]}:\\${match[3]}\\`);
-      } else if (match[4]) {
-        splited.push('\\');
+    )?.[0];
+    if (root) {
+      if (root && root.charAt(1) === ':' && root.length < 3) {
+        throw new Error(`ドライブ指定時には絶対パスで指定してください`);
       }
-      if (match[0]) {
-        path = path.substr(match[0].length);
-      }
+      path = path.slice(root.length);
+      splited.push(root);
     }
-    if (!path) {
-      return splited;
+
+    const re = /([^\\]+\\+)|./gs;
+    let dir;
+    while ((dir = re.exec(path)?.[1])) {
+      splited.push(dir);
     }
-    return splited.concat(path.split(/\\+/));
+    if (filename) {
+      splited.push(filename);
+    }
+    return splited;
   }
 
   export function relativePath(

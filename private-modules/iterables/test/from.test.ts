@@ -28,7 +28,9 @@ namespace Iterables_from_test {
         try {
           const subfolder2 = fso.GetFolder(path2);
           // 作成したフォルダの一覧がGetFolderしたもの2つと一致するか
-          expect(I.from(folder.SubFolders)).toBe(I.of(subfolder1, subfolder2));
+          expect(I.from(folder.SubFolders)).toEqual(
+            I.of(subfolder1, subfolder2)
+          );
         } finally {
           fso.DeleteFolder(path2);
         }
@@ -40,6 +42,6 @@ namespace Iterables_from_test {
     }
   });
   test('from([1,2,3])', () => {
-    expect(I.from([1, 2, 3])).toBe(I.of(1, 2, 3));
+    expect(I.from([1, 2, 3])).toEqual(I.of(1, 2, 3));
   });
 }

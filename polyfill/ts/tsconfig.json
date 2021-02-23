@@ -7,8 +7,11 @@
     "downlevelIteration": true,
     "strict": true,
     "strictNullChecks": true,
-    "types": ["windows-script-host", "activex-scripting"],
+    "types": [
+      "windows-script-host",
+      "activex-scripting"
+    ],
     "removeComments": true
   },
-  "files": ["./index.ts"]
+  "include": ["./*.ts"]
 }

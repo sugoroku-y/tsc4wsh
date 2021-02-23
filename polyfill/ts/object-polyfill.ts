@@ -1,3 +1,5 @@
+/// <reference path="./symbol-polyfill.ts" />
+
 interface ObjectConstructor {
   entries(o: object): Array<[string, any]>;
   values(obj: any): any[];
@@ -27,7 +29,7 @@ interface ObjectConstructor {
 
       const result = [];
       for (const prop in obj) {
-        if (Symbol.isSymbol(prop)) {
+        if ((Symbol as any).isSymbol(prop)) {
           continue;
         }
         if (!hasOwnProperty.call(obj, prop)) {

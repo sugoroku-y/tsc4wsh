@@ -394,7 +394,7 @@ export function transpile(fileNames: string[]) {
       // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
       .replace(/\]\]>/g, ']]\\x3e')
       // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
-      .replace(/(?:\\u[0-9a-f]{4})+/gi, hexEncoded =>
+      .replace(/(?:\\u(?:(?!00[01][0-9a-f]|007f)[0-9a-f]{4}))+/gi, hexEncoded =>
         String.fromCharCode(
           ...hexEncoded
             .split('\\u')

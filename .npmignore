@@ -4,6 +4,7 @@
 /lib/*.test.js
 /src/
 /polyfill/ts/
+/polyfill/test/
 /test/
 /*.tgz
 /private-modules/**/tsconfig.json

@@ -3,14 +3,41 @@ const escapes = {
   '\r': 'r',
   '\n': 'n',
 };
-function toString(v: number | boolean | string | null | undefined): string {
-  return typeof v === 'string'
-    ? `"${v.replace(
-        /[\\""\t\n\r]/g,
-        ch => '\\' + (escapes[ch as keyof typeof escapes] ?? ch)
-      )}"`
-    : String(v);
+function toString(v: unknown): string {
+  if (typeof v === 'string') {
+    return `"${v.replace(
+      /[\\""\t\n\r]/g,
+      ch => '\\' + (escapes[ch as keyof typeof escapes] ?? ch)
+    )}"`;
+  }
+  if (isPrimitive(v)) {
+    return String(v);
+  }
+  return `${Object.prototype.toString.call(v)}: ${JSON.stringify(v)}`;
 }
+
+function isPrimitive(
+  o: unknown
+): o is undefined | null | boolean | number | string {
+  return (
+    o === undefined ||
+    o === null ||
+    o === false ||
+    o === true ||
+    typeof o === 'number' ||
+    typeof o === 'string'
+  );
+}
+
+function isIterable(o: unknown): o is Iterable<unknown> {
+  return (
+    typeof o === 'object' &&
+    o !== null &&
+    // @ts-ignore
+    typeof o[Symbol.iterator] === 'function'
+  );
+}
+
 class TestFailed extends Error {
   constructor(message: string) {
     super(message);
@@ -21,49 +48,93 @@ class IllegalTest extends Error {
     super(message);
   }
 }
+
+function arraytest<T>(actual: T[], expected: T[]): void {
+  if (actual.length !== expected.length) {
+    throw new TestFailed(
+      `expected.length: ${expected.length}, but actual.length: ${actual.length}`
+    );
+  }
+  for (let i = 0; i < actual.length; ++i) {
+    if (actual[i] === expected[i]) {
+      continue;
+    }
+    throw new TestFailed(
+      `expected[${i}]: ${JSON.stringify(expected[i])}, but actual[${i}]: ${
+        actual[i]
+      }`
+    );
+  }
+}
+
 class TestResult<T> {
   constructor(private readonly actual: T) {}
-  public toBe(_expected: T): void {
-    const expected = _expected as unknown;
-    const actual = this.actual as unknown;
-    if (
-      actual === undefined ||
-      actual === null ||
-      typeof actual === 'number' ||
-      typeof actual === 'string' ||
-      typeof actual === 'boolean'
-    ) {
-      if (actual !== expected) {
-        throw new TestFailed(
-          `expected: ${toString(
-            expected as typeof actual
-          )}, but actual.length: ${toString(actual)}`
-        );
-      }
-      return;
-    } else if (typeof this.actual === 'function') {
+  public toBe(expected: T): void {
+    if (typeof this.actual === 'function') {
       throw new IllegalTest('Unsupported value type: function');
     }
-    if (
-      typeof this.actual === 'object' &&
-      typeof (this.actual as any)[Symbol.iterator] === 'function'
-    ) {
-      const a = [...((this.actual as any) as Iterable<any>)];
-      const e = [...((expected as any) as Iterable<any>)];
-      if (a.length !== e.length) {
-        throw new TestFailed(
-          `expected.length: ${e.length}, but actual.length: ${a.length}`
-        );
-      }
-      for (let i = 0; i < a.length; ++i) {
-        if (a[i] === e[i]) {
-          continue;
-        }
-        throw new TestFailed(
-          `expected[${i}]: ${JSON.stringify(e[i])}, but actual[${i}]: ${a[i]}`
-        );
-      }
+    if (this.actual !== expected) {
+      throw new TestFailed(
+        `expected: ${toString(expected)}, but actual: ${toString(
+          this.actual
+        )}`
+      );
     }
+  }
+  public toEqual(expected: T): void {
+    if (typeof this.actual === 'function') {
+      throw new IllegalTest('Unsupported value type: function');
+    }
+    if (isPrimitive(expected)) {
+      this.toBe(expected);
+      return;
+    }
+    if (Array.isArray(expected)) {
+      if (!Array.isArray(this.actual)) {
+        throw new TestFailed(
+          `expected is an Array, but actual is not an Array: expected: ${toString(
+            expected
+          )}, actual:${toString(this.actual)}`
+        );
+      }
+      arraytest(this.actual, expected);
+      return;
+    }
+    if (isIterable(expected)) {
+      if (!isIterable(this.actual)) {
+        throw new TestFailed(
+          `expected is an Iteable, but actual is not an Iterable: expected: ${toString(
+            expected
+          )}, actual:${toString(this.actual)}`
+        );
+      }
+      arraytest([...this.actual], [...expected]);
+      return;
+    }
+    if (typeof expected === 'object') {
+      if (typeof this.actual !== 'object') {
+        throw new TestFailed(`expected does not equal to actual: expected: ${toString(
+            expected
+          )}, actual:${toString(this.actual)}`)
+        }
+        const expectedKeys = Object.keys(expected);
+        const actualKeys = Object.keys(this.actual);
+        arraytest(actualKeys, expectedKeys);
+      for (const key of actualKeys) {
+          // @ts-ignore
+          if (this.actual[key] !== expected[key]) {
+            throw new TestFailed(`expected.${key} does not equal to actual.${key}: expected.${key}: ${toString(
+              // @ts-ignore
+              expected[key]
+              )}, actual.${key}:${toString(
+              // @ts-ignore
+              this.actual[key]
+            )}`)
+        }
+      }
+      return;
+    }
+    throw new IllegalTest(`Unsupported type: expected: ${toString(expected)}`);
   }
   public toThrow(): void;
   public toThrow(checker: (ex: unknown) => unknown): void;
@@ -117,7 +188,8 @@ function expect(v: number): TestResult<number>;
 function expect(v: string): TestResult<string>;
 function expect(v: boolean): TestResult<boolean>;
 function expect<T>(v: Iterable<T>): TestResult<Iterable<T>>;
-function expect<T>(v: () => any): TestResult<() => any>;
+function expect(v: () => unknown): TestResult<() => unknown>;
+function expect<T>(v: T): TestResult<T>;
 function expect<T>(v: T): TestResult<T> {
   return new TestResult<T>(v);
 }
@@ -148,11 +220,11 @@ function wshtestRun() {
       } catch (ex) {
         if (ex instanceof IllegalTest) {
           WScript.StdErr.WriteLine(
-            `Illegal test: ${caption}: ${ex.message || String(ex)}`
+            `Illegal test: ${caption}: ${ex.message ?? String(ex)}`
           );
         } else {
           WScript.StdErr.WriteLine(
-            `FAILED: ${caption}: ${ex.message || ex.Message || String(ex)}`
+            `FAILED: ${caption}: ${ex.message ?? ex.Message ?? String(ex)}`
           );
         }
       }

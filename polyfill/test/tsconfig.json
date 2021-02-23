@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES3",
+    "lib": ["ESNext"],
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "types": [
+      "window-script-host",
+      "activex-scripting",
+      "activex-adodb",
+      "wshtest"
+    ],
+    "typeRoots": [
+      "../../private-modules",
+      "../../private-modules/@types"
+    ]
+  }
+}

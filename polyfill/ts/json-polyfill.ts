@@ -1,4 +1,6 @@
-(function(this: any) {
+/// <reference path="./object-polyfill.ts" />
+
+(function (this: any) {
   const ENQUOTE: {[ch: string]: string} = {
     '\b': '\\b',
     '\t': '\\t',

@@ -1,3 +1,17 @@
+interface X<T> {
+  [Symbol.iterator](): Iterator<T>;
+}
+function x<T>(a: X<T> | (() => X<T>)) {
+  if (typeof a === 'function') {
+    a = a();
+    a;
+  } else {
+    a;
+  }
+  a;
+}
+
+
 namespace Iterables {
   // Iterableは長いのでIに省略
   type I<T> = Iterable<T>;
@@ -14,12 +28,10 @@ namespace Iterables {
    * @template T
    */
   class IterableEx<T> implements I<T> {
-    private readonly i: I<T>;
-    constructor(param: I<T> | (() => IterableIterator<T>)) {
-      this.i = typeof param === 'function' ? param() : param;
-    }
-    public [Symbol.iterator]() {
-      return this.i[Symbol.iterator]();
+    readonly [Symbol.iterator]: () => Iterator<T>;
+    constructor(param: I<T> | (() => I<T>)) {
+      const p = typeof param === 'function' ? param() : param;
+      this[Symbol.iterator] = () => p[Symbol.iterator]();
     }
     public forEach(callback: (e: T, i: number, x: this) => unknown) {
       forEach(this, callback);
@@ -51,7 +63,9 @@ namespace Iterables {
     public join(sep?: string) {
       return join(this, sep);
     }
-    public concat<ARGS extends Iterable<unknown>[]>(...args: ARGS): Ex<([this, ...ARGS] extends I<infer R>[] ? R : never)> {
+    public concat<ARGS extends Iterable<unknown>[]>(
+      ...args: ARGS
+    ): Ex<[this, ...ARGS] extends I<infer R>[] ? R : never> {
       return concat(this, ...args);
     }
   }
