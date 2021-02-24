@@ -6,282 +6,6 @@
 <object id="shellapp" progid="Shell.Application"/>
 <script language="JScript"><![CDATA[
 "use strict";
-function Symbol(description) {
-    var symbols = this.Symbol.symbols;
-    var id = "Symbol@@" + description + "@@" + new Date().getTime() + "@@" + Math.random();
-    symbols[id] = true;
-    return {
-        toString: function () {
-            return id;
-        },
-        valueOf: function () {
-            return description || '';
-        }
-    };
-}
-(function (Symbol) {
-})(Symbol || (Symbol = {}));
-(function () {
-    var symbols = (this.Symbol.symbols = {});
-    var registered = {};
-    var keys = {};
-    this.Symbol.isSymbol = function (symbol) { return !!symbols[symbol.toString()]; };
-    this.Symbol["for"] = function (key) {
-        var existing = registered[key];
-        if (existing) {
-            return existing;
-        }
-        var sym = Symbol(key);
-        registered[key] = sym;
-        keys[sym.toString()] = key;
-        return sym;
-    };
-    this.Symbol.keyFor = function (sym) { return keys[sym.toString()]; };
-})();
-(function () {
-    this.Symbol.iterator = Symbol('iterator');
-    this.Symbol.iterator = Symbol('split');
-    function polyfill_iterator(o) {
-        var i = 0;
-        return {
-            next: function () {
-                return i < o.length ? { value: o[i++] } : { done: true };
-            }
-        };
-    }
-    this.Array.prototype[Symbol.iterator] =
-        this.Array.prototype[Symbol.iterator] ||
-            function Array_iterator() {
-                return polyfill_iterator(this);
-            };
-    this.String.prototype[Symbol.iterator] =
-        this.String.prototype[Symbol.iterator] ||
-            function String_iterator() {
-                return polyfill_iterator(this);
-            };
-    if (typeof this.TypedArray === 'function') {
-        this.TypedArray.prototype[Symbol.iterator] =
-            this.TypedArray.prototype[Symbol.iterator] ||
-                function TypedArray_iterator() {
-                    return polyfill_iterator(this);
-                };
-    }
-    if (typeof this.Map === 'function') {
-        this.Map.prototype[Symbol.iterator] =
-            this.Map.prototype[Symbol.iterator] ||
-                function Map_iterator() {
-                    return polyfill_iterator(this.entries());
-                };
-    }
-    if (typeof this.Set === 'function') {
-        this.Set.prototype[Symbol.iterator] =
-            this.Set.prototype[Symbol.iterator] ||
-                function Set_iterator() {
-                    return polyfill_iterator(this.values());
-                };
-    }
-})();
-(function () {
-    Date.prototype.toISOString =
-        Date.prototype.toISOString ||
-            function toISOString() {
-                return (this.getUTCFullYear() +
-                    '-' +
-                    ('' + (this.getUTCMonth() + 1)).padStart(2, '0') +
-                    '-' +
-                    ('' + this.getUTCDate()).padStart(2, '0') +
-                    'T' +
-                    ('' + this.getUTCHours()).padStart(2, '0') +
-                    ':' +
-                    ('' + this.getUTCMinutes()).padStart(2, '0') +
-                    ':' +
-                    ('' + this.getUTCSeconds()).padStart(2, '0') +
-                    '.' +
-                    ('' + this.getUTCMilliseconds()).padStart(3, '0') +
-                    'Z');
-            };
-    Date.now =
-        Date.now ||
-            function now() {
-                return new Date().getTime();
-            };
-})();
-(function () {
-    String.prototype.repeat =
-        String.prototype.repeat ||
-            function repeat(count) {
-                if (count < 0) {
-                    throw new Error('repeat count must be non-negative');
-                }
-                if (count === Infinity) {
-                    throw new Error('repeat count must be less than infinity');
-                }
-                if (this.length === 0) {
-                    if (count < 1) {
-                        return '';
-                    }
-                    throw new Error('empty string');
-                }
-                var r = '';
-                while (count-- > 0) {
-                    r += this;
-                }
-                return r;
-            };
-    var originalSubstr = String.prototype.substr;
-    String.prototype.substr = function substr(start, length) {
-        if (start < 0) {
-            start += this.length;
-        }
-        length =
-            length !== undefined
-                ? length < 0
-                    ? length + this.length - start
-                    : length
-                : this.length - start;
-        return originalSubstr.call(this, start, length);
-    };
-    String.prototype.padStart =
-        String.prototype.padStart ||
-            function padStart(length, paddings) {
-                var count = length - this.length;
-                if (count <= 0) {
-                    return this;
-                }
-                paddings = paddings || ' ';
-                return (paddings
-                    .repeat((count + paddings.length - 1) / paddings.length)
-                    .substr(0, count) + this);
-            };
-    String.prototype.padEnd =
-        String.prototype.padEnd ||
-            function padEnd(length, paddings) {
-                var count = length - this.length;
-                if (count <= 0) {
-                    return this;
-                }
-                paddings = paddings || ' ';
-                return (this +
-                    paddings
-                        .repeat((count + paddings.length - 1) / paddings.length)
-                        .substr(0, count));
-            };
-    String.prototype.startsWith =
-        String.prototype.startsWith ||
-            function startsWith(searchString, position) {
-                position = position !== undefined ? position : 0;
-                return (this.length - position >= searchString.length &&
-                    this.lastIndexOf(searchString, position) === position);
-            };
-    String.prototype.endsWith =
-        String.prototype.endsWith ||
-            function endsWith(searchString, position) {
-                position =
-                    (position !== undefined ? position : this.length) - searchString.length;
-                return position >= 0 && this.indexOf(searchString, position) === position;
-            };
-    String.prototype.trim =
-        String.prototype.trim ||
-            function trim() {
-                var match = /(?:\S(?:.*\S)?)(?=\s*$)/.exec(this);
-                return (match && match[0]) || '';
-            };
-    String.prototype.includes =
-        String.prototype.includes ||
-            function includes(searchString, position) {
-                if (typeof position !== 'number') {
-                    position = 0;
-                }
-                return (position + searchString.length <= this.length &&
-                    this.indexOf(searchString, position) >= 0);
-            };
-    String.prototype.split = function split(separator, limit) {
-        var str = '' + this;
-        if (separator &&
-            typeof separator !== 'string' &&
-            !(separator instanceof RegExp) &&
-            typeof separator[Symbol.split] === 'function') {
-            return separator[Symbol.split](str, limit);
-        }
-        var index = 0;
-        var result = [];
-        if (separator instanceof RegExp) {
-            var prev = 0;
-            var re = separator.global
-                ? separator
-                : new RegExp(separator.source, "g" + (separator.multiline ? 'm' : '') + (separator.ignoreCase ? 'i' : ''));
-            while (true) {
-                re.lastIndex = index;
-                var match = re.exec(str);
-                if (!match) {
-                    break;
-                }
-                if (match[0].length) {
-                    var next = match.index;
-                    var splitted = str.substr(prev, next - prev);
-                    result.push(splitted);
-                    prev = index = next + match[0].length;
-                }
-                else {
-                    if (index === prev) {
-                        index = prev + 1;
-                        if (index >= str.length) {
-                            return result;
-                        }
-                        continue;
-                    }
-                    if (index >= str.length) {
-                        break;
-                    }
-                    var next = index;
-                    var splitted = str.substr(prev, next - prev);
-                    prev = next;
-                    result.push(splitted);
-                    ++index;
-                }
-                for (var i = 1; i < match.length; ++i) {
-                    result.push(match[i]);
-                }
-            }
-            result.push(str.substr(prev));
-            return result;
-        }
-        if (!separator) {
-            return Array(str.length)
-                .fill(0)
-                .map(function (_, i) { return str.substr(i, 1); });
-        }
-        separator = '' + separator;
-        while (index < str.length) {
-            var next = str.indexOf(separator, index);
-            if (next < 0) {
-                break;
-            }
-            result.push(str.substr(index, next - index));
-            index = next + separator.length;
-        }
-        result.push(str.substr(index));
-        return result;
-    };
-})();
-(function () {
-    this.console = this.console || {};
-    function output(stream, messages) {
-        stream.WriteLine("[" + new Date().toLocaleTimeString() + "] " + Array.from(messages)
-            .map(function (m) { return (m === undefined ? 'undefined' : m === null ? 'null' : m); })
-            .join(' '));
-    }
-    this.console.log =
-        this.console.log ||
-            function log() {
-                output(WScript.StdOut, arguments);
-            };
-    this.console.error =
-        this.console.error ||
-            function error() {
-                output(WScript.StdErr, arguments);
-            };
-})();
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -516,6 +240,101 @@ var __values = (this && this.__values) || function(o) {
             function keys() {
                 return this.map(function (_, index) { return index; });
             };
+})();
+(function () {
+    this.console = this.console || {};
+    function output(stream, messages) {
+        stream.WriteLine("[" + new Date().toLocaleTimeString() + "] " + Array.from(messages)
+            .map(function (m) { return (m === undefined ? 'undefined' : m === null ? 'null' : m); })
+            .join(' '));
+    }
+    this.console.log =
+        this.console.log ||
+            function log() {
+                output(WScript.StdOut, arguments);
+            };
+    this.console.error =
+        this.console.error ||
+            function error() {
+                output(WScript.StdErr, arguments);
+            };
+})();
+(function () {
+    Date.prototype.toISOString =
+        Date.prototype.toISOString ||
+            function toISOString() {
+                return (this.getUTCFullYear() +
+                    '-' +
+                    ('' + (this.getUTCMonth() + 1)).padStart(2, '0') +
+                    '-' +
+                    ('' + this.getUTCDate()).padStart(2, '0') +
+                    'T' +
+                    ('' + this.getUTCHours()).padStart(2, '0') +
+                    ':' +
+                    ('' + this.getUTCMinutes()).padStart(2, '0') +
+                    ':' +
+                    ('' + this.getUTCSeconds()).padStart(2, '0') +
+                    '.' +
+                    ('' + this.getUTCMilliseconds()).padStart(3, '0') +
+                    'Z');
+            };
+    Date.now =
+        Date.now ||
+            function now() {
+                return new Date().getTime();
+            };
+})();
+function Symbol(description) {
+    return Symbol.newSymbol(description);
+}
+(function () {
+    var _a, _b;
+    var _c, _d, _e, _f;
+    var symbols = {};
+    Symbol.newSymbol = function (description) {
+        var id = "Symbol@@" + description + "@@" + new Date().getTime() + "@@" + Math.random();
+        symbols[id] = true;
+        return {
+            toString: function () {
+                return id;
+            },
+            valueOf: function () {
+                return description || '';
+            }
+        };
+    };
+    Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
+    var registered = {};
+    var keys = {};
+    Symbol["for"] = function (key) {
+        var existing = registered[key];
+        if (existing) {
+            return existing;
+        }
+        var sym = Symbol(key);
+        registered[key] = sym;
+        keys[sym.toString()] = key;
+        return sym;
+    };
+    Symbol.keyFor = function (sym) { return keys[sym.toString()]; };
+    Symbol.iterator = Symbol('iterator');
+    Symbol.split = Symbol('split');
+    (_a = (_c = Array.prototype)[_d = Symbol.iterator]) !== null && _a !== void 0 ? _a : (_c[_d] = function () {
+        var _this = this;
+        var i = 0;
+        var next = function () {
+            return i < _this.length ? { value: _this[i++] } : { done: true };
+        };
+        return { next: next };
+    });
+    (_b = (_e = String.prototype)[_f = Symbol.iterator]) !== null && _b !== void 0 ? _b : (_e[_f] = function () {
+        var _this = this;
+        var i = 0;
+        var next = function () {
+            return i < _this.length ? { value: _this.charAt(i++) } : { done: true };
+        };
+        return { next: next };
+    });
 })();
 (function () {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -932,6 +751,164 @@ var __read = (this && this.__read) || function (o, n) {
             };
 })();
 (function () {
+    String.prototype.repeat =
+        String.prototype.repeat ||
+            function repeat(count) {
+                if (count < 0) {
+                    throw new Error('repeat count must be non-negative');
+                }
+                if (count === Infinity) {
+                    throw new Error('repeat count must be less than infinity');
+                }
+                if (this.length === 0) {
+                    if (count < 1) {
+                        return '';
+                    }
+                    throw new Error('empty string');
+                }
+                var r = '';
+                while (count-- > 0) {
+                    r += this;
+                }
+                return r;
+            };
+    var originalSubstr = String.prototype.substr;
+    String.prototype.substr = function substr(start, length) {
+        if (start < 0) {
+            start += this.length;
+        }
+        length =
+            length !== undefined
+                ? length < 0
+                    ? length + this.length - start
+                    : length
+                : this.length - start;
+        return originalSubstr.call(this, start, length);
+    };
+    String.prototype.padStart =
+        String.prototype.padStart ||
+            function padStart(length, paddings) {
+                var count = length - this.length;
+                if (count <= 0) {
+                    return this;
+                }
+                paddings = paddings || ' ';
+                return (paddings
+                    .repeat((count + paddings.length - 1) / paddings.length)
+                    .substr(0, count) + this);
+            };
+    String.prototype.padEnd =
+        String.prototype.padEnd ||
+            function padEnd(length, paddings) {
+                var count = length - this.length;
+                if (count <= 0) {
+                    return this;
+                }
+                paddings = paddings || ' ';
+                return (this +
+                    paddings
+                        .repeat((count + paddings.length - 1) / paddings.length)
+                        .substr(0, count));
+            };
+    String.prototype.startsWith =
+        String.prototype.startsWith ||
+            function startsWith(searchString, position) {
+                position = position !== undefined ? position : 0;
+                return (this.length - position >= searchString.length &&
+                    this.lastIndexOf(searchString, position) === position);
+            };
+    String.prototype.endsWith =
+        String.prototype.endsWith ||
+            function endsWith(searchString, position) {
+                position =
+                    (position !== undefined ? position : this.length) - searchString.length;
+                return position >= 0 && this.indexOf(searchString, position) === position;
+            };
+    String.prototype.trim =
+        String.prototype.trim ||
+            function trim() {
+                var match = /(?:\S(?:.*\S)?)(?=\s*$)/.exec(this);
+                return (match && match[0]) || '';
+            };
+    String.prototype.includes =
+        String.prototype.includes ||
+            function includes(searchString, position) {
+                if (typeof position !== 'number') {
+                    position = 0;
+                }
+                return (position + searchString.length <= this.length &&
+                    this.indexOf(searchString, position) >= 0);
+            };
+    String.prototype.split = function split(separator, limit) {
+        var str = '' + this;
+        if (separator &&
+            typeof separator !== 'string' &&
+            !(separator instanceof RegExp) &&
+            typeof separator[Symbol.split] === 'function') {
+            return separator[Symbol.split](str, limit);
+        }
+        var index = 0;
+        var result = [];
+        if (separator instanceof RegExp) {
+            var prev = 0;
+            var re = separator.global
+                ? separator
+                : new RegExp(separator.source, "g" + (separator.multiline ? 'm' : '') + (separator.ignoreCase ? 'i' : ''));
+            while (true) {
+                re.lastIndex = index;
+                var match = re.exec(str);
+                if (!match) {
+                    break;
+                }
+                if (match[0].length) {
+                    var next = match.index;
+                    var splitted = str.substr(prev, next - prev);
+                    result.push(splitted);
+                    prev = index = next + match[0].length;
+                }
+                else {
+                    if (index === prev) {
+                        index = prev + 1;
+                        if (index >= str.length) {
+                            return result;
+                        }
+                        continue;
+                    }
+                    if (index >= str.length) {
+                        break;
+                    }
+                    var next = index;
+                    var splitted = str.substr(prev, next - prev);
+                    prev = next;
+                    result.push(splitted);
+                    ++index;
+                }
+                for (var i = 1; i < match.length; ++i) {
+                    result.push(match[i]);
+                }
+            }
+            result.push(str.substr(prev));
+            return result;
+        }
+        if (!separator) {
+            return Array(str.length)
+                .fill(0)
+                .map(function (_, i) { return str.substr(i, 1); });
+        }
+        separator = '' + separator;
+        while (index < str.length) {
+            var next = str.indexOf(separator, index);
+            if (next < 0) {
+                break;
+            }
+            result.push(str.substr(index, next - index));
+            index = next + separator.length;
+        }
+        result.push(str.substr(index));
+        return result;
+    };
+})();
+(function () {
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -991,6 +968,16 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
+function x(a) {
+    if (typeof a === 'function') {
+        a = a();
+        a;
+    }
+    else {
+        a;
+    }
+    a;
+}
 var Iterables;
 (function (Iterables) {
     /**
@@ -1002,11 +989,9 @@ var Iterables;
      */
     var IterableEx = /** @class */ (function () {
         function IterableEx(param) {
-            this.i = typeof param === 'function' ? param() : param;
+            var p = typeof param === 'function' ? param() : param;
+            this[Symbol.iterator] = function () { return p[Symbol.iterator](); };
         }
-        IterableEx.prototype[Symbol.iterator] = function () {
-            return this.i[Symbol.iterator]();
-        };
         IterableEx.prototype.forEach = function (callback) {
             forEach(this, callback);
         };
@@ -1572,7 +1557,7 @@ var Scripting;
             }
             Utils.subFolders = subFolders;
             function filesAndSubFolders(folder) {
-                return sort(__spread(Iterables.concat(Iterables.from(folder.Files), Iterables.from(folder.SubFolders))));
+                return sort(__spread(Iterables.from(folder.Files), Iterables.from(folder.SubFolders)));
             }
             Utils.filesAndSubFolders = filesAndSubFolders;
             function getItem(path) {
@@ -1586,29 +1571,27 @@ var Scripting;
             }
             Utils.getItem = getItem;
             function splitPath(path) {
+                var _a, _b, _c;
+                var filename = (_a = /[^\\]+$/.exec(path)) === null || _a === void 0 ? void 0 : _a[0];
+                path = filename ? path.slice(0, -filename.length) : path;
                 var splited = [];
-                var match = /^(?:([A-Z]):|\\{2,}([^\\]+)\\+([^\\]+))?(\\+|$)?/i.exec(path);
-                if (match) {
-                    if (match[1]) {
-                        if (!match[4]) {
-                            throw new Error("ドライブ指定時には絶対パスで指定してください");
-                        }
-                        splited.push(match[1] + ":\\");
+                var root = (_b = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(path)) === null || _b === void 0 ? void 0 : _b[0];
+                if (root) {
+                    if (root && root.charAt(1) === ':' && root.length < 3) {
+                        throw new Error("ドライブ指定時には絶対パスで指定してください");
                     }
-                    else if (match[2]) {
-                        splited.push("\\\\" + match[2] + ":\\" + match[3] + "\\");
-                    }
-                    else if (match[4]) {
-                        splited.push('\\');
-                    }
-                    if (match[0]) {
-                        path = path.substr(match[0].length);
-                    }
+                    path = path.slice(root.length);
+                    splited.push(root);
                 }
-                if (!path) {
-                    return splited;
+                var re = /([^\\]+\\+)|./gs;
+                var dir;
+                while ((dir = (_c = re.exec(path)) === null || _c === void 0 ? void 0 : _c[1])) {
+                    splited.push(dir);
                 }
-                return splited.concat(path.split(/\\+/));
+                if (filename) {
+                    splited.push(filename);
+                }
+                return splited;
             }
             Utils.splitPath = splitPath;
             function relativePath(path, base) {
