@@ -5,9 +5,9 @@ function findFileInUpper(source: string, filename: string): string | undefined {
   let dirpath = source;
   while (true) {
     const newdirpath = path.dirname(dirpath);
+    // istanbul ignore next
     if (dirpath === newdirpath) {
       // ルートまで行っても見つからなかった
-      // istanbul ignore next
       return undefined;
     }
     dirpath = newdirpath;
@@ -18,6 +18,7 @@ function findFileInUpper(source: string, filename: string): string | undefined {
   }
 }
 
+// istanbul ignore next
 function loadPackageJson(source: string): [string | undefined, any] {
   const packageJson = findFileInUpper(source, 'package.json');
   if (packageJson) {
@@ -26,20 +27,18 @@ function loadPackageJson(source: string): [string | undefined, any] {
       return [packageJson, JSON.parse(content)];
     }
   }
-  // istanbul ignore next
   return [undefined, undefined];
 }
 
 function loadTsConfigFile(source: string): [any, string | null] {
   const tsconfig = findFileInUpper(source, 'tsconfig.json');
+  // istanbul ignore next tsconfigが見つからないことは想定していない
   if (!tsconfig) {
-    // istanbul ignore next
     return [null, null];
   }
   const {config, error} = ts.readConfigFile(tsconfig, ts.sys.readFile);
   // istanbul ignore next どういう時にエラーになるか分からないのでテスト省略
   if (error) {
-    // istanbul ignore next
     throw new Error(error.toString());
   }
   return [config, tsconfig];
@@ -66,8 +65,8 @@ function adjustConfig(config: {[key: string]: any}) {
   });
   // 無ければ補完する設定値
   // libの指定が無ければESNextを指定
+  // istanbul ignore next
   if (!config.lib) {
-    // istanbule ignore next
     config.lib = ['ESNext'];
   }
   return config;
@@ -89,18 +88,15 @@ export function generateTSConfig() {
   );
 }
 
+// istanbul ignore next エラーの発生条件が分からないのでテスト省略
 function diagnosticToText(diag: ts.Diagnostic): string {
-  /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
   if (!diag.file) {
     return ts.flattenDiagnosticMessageText(diag.messageText, '\n');
   }
-  /* istanbul ignore next */
   const {line, character} = diag.file.getLineAndCharacterOfPosition(
     diag.start!
   );
-  /* istanbul ignore next */
   const message = ts.flattenDiagnosticMessageText(diag.messageText, '\n');
-  /* istanbul ignore next */
   return `${diag.file.fileName} (${line + 1},${character + 1}): ${message}`;
 }
 /**
@@ -122,12 +118,10 @@ function generateActiveXObjectNameMap(program: ts.Program) {
       for (const member of statement.members) {
         /* istanbul ignore next memberがActiveXObjectNameMapのプロパティでないことはないはず */
         if (!ts.isPropertySignature(member)) {
-          /* istanbul ignore next */
           continue;
         }
         /* istanbul ignore next ActiveXObjectNameMapのプロパティのタイプが指定されていないことはないはず */
         if (!member.type) {
-          /* istanbul ignore next */
           continue;
         }
         const name = member.name
@@ -169,7 +163,6 @@ function generateObjectMap(program: ts.Program) {
             // 同じ変数名で違う型を宣言していたらエラー
             /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
             if (objectMap[name] !== activeXmap[type]) {
-              /* istanbul ignore next */
               throw new Error(
                 `同じIDで違う型が宣言されています。: ${objectMap[name]}: {objectMap[name]}、${type}$`
               );
@@ -318,14 +311,15 @@ export function transpile(fileNames: string[]) {
       continue;
     }
     const [pkgpath, pkg] = loadPackageJson(source.fileName);
+    // istanbul ignore next
     if (!pkgpath || !pkg) {
-      // istanbul ignore next
       continue;
     }
     if (!pkg.types || !pkg.main) {
       continue;
     }
     // typesプロパティをpackage.jsonからの相対パスとして検索、`.d.ts`が末尾になければ追加
+    // istanbul ignore next
     const typesPath = path
       .join(
         path.dirname(pkgpath),
@@ -335,18 +329,20 @@ export function transpile(fileNames: string[]) {
       )
       .replace(/\\/g, '/');
     // ソースファイルと一致しなければ無視
+    // istanbul ignore next
     if (typesPath !== source.fileName) {
-      // istanbul ignore next
       continue;
     }
     // 実装スクリプトを追加
     const mainPath = path.join(path.dirname(pkgpath), pkg.main);
 
+    // istanbul ignore next
     const pkgscript = ts.sys
       .readFile(mainPath, 'utf8')
       ?.replace(/\r\n/g, '\n')
       .replace(/^(?!\n)/, '\n')
       .replace(/[^\n]$/, '$&\n');
+    // istanbul ignore next
     if (pkgscript !== undefined) {
       pkgscripts += pkgscript;
     }

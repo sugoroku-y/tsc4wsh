@@ -8,16 +8,16 @@ interface IWriteStream {
   write(s: string, ...args: any[]): any;
   close(): any;
 }
+// istanbul ignore next
 export let stdout: IWriteStream = {
   write(s) {
-    /* istanbul ignore next */
     process.stdout.write(s);
   },
   close() {},
 };
+// istanbul ignore next
 export let stderr: IWriteStream = {
   write(s) {
-    /* istanbul ignore next */
     process.stderr.write(s);
   },
   close() {},
@@ -46,7 +46,6 @@ function appendObjectElements(
   for (const id in progids) {
     /* istanbul ignore next */ // eslint-disable-next-line no-prototype-builtins
     if (!progids.hasOwnProperty(id)) {
-      /* istanbul ignore next */
       continue;
     }
     const progid = progids[id];
@@ -131,7 +130,6 @@ ${post}
       const elements = jobElement.getElementsByTagName('runtime');
       /* istanbul ignore next */
       if (elements.length) {
-        /* istanbul ignore next */
         return elements[0];
       }
       // 無ければ作成
@@ -208,28 +206,23 @@ async function writeWsf(
   // コンソールモードの場合は標準出力に表示して終了
   /* istanbul ignore next */
   if (options.console) {
-    /* istanbul ignore next */
     stdout.write(`${filepath}:\n`);
-    /* istanbul ignore next */
     stdout.write(content);
-    /* istanbul ignore next */
     stdout.write('\n');
-    /* istanbul ignore next */
     return;
   }
+  // istanbul ignore next
   const outputPath =
     // outputの指定が無ければソースファイルの拡張子をWSFに変えたものに出力
     !options.output
-      ? /* istanbul ignore next */
+      ?
         filepath.replace(/\.ts$/, '.wsf')
       : // outputに拡張子WSFのファイル名が指定されていればそのまま使用
-      /* istanbul ignore next */
       /\.wsf$/i.test(options.output)
-      ? /* istanbul ignore next */
+      ?
         options.output
       : // outputに拡張子WSFが指定されていなければディレクトリと見なして
         // そこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
-        /* istanbul ignore next */
         path.join(options.output, path.basename(filepath, '.ts') + '.wsf');
   const existent = await fs.promises.readFile(outputPath, 'utf8').catch(err => {
     /* istanbul ignore next */
@@ -244,7 +237,6 @@ async function writeWsf(
   /* istanbul ignore next */
   if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
-    /* istanbul ignore next */
     stdout.write(`\t\t変化なし: ${outputPath}\n`);
   } else {
     await fs.promises.writeFile(outputPath, content, 'utf8');
@@ -252,8 +244,8 @@ async function writeWsf(
   }
 }
 
+// istanbul ignore next
 function assertNever(o: never): never {
-  // istanbul ignore next
   throw new Error()
 }
 
@@ -297,8 +289,8 @@ function hasProperty<NAME extends string>(o: unknown, name: NAME): o is {[k in N
   }
 }
 
+// istanbul ignore next
 function getExceptionMessage(ex: unknown): string {
-  // istanbul ignore next
   return hasProperty(ex, 'message') ? typeof ex.message === 'string' ? ex.message : String(ex.message) : String(ex)
 }
 
@@ -330,7 +322,6 @@ export async function tsc4wsh(
           filepath => path.extname(filepath).toLowerCase() !== '.ts'
         )
       ) {
-        /* istanbul ignore next */
         throw new Error('サポートしていないファイルです。');
       }
       const {script, objectMap, runtimes, vbscripts} = transpile(filepaths);
