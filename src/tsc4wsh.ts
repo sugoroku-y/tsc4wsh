@@ -1,7 +1,7 @@
 /* globals Node Document Element */
 import * as fs from 'fs';
 import * as path from 'path';
-import xmldom from 'xmldom';
+import {DOMParser, DOMImplementation, XMLSerializer} from '@xmldom/xmldom';
 import {transpile} from './transpile';
 
 interface IWriteStream {
@@ -78,7 +78,7 @@ function appendScriptElement(
     lineNumber: 0,
     systemId: '',
   };
-  const parser = new xmldom.DOMParser({
+  const parser = new DOMParser({
     errorHandler: (level, message) => {
       throw new Error(message);
     },
@@ -165,8 +165,8 @@ ${post}
   return scriptElement;
 }
 
-const dom = new xmldom.DOMImplementation();
-const serializer = new xmldom.XMLSerializer();
+const dom = new DOMImplementation();
+const serializer = new XMLSerializer();
 // ポリフィルを追加(TypeScriptで記述してコンパイルしたもの)
 const polyfill = fs.promises.readFile(
   path.join(__dirname, '../polyfill/index.js'),

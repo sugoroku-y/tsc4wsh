@@ -32,16 +32,15 @@
     "@types/activex-scripting": "^1.0.7",
     "@types/activex-shell": "^1.0.2",
     "@types/windows-script-host": "^5.8.3",
+    "@xmldom/xmldom": "^0.8.2",
     "optionalist": "^1.0.2",
     "typescript": "^4.1.3",
     "wildkarte": "^1.1.0",
-    "xmldom": "^0.1.27",
     "xpath": "0.0.27"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
     "@types/node": "^10.14.8",
-    "@types/xmldom": "^0.1.29",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
     "eslint-plugin-jest": "^24.1.3",
