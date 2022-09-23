@@ -41,8 +41,8 @@ function appendObjectElements(
   progids: {[id: string]: string}
 ) {
   const doc = jobElement.ownerDocument!;
-  // ソース中にdeclare const fso: Scripting.FileSystemObbjectのような記述を見つけたら
-  // <object id="fso" progid="Scripting.FileSystemObbject">を追加する
+  // ソース中にdeclare const fso: Scripting.FileSystemObjectのような記述を見つけたら
+  // <object id="fso" progid="Scripting.FileSystemObject">を追加する
   for (const id in progids) {
     /* istanbul ignore next */ // eslint-disable-next-line no-prototype-builtins
     if (!progids.hasOwnProperty(id)) {

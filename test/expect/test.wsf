@@ -12,8 +12,8 @@
 例:
   test.wsf /?
     使い方(これ)を表示します。
-  test.wsf /base:\\dokokano\nantoka\Matser\Release\Updater **\*.tbl
-    \\dokokano\nantoka\Matser\Release\Updater以下にある拡張子がtblのファイルすべてを処理します。
+  test.wsf /base:\\dokokano\nantoka\Master\Release\Updater **\*.tbl
+    \\dokokano\nantoka\Master\Release\Updater以下にある拡張子がtblのファイルすべてを処理します。
 </example>
 </runtime>
 <script language="VBScript"><![CDATA[
