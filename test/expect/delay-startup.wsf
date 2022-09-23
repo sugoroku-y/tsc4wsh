@@ -951,9 +951,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1010,7 +1015,7 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return reduce.apply(void 0, __spread([this], args));
+            return reduce.apply(void 0, __spreadArray([this], __read(args), false));
         };
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
@@ -1020,10 +1025,11 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return concat.apply(void 0, __spread([this], args));
+            return concat.apply(void 0, __spreadArray([this], __read(args), false));
         };
         return IterableEx;
     }());
+    Symbol.iterator;
     /**
      * Iterableの返す各要素に対してコールバックを呼び出す。
      * @export
@@ -1432,7 +1438,7 @@ while (true) {
         // 起動できていないショートカットを実行
         for (var lnkpaths_1 = (e_10 = void 0, __values(lnkpaths)), lnkpaths_1_1 = lnkpaths_1.next(); !lnkpaths_1_1.done; lnkpaths_1_1 = lnkpaths_1.next()) {
             var lnkpath = lnkpaths_1_1.value;
-            wshshell.Run("\"" + lnkpath + "\"");
+            wshshell.Run("\"".concat(lnkpath, "\""));
         }
     }
     catch (e_10_1) { e_10 = { error: e_10_1 }; }

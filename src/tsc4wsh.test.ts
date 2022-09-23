@@ -67,11 +67,15 @@ describe('tsc4wsh', () => {
   });
 });
 
+function hasProperty<NAME extends string>(o: unknown, name: NAME): o is {[k in NAME]: unknown} {
+  return !!o && name in o
+}
+
 test('generateTSConfig', async () => {
   try {
     await fs.promises.mkdir('test/temp');
   } catch (ex) {
-    if (ex.code !== 'EEXIST') {
+    if (!hasProperty(ex, 'code') || ex.code !== 'EEXIST') {
       throw ex;
     }
   }

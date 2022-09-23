@@ -970,9 +970,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1029,7 +1034,7 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return reduce.apply(void 0, __spread([this], args));
+            return reduce.apply(void 0, __spreadArray([this], __read(args), false));
         };
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
@@ -1039,10 +1044,11 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return concat.apply(void 0, __spread([this], args));
+            return concat.apply(void 0, __spreadArray([this], __read(args), false));
         };
         return IterableEx;
     }());
+    Symbol.iterator;
     /**
      * Iterableの返す各要素に対してコールバックを呼び出す。
      * @export
@@ -1470,7 +1476,7 @@ var WScriptUtil;
         try {
             for (var _b = __values(Iterables.from(doc.selectNodes('/job/runtime/named'))), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var node = _c.value;
-                if (node.nodeType !== 1 /* ELEMENT_NODE */) {
+                if (node.nodeType !== 1 /* DOM3.NodeType.ELEMENT_NODE */) {
                     continue;
                 }
                 var name = node.getAttribute('name');
@@ -1480,7 +1486,7 @@ var WScriptUtil;
                 var required = node.getAttribute('required') === 'true';
                 if (!WScript.Arguments.Named.Exists(name)) {
                     if (required) {
-                        WScript.Echo(name + " は必須パラメータです。");
+                        WScript.Echo("".concat(name, " は必須パラメータです。"));
                         hasError = true;
                     }
                     continue;
@@ -1489,14 +1495,14 @@ var WScriptUtil;
                 switch (node.getAttribute('type')) {
                     case 'string':
                         if (typeof value !== 'string') {
-                            WScript.Echo(name + " には文字列を指定(/" + name + ":文字列)してください。");
+                            WScript.Echo("".concat(name, " には文字列を指定(/").concat(name, ":文字列)してください。"));
                             hasError = true;
                             continue;
                         }
                         break;
                     case 'boolean':
                         if (typeof value !== 'boolean') {
-                            WScript.Echo(name + " にはオン(/" + name + "+)、もしくはオフ(/" + name + "-)を指定してください。");
+                            WScript.Echo("".concat(name, " にはオン(/").concat(name, "+)、もしくはオフ(/").concat(name, "-)を指定してください。"));
                             hasError = true;
                             continue;
                         }
@@ -1504,7 +1510,7 @@ var WScriptUtil;
                     default:
                         // case 'simple':
                         if (typeof value !== 'undefined') {
-                            WScript.Echo(name + " にはパラメータだけ(/" + name + ")を指定してください。");
+                            WScript.Echo("".concat(name, " にはパラメータだけ(/").concat(name, ")を指定してください。"));
                             hasError = true;
                             continue;
                         }
@@ -1521,18 +1527,18 @@ var WScriptUtil;
         }
         var unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
         if (unnamedElement &&
-            unnamedElement.nodeType === 1 /* ELEMENT_NODE */) {
+            unnamedElement.nodeType === 1 /* DOM3.NodeType.ELEMENT_NODE */) {
             var isMany = unnamedElement.getAttribute('many') === 'true';
             var required = (function (value) {
                 return !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value;
             })(unnamedElement.getAttribute('required'));
             if (WScript.Arguments.Unnamed.length < required) {
-                WScript.Echo("パラメータが不足しています(必要数: " + required + "})。");
+                WScript.Echo("パラメータが不足しています(必要数: ".concat(required, "})。"));
                 hasError = true;
             }
             else if (WScript.Arguments.Unnamed.length > required && !isMany) {
                 WScript.Echo(required > 0
-                    ? "パラメータが多過ぎます(必要数: " + required + "})。"
+                    ? "パラメータが多過ぎます(必要数: ".concat(required, "})。")
                     : "パラメータは不要です。");
                 hasError = true;
             }
@@ -1566,15 +1572,15 @@ var Scripting;
                 });
             }
             function files(folder) {
-                return sort(__spread(Iterables.from(folder.Files)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.Files)), false));
             }
             Utils.files = files;
             function subFolders(folder) {
-                return sort(__spread(Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.subFolders = subFolders;
             function filesAndSubFolders(folder) {
-                return sort(__spread(Iterables.from(folder.Files), Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray(__spreadArray([], __read(Iterables.from(folder.Files)), false), __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.filesAndSubFolders = filesAndSubFolders;
             function getItem(path) {
@@ -1791,7 +1797,7 @@ var Scripting;
                     return undefined;
                 }
                 if (pattern.includes('\\')) {
-                    throw new Error("Unsupported wildcard: " + pattern);
+                    throw new Error("Unsupported wildcard: ".concat(pattern));
                 }
                 var depth = 0;
                 var regex = '^' +
@@ -1851,7 +1857,7 @@ var Scripting;
                 }
                 var root = match[0];
                 if (!fso.FolderExists(root)) {
-                    throw new Error("The folder not found: " + root);
+                    throw new Error("The folder not found: ".concat(root));
                 }
                 var folder = fso.GetFolder(root);
                 var pathes = fullpath
@@ -2017,7 +2023,7 @@ var Scripting;
                     return fso.GetFolder(dirpath);
                 }
                 if (fso.FileExists(dirpath)) {
-                    throw new Error("ファイルが存在しています。: " + dirpath);
+                    throw new Error("ファイルが存在しています。: ".concat(dirpath));
                 }
                 ensureDirectory(fso.GetParentFolderName(dirpath));
                 return fso.CreateFolder(dirpath);
@@ -2079,7 +2085,7 @@ var test1;
     var fsoU = Scripting.FileSystemObject.Utils;
     var output = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], function (outputPath) {
         if (outputPath) {
-            return fso.OpenTextFile(outputPath, 2 /* ForWriting */, true, 0 /* TristateFalse */);
+            return fso.OpenTextFile(outputPath, 2 /* Scripting.IOMode.ForWriting */, true, 0 /* Scripting.Tristate.TristateFalse */);
         }
         return WScript.StdOut;
     });
@@ -2090,7 +2096,7 @@ var test1;
                 for (var _e = (e_19 = void 0, __values(fsoU.wildcard(arg))), _f = _e.next(); !_f.done; _f = _e.next()) {
                     var item = _f.value;
                     var d = new Date(item.DateLastModified);
-                    output.WriteLine(fsoU.relativePath(item.Path) + " " + item.Size + " " + d.toLocaleString());
+                    output.WriteLine("".concat(fsoU.relativePath(item.Path), " ").concat(item.Size, " ").concat(d.toLocaleString()));
                 }
             }
             catch (e_19_1) { e_19 = { error: e_19_1 }; }

@@ -949,9 +949,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1008,7 +1013,7 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return reduce.apply(void 0, __spread([this], args));
+            return reduce.apply(void 0, __spreadArray([this], __read(args), false));
         };
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
@@ -1018,10 +1023,11 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return concat.apply(void 0, __spread([this], args));
+            return concat.apply(void 0, __spreadArray([this], __read(args), false));
         };
         return IterableEx;
     }());
+    Symbol.iterator;
     /**
      * Iterableの返す各要素に対してコールバックを呼び出す。
      * @export
@@ -1433,7 +1439,7 @@ var debugContext;
                 return '' + o;
             }
             if (typeof o === 'function') {
-                return "function " + getFunctionName(o) + " () {...}";
+                return "function ".concat(getFunctionName(o), " () {...}");
             }
             if (Array.isArray(o)) {
                 if (o.length === 0) {
@@ -1452,13 +1458,13 @@ var debugContext;
                     suffix);
             }
             if (o instanceof Error) {
-                return "[Error {number: 0x" + toHexadecimal(o.number, 8) + ", description: " + quote(o.description) + ", message: " + quote(o.message) + "}]";
+                return "[Error {number: 0x".concat(toHexadecimal(o.number, 8), ", description: ").concat(quote(o.description), ", message: ").concat(quote(o.message), "}]");
             }
             if (o instanceof RegExp) {
                 return o.toString();
             }
             if (o instanceof Date) {
-                return "[Date " + o.toISOString() + "]";
+                return "[Date ".concat(o.toISOString(), "]");
             }
             var names = Object.keys(o);
             if (names.length === 0) {
@@ -1495,7 +1501,7 @@ var debugContext;
             }
             if (/^\s*:stack\s*$/.test(expr)) {
                 for (var frame = arguments.callee.caller.caller; frame; frame = frame.caller) {
-                    WScript.StdOut.WriteLine("function " + getFunctionName(frame) + " (" + inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, '') + ") {...}");
+                    WScript.StdOut.WriteLine("function ".concat(getFunctionName(frame), " (").concat(inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, ''), ") {...}"));
                 }
                 continue;
             }
@@ -1506,11 +1512,39 @@ var debugContext;
                 WScript.StdOut.WriteLine(inspect(eval(expr)));
             }
             catch (e) {
-                WScript.StdOut.WriteLine("Error Code: 0x" + toHexadecimal(e.number, 8) + ": " + e.description);
+                WScript.StdOut.WriteLine(hasProperty(e, 'number') && typeof e.number === 'number' && hasProperty(e, 'description') ?
+                    "Error Code: 0x".concat(toHexadecimal(e.number, 8), ": ").concat(e.description)
+                    : String(e));
             }
         }
     }
     debugContext.breakpoint = breakpoint;
+    function assertNever(o) {
+        throw new Error();
+    }
+    function hasProperty(o, name) {
+        var _a = __read([typeof o, o], 2), type = _a[0], obj = _a[1];
+        if (obj === undefined || obj === null) {
+            return false;
+        }
+        switch (type) {
+            case 'object':
+            case 'function':
+                return name in obj;
+            // @ts-expect-error WSHのVerDateはビルトイン型で、typeofで'date'を返し、プロパティを持たない
+            case 'date':
+                return false;
+            case 'boolean':
+            case 'number':
+            case 'string':
+            case 'symbol':
+            case 'bigint':
+                return obj.hasOwnProperty(name);
+            default:
+                assertNever(obj);
+        }
+    }
+    debugContext.hasProperty = hasProperty;
 })(debugContext || (debugContext = {}));
 /// <reference types="iterables" />
 /// <reference types="debug-context" />
@@ -1518,7 +1552,7 @@ var debugContext;
  * このスクリプトの使用方法を表示する
  */
 function usage() {
-    WScript.Echo("\nUSAGE eval.wsf \"script\" [-r {" + Object.keys(cachedProgid).join('|') + "|name=progid}] [-l script_file]\n");
+    WScript.Echo("\nUSAGE eval.wsf \"script\" [-r {".concat(Object.keys(cachedProgid).join('|'), "|name=progid}] [-l script_file]\n"));
     return WScript.Quit(1);
 }
 /**
@@ -1588,7 +1622,7 @@ var cachedProgid = {
     }
     // Functionを使ってスクリプトを実行
     try {
-        var r = new Function("\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval(\"" + script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
+        var r = new Function("\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval(\"".concat(script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
             return ch === '"' || ch === '\\'
                 ? '\\' + ch
                 : ch === '\t'
@@ -1598,14 +1632,14 @@ var cachedProgid = {
                         : ch === '\n'
                             ? '\\n'
                             : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2);
-        }) + "\")\n    ").apply(this, args);
+        }), "\")\n    ")).apply(this, args);
         // スクリプトの返値をプロセスの終了コードとする
         WScript.Quit(+r || 0);
     }
     catch (ex) {
-        WScript.StdErr.WriteLine("" + (ex.name || '') + ((ex.number &&
+        WScript.StdErr.WriteLine("".concat(debugContext.hasProperty(ex, 'name') && ex.name || '').concat((debugContext.hasProperty(ex, 'number') && typeof ex.number === 'number' &&
             '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')') ||
-            '') + ex.message);
+            '').concat(debugContext.hasProperty(ex, 'message') && ex.message || ''));
         WScript.Quit(1);
     }
 })();

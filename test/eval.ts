@@ -93,9 +93,9 @@ const cachedProgid: {[name: string]: string} = {
     WScript.Quit(+r || 0);
   } catch (ex) {
     WScript.StdErr.WriteLine(
-      `${ex.name || ''}${(ex.number &&
+      `${debugContext.hasProperty(ex, 'name') && ex.name || ''}${(debugContext.hasProperty(ex, 'number') && typeof ex.number === 'number' &&
         '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')') ||
-        ''}${ex.message}`
+        ''}${debugContext.hasProperty(ex, 'message') && ex.message || ''}`
     );
     WScript.Quit(1);
   }

@@ -355,7 +355,7 @@ namespace filever {
       }
     } catch (ex) {
       // レジストリからも取得に失敗したら例外
-      throw new Error(`signtoolが見つかりません。: ${ex.toString}`);
+      throw new Error(`signtoolが見つかりません。: ${ex}`);
     }
   }
 

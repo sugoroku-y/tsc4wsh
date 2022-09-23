@@ -953,9 +953,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1012,7 +1017,7 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return reduce.apply(void 0, __spread([this], args));
+            return reduce.apply(void 0, __spreadArray([this], __read(args), false));
         };
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
@@ -1022,10 +1027,11 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return concat.apply(void 0, __spread([this], args));
+            return concat.apply(void 0, __spreadArray([this], __read(args), false));
         };
         return IterableEx;
     }());
+    Symbol.iterator;
     /**
      * Iterableの返す各要素に対してコールバックを呼び出す。
      * @export
@@ -1453,7 +1459,7 @@ var WScriptUtil;
         try {
             for (var _b = __values(Iterables.from(doc.selectNodes('/job/runtime/named'))), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var node = _c.value;
-                if (node.nodeType !== 1 /* ELEMENT_NODE */) {
+                if (node.nodeType !== 1 /* DOM3.NodeType.ELEMENT_NODE */) {
                     continue;
                 }
                 var name = node.getAttribute('name');
@@ -1463,7 +1469,7 @@ var WScriptUtil;
                 var required = node.getAttribute('required') === 'true';
                 if (!WScript.Arguments.Named.Exists(name)) {
                     if (required) {
-                        WScript.Echo(name + " は必須パラメータです。");
+                        WScript.Echo("".concat(name, " は必須パラメータです。"));
                         hasError = true;
                     }
                     continue;
@@ -1472,14 +1478,14 @@ var WScriptUtil;
                 switch (node.getAttribute('type')) {
                     case 'string':
                         if (typeof value !== 'string') {
-                            WScript.Echo(name + " には文字列を指定(/" + name + ":文字列)してください。");
+                            WScript.Echo("".concat(name, " には文字列を指定(/").concat(name, ":文字列)してください。"));
                             hasError = true;
                             continue;
                         }
                         break;
                     case 'boolean':
                         if (typeof value !== 'boolean') {
-                            WScript.Echo(name + " にはオン(/" + name + "+)、もしくはオフ(/" + name + "-)を指定してください。");
+                            WScript.Echo("".concat(name, " にはオン(/").concat(name, "+)、もしくはオフ(/").concat(name, "-)を指定してください。"));
                             hasError = true;
                             continue;
                         }
@@ -1487,7 +1493,7 @@ var WScriptUtil;
                     default:
                         // case 'simple':
                         if (typeof value !== 'undefined') {
-                            WScript.Echo(name + " にはパラメータだけ(/" + name + ")を指定してください。");
+                            WScript.Echo("".concat(name, " にはパラメータだけ(/").concat(name, ")を指定してください。"));
                             hasError = true;
                             continue;
                         }
@@ -1504,18 +1510,18 @@ var WScriptUtil;
         }
         var unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
         if (unnamedElement &&
-            unnamedElement.nodeType === 1 /* ELEMENT_NODE */) {
+            unnamedElement.nodeType === 1 /* DOM3.NodeType.ELEMENT_NODE */) {
             var isMany = unnamedElement.getAttribute('many') === 'true';
             var required = (function (value) {
                 return !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value;
             })(unnamedElement.getAttribute('required'));
             if (WScript.Arguments.Unnamed.length < required) {
-                WScript.Echo("パラメータが不足しています(必要数: " + required + "})。");
+                WScript.Echo("パラメータが不足しています(必要数: ".concat(required, "})。"));
                 hasError = true;
             }
             else if (WScript.Arguments.Unnamed.length > required && !isMany) {
                 WScript.Echo(required > 0
-                    ? "パラメータが多過ぎます(必要数: " + required + "})。"
+                    ? "パラメータが多過ぎます(必要数: ".concat(required, "})。")
                     : "パラメータは不要です。");
                 hasError = true;
             }
@@ -1549,15 +1555,15 @@ var Scripting;
                 });
             }
             function files(folder) {
-                return sort(__spread(Iterables.from(folder.Files)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.Files)), false));
             }
             Utils.files = files;
             function subFolders(folder) {
-                return sort(__spread(Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.subFolders = subFolders;
             function filesAndSubFolders(folder) {
-                return sort(__spread(Iterables.from(folder.Files), Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray(__spreadArray([], __read(Iterables.from(folder.Files)), false), __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.filesAndSubFolders = filesAndSubFolders;
             function getItem(path) {
@@ -1774,7 +1780,7 @@ var Scripting;
                     return undefined;
                 }
                 if (pattern.includes('\\')) {
-                    throw new Error("Unsupported wildcard: " + pattern);
+                    throw new Error("Unsupported wildcard: ".concat(pattern));
                 }
                 var depth = 0;
                 var regex = '^' +
@@ -1834,7 +1840,7 @@ var Scripting;
                 }
                 var root = match[0];
                 if (!fso.FolderExists(root)) {
-                    throw new Error("The folder not found: " + root);
+                    throw new Error("The folder not found: ".concat(root));
                 }
                 var folder = fso.GetFolder(root);
                 var pathes = fullpath
@@ -2000,7 +2006,7 @@ var Scripting;
                     return fso.GetFolder(dirpath);
                 }
                 if (fso.FileExists(dirpath)) {
-                    throw new Error("ファイルが存在しています。: " + dirpath);
+                    throw new Error("ファイルが存在しています。: ".concat(dirpath));
                 }
                 ensureDirectory(fso.GetParentFolderName(dirpath));
                 return fso.CreateFolder(dirpath);
@@ -2084,7 +2090,7 @@ var filever;
             doc.async = false;
             doc.setProperty('SelectionNamespaces', "xmlns:patch='http://www.microsoft.com/msi/patch_applicability.xsd'");
             if (!doc.loadXML(xml)) {
-                throw new Error(filepath + ":\n    errorCode: " + doc.parseError.errorCode + "\n    reason: " + doc.parseError.reason + "\n    line: " + doc.parseError.line + "\n    linepos: " + doc.parseError.linepos + "\n    filepos: " + doc.parseError.filepos + "\n    srcText: " + doc.parseError.srcText + "\n    url: " + doc.parseError.url);
+                throw new Error("".concat(filepath, ":\n    errorCode: ").concat(doc.parseError.errorCode, "\n    reason: ").concat(doc.parseError.reason, "\n    line: ").concat(doc.parseError.line, "\n    linepos: ").concat(doc.parseError.linepos, "\n    filepos: ").concat(doc.parseError.filepos, "\n    srcText: ").concat(doc.parseError.srcText, "\n    url: ").concat(doc.parseError.url));
             }
             return doc.selectSingleNode('/patch:MsiPatch/patch:TargetProduct/patch:UpdatedVersion').text;
         }
@@ -2116,7 +2122,7 @@ var filever;
     /** 電子署名済みであれば署名者を返す。 */
     function checkSignature(file) {
         // 署名チェックツールの実行
-        var process = wshShell.Exec("\"" + signtool() + "\" verify /pa /v \"" + file.Path + "\"");
+        var process = wshShell.Exec("\"".concat(signtool(), "\" verify /pa /v \"").concat(file.Path, "\""));
         // 標準出力および標準エラー出力から署名情報を取得
         var signer = '';
         var inSigningCertificateChain = false;
@@ -2158,7 +2164,7 @@ var filever;
             }
             // 署名エラー
             if (line.startsWith('SignTool Error: ')) {
-                signer = "!!!!署名エラー(" + line.substr(16) + ")!!!!";
+                signer = "!!!!署名エラー(".concat(line.substr(16), ")!!!!");
                 break;
             }
             // 署名済み
@@ -2173,7 +2179,7 @@ var filever;
         }
         // 時刻署名しているかどうかもチェック
         if (!timestamped) {
-            signer = "!!!!時刻署名なし!!!!(" + signer + ")";
+            signer = "!!!!時刻署名なし!!!!(".concat(signer, ")");
         }
         return signer;
     }
@@ -2181,7 +2187,7 @@ var filever;
     function GetContentCreationDate(file) {
         if (fso.GetExtensionName(file.Name).toLowerCase() === 'msp') {
             // MSPだけはMsiPatchMetadataのCreationTimeUTCから取得
-            var database = installer.OpenDatabase(file.Path, 32 /* msiOpenDatabaseModePatchFile */);
+            var database = installer.OpenDatabase(file.Path, 32 /* WindowsInstaller.msiOpenDatabaseMode.msiOpenDatabaseModePatchFile */);
             var view = database.OpenView("SELECT Value FROM MsiPatchMetadata WHERE Property = 'CreationTimeUTC'");
             try {
                 view.Execute();
@@ -2195,7 +2201,7 @@ var filever;
                 if (!match) {
                     return;
                 }
-                return new Date(match[1] + "/" + match[2] + "/" + match[3] + " " + match[4]).toLocaleString();
+                return new Date("".concat(match[1], "/").concat(match[2], "/").concat(match[3], " ").concat(match[4])).toLocaleString();
             }
             finally {
                 view.Close();
@@ -2243,8 +2249,8 @@ var filever;
                 return GetContentCreationDate(file);
         }
         var STREAM = WScript.CreateObject('ADODB.Stream');
-        STREAM.Mode = 3 /* adModeReadWrite */;
-        STREAM.Type = 1 /* adTypeBinary */;
+        STREAM.Mode = 3 /* ADODB.ConnectModeEnum.adModeReadWrite */;
+        STREAM.Type = 1 /* ADODB.StreamTypeEnum.adTypeBinary */;
         STREAM.Open();
         try {
             STREAM.LoadFromFile(file.Path);
@@ -2293,9 +2299,9 @@ var filever;
                 return WScript.StdOut;
             }
             var mode = appendMode
-                ? 8 /* ForAppending */
-                : 2 /* ForWriting */;
-            return fso.OpenTextFile(outputPath, mode, true, 0 /* TristateFalse */);
+                ? 8 /* Scripting.IOMode.ForAppending */
+                : 2 /* Scripting.IOMode.ForWriting */;
+            return fso.OpenTextFile(outputPath, mode, true, 0 /* Scripting.Tristate.TristateFalse */);
         }
     });
     /**
@@ -2351,7 +2357,7 @@ var filever;
         }
         catch (ex) {
             // レジストリからも取得に失敗したら例外
-            throw new Error("signtoolが見つかりません。: " + ex.toString);
+            throw new Error("signtoolが見つかりません。: ".concat(ex));
         }
     }
     /**
@@ -2363,7 +2369,7 @@ var filever;
         if (shellappdesktopCache !== undefined) {
             return shellappdesktopCache;
         }
-        shellappdesktopCache = shellapp.NameSpace(0 /* ssfDESKTOP */);
+        shellappdesktopCache = shellapp.NameSpace(0 /* Shell32.ShellSpecialFolderConstants.ssfDESKTOP */);
         return shellappdesktopCache || (shellappdesktopCache = null);
     }
     function GetExtendedProperty(file, propertyName) {
@@ -2460,7 +2466,7 @@ var filever;
                 .Write("filevar.wsf: List information such as version and name of files and directories.\n\nUSAGE:\n  cscript //nologo filver.wsf /Help\n  cscript //nologo filver.wsf [/BaseDir:\"base\\directory\"] [/Format:\"Format for output\"] [/Output:\"output file\"] [path of files and directories...]\n\n/Help\n      Show this help.\n      Alias: /H /?\n/BaseDir:\"base\\directory\"\n      Specify the base directory of the specified path pattern.\n      If omitted, it is assumed that the current directory is specified.\n      Alias: /Base /B\n/Format:\"Format for output\"\n      Specify the format used for output of file and directory information.\n      If omitted, it is assumed that the '$r\\t$v' is specified\n      Alias: /F\n\n      $name\n        The name of the file or the directory.\n        Alias: $n\n      $directory\n        The path of the parent directory if it is a file, or its own path if it is a directory.\n        Alias: $dir $d\n      $size\n        The three-digit delimited file size, or '-' if it is a directory.\n        Alias: $s\n      $length\n        The file size(no delimited), or '-' if it is a directory.\n        Alias: $len $l\n      $version\n        The version of the file, or '-' if it is a file without a version or it is a directory.\n        Alias: $ver $v\n      $fullpath\n        The full path of the file or the directory.\n        Alias: $full $f\n      $relative\n        The relative path of the file or the directory.\n        Alias: $rel $r\n      $reldir\n        The relative path of the parent directory if it is a file, or its own relative path if it is a directory.\n        Alias: $rd\n      $timestamp\n        The full path of the file or the directory.\n        Alias: $time $t\n      $hash\n        The hash of the file, or '-' if it is a directory.\n        Alias: $h\n      $build\n        The date to build the content.\n        Alias: $b\n      $sign\n        The signer if the file is digitally signed, the error message if the signature it is incomplete. '-' if it is a directory.\n        Alias: $g\n      $company\n        The company in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cp\n      $copyright\n        The copyright in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cr\n/Output:\"output file\"\n      The file to output into.\n      If omitted, output into standard output.\n      Alias: /Out /O\n/Append\n      Specify it with /Output, then append output to file.\n/fileonly\n      Show information of files only.\n/directoryonly\n      Show information of directories only.\n      This parameter is ignored if `/fileonly` specified.\n/notimestamp:filename-pattern\n      Specify a pattern of file names that do not show timestamps.\n      If omitted, show timestamps of all files.\n/signtool:signtool_path\n      Specify the path to 'signtool.exe'.\n      If omitted, find signtool.exe from the current directory,\n      this script directory, and Windows SDK directory\n\npath of files and directories...\n      Files and directories for listing information. Wild cards can be used.\n      Example:\n      *.dll\n        DLL files in the current directory.\n      aaa?.dll\n        Dll files with only one letter after aaa.\n      *.{exe;dll;ocx}\n        EXE, DLL, OCX files in the current directory.\n      aaa\\**\\*.{exe;dll;ocx}\n        All EXE, DLL, OCX files under aaa directory.\n");
             return;
         }
-        var args = __spread(Iterables.from(WScript.Arguments.Unnamed));
+        var args = __spreadArray([], __read(Iterables.from(WScript.Arguments.Unnamed)), false);
         if (args.length === 0) {
             args = ['**'];
         }

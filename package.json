@@ -34,7 +34,7 @@
     "@types/windows-script-host": "^5.8.3",
     "@xmldom/xmldom": "^0.8.2",
     "optionalist": "^1.0.2",
-    "typescript": "^4.1.3",
+    "typescript": "^4.8.3",
     "wildkarte": "^1.1.0",
     "xpath": "0.0.27"
   },

@@ -28,7 +28,7 @@ namespace Iterables {
    * @template T
    */
   class IterableEx<T> implements I<T> {
-    readonly [Symbol.iterator]: () => Iterator<T>;
+    readonly [Symbol.iterator]!: () => Iterator<T>;
     constructor(param: I<T> | (() => I<T>)) {
       const p = typeof param === 'function' ? param() : param;
       this[Symbol.iterator] = () => p[Symbol.iterator]();
@@ -251,7 +251,7 @@ namespace Iterables {
           return itr;
         },
       };
-      initialValue = ir.value as S; // arguments.length <= 2 なら ir.value is S(=T)
+      initialValue = ir.value as unknown as S; // arguments.length <= 2 なら ir.value is S(=T)
     }
     let r: S = initialValue!; // arguments.length > 2 なら initialValue is S(not nullish)
     let i = initialIndex;

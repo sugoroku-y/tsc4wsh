@@ -1056,9 +1056,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1115,7 +1120,7 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return reduce.apply(void 0, __spread([this], args));
+            return reduce.apply(void 0, __spreadArray([this], __read(args), false));
         };
         IterableEx.prototype.join = function (sep) {
             return join(this, sep);
@@ -1125,10 +1130,11 @@ var Iterables;
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return concat.apply(void 0, __spread([this], args));
+            return concat.apply(void 0, __spreadArray([this], __read(args), false));
         };
         return IterableEx;
     }());
+    Symbol.iterator;
     /**
      * Iterableの返す各要素に対してコールバックを呼び出す。
      * @export
@@ -1508,15 +1514,15 @@ var Scripting;
                 });
             }
             function files(folder) {
-                return sort(__spread(Iterables.from(folder.Files)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.Files)), false));
             }
             Utils.files = files;
             function subFolders(folder) {
-                return sort(__spread(Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray([], __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.subFolders = subFolders;
             function filesAndSubFolders(folder) {
-                return sort(__spread(Iterables.from(folder.Files), Iterables.from(folder.SubFolders)));
+                return sort(__spreadArray(__spreadArray([], __read(Iterables.from(folder.Files)), false), __read(Iterables.from(folder.SubFolders)), false));
             }
             Utils.filesAndSubFolders = filesAndSubFolders;
             function getItem(path) {
@@ -1733,7 +1739,7 @@ var Scripting;
                     return undefined;
                 }
                 if (pattern.includes('\\')) {
-                    throw new Error("Unsupported wildcard: " + pattern);
+                    throw new Error("Unsupported wildcard: ".concat(pattern));
                 }
                 var depth = 0;
                 var regex = '^' +
@@ -1793,7 +1799,7 @@ var Scripting;
                 }
                 var root = match[0];
                 if (!fso.FolderExists(root)) {
-                    throw new Error("The folder not found: " + root);
+                    throw new Error("The folder not found: ".concat(root));
                 }
                 var folder = fso.GetFolder(root);
                 var pathes = fullpath
@@ -1959,7 +1965,7 @@ var Scripting;
                     return fso.GetFolder(dirpath);
                 }
                 if (fso.FileExists(dirpath)) {
-                    throw new Error("ファイルが存在しています。: " + dirpath);
+                    throw new Error("ファイルが存在しています。: ".concat(dirpath));
                 }
                 ensureDirectory(fso.GetParentFolderName(dirpath));
                 return fso.CreateFolder(dirpath);
@@ -2010,7 +2016,7 @@ var msiinfo;
 (function (msiinfo) {
     var e_15, _a, e_16, _b;
     var fsoU = Scripting.FileSystemObject.Utils;
-    var msiOpenDatabaseModeReadOnly = 0 /* msiOpenDatabaseModeReadOnly */;
+    var msiOpenDatabaseModeReadOnly = 0 /* WindowsInstaller.msiOpenDatabaseMode.msiOpenDatabaseModeReadOnly */;
     WScript.StdOut.WriteLine("パス\t製品名\tバージョン\tProductCode\tPackageCode\tUpgradeCode\t最終更新日時");
     try {
         for (var _c = __values(Iterables.from(WScript.Arguments.Unnamed)), _d = _c.next(); !_d.done; _d = _c.next()) {
@@ -2019,10 +2025,10 @@ var msiinfo;
                 for (var _e = (e_16 = void 0, __values(Iterables.filter(fsoU.wildcard(arg), fsoU.isFile))), _f = _e.next(); !_f.done; _f = _e.next()) {
                     var file = _f.value;
                     var db = installer.OpenDatabase(file.Path, msiOpenDatabaseModeReadOnly);
-                    var summaryInfo = db.SummaryInformation(20 /* COUNT_OF_PID */);
-                    var subject = summaryInfo.Property(3 /* PID_SUBJECT */);
-                    var packageCode = summaryInfo.Property(9 /* PID_REVNUMBER */);
-                    var lastSaveTime = new Date(summaryInfo.Property(13 /* PID_LASTSAVE_DTM */)).toISOString();
+                    var summaryInfo = db.SummaryInformation(20 /* WindowsInstaller.SummaryPropertyId.COUNT_OF_PID */);
+                    var subject = summaryInfo.Property(3 /* WindowsInstaller.SummaryPropertyId.PID_SUBJECT */);
+                    var packageCode = summaryInfo.Property(9 /* WindowsInstaller.SummaryPropertyId.PID_REVNUMBER */);
+                    var lastSaveTime = new Date(summaryInfo.Property(13 /* WindowsInstaller.SummaryPropertyId.PID_LASTSAVE_DTM */)).toISOString();
                     var view = db.OpenView('SELECT `Value` FROM `Property` WHERE `Property`=?');
                     var param = installer.CreateRecord(1);
                     ActiveXObject.set(param, 'StringData', [1], 'ProductVersion');
