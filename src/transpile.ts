@@ -211,10 +211,8 @@ export function transpile(fileNames: string[]) {
   const adjustedConfig = adjustConfig(config?.compilerOptions ?? {});
   /* istanbul ignore next */
   const tsbasedir = path.dirname(tsconfigPath || fileNames[0]);
-  const {
-    options: compilerOptions,
-    errors: coError,
-  } = ts.convertCompilerOptionsFromJson(adjustedConfig, tsbasedir);
+  const {options: compilerOptions, errors: coError} =
+    ts.convertCompilerOptionsFromJson(adjustedConfig, tsbasedir);
   /* istanbul ignore next */
   if (coError && coError.length) {
     /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
@@ -254,7 +252,7 @@ export function transpile(fileNames: string[]) {
           vbscripts.push(statement.expression.template.rawText);
         }
         // 見つけたら強引にステートメントを削除
-        ((source.statements as unknown) as unknown[]).splice(i, 1);
+        (source.statements as unknown as unknown[]).splice(i, 1);
         --i;
         continue;
       }
@@ -267,7 +265,8 @@ export function transpile(fileNames: string[]) {
         // 関数の前のコメントから@～を抽出
         const tags: {[name: string]: string} = {};
         // functionの前のコメント部分を抽出
-        const re = /\/\/[ \t]*([^\r\n]*?)[ \t]*\r?\n|\/\**\s*(.*?)\s*\*\/|\s+|(.)/gs;
+        const re =
+          /\/\/[ \t]*([^\r\n]*?)[ \t]*\r?\n|\/\**\s*(.*?)\s*\*\/|\s+|(.)/gs;
         re.lastIndex = statement.pos;
         let matched;
         while ((matched = re.exec(source.text))) {

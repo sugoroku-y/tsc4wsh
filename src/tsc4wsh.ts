@@ -215,12 +215,10 @@ async function writeWsf(
   const outputPath =
     // outputの指定が無ければソースファイルの拡張子をWSFに変えたものに出力
     !options.output
-      ?
-        filepath.replace(/\.ts$/, '.wsf')
+      ? filepath.replace(/\.ts$/, '.wsf')
       : // outputに拡張子WSFのファイル名が指定されていればそのまま使用
       /\.wsf$/i.test(options.output)
-      ?
-        options.output
+      ? options.output
       : // outputに拡張子WSFが指定されていなければディレクトリと見なして
         // そこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
         path.join(options.output, path.basename(filepath, '.ts') + '.wsf');
@@ -246,18 +244,18 @@ async function writeWsf(
 
 // istanbul ignore next
 function assertNever(o: never): never {
-  throw new Error()
+  throw new Error();
 }
 
 type TypeofResult = {
-  object: object | null,
-  function: Function,
-  undefined: undefined,
-  boolean: boolean,
-  number: number,
-  string: string,
-  bigint: bigint,
-  symbol: symbol,
+  object: object | null;
+  function: Function;
+  undefined: undefined;
+  boolean: boolean;
+  number: number;
+  string: string;
+  bigint: bigint;
+  symbol: symbol;
 };
 type ObjectEntry<T> = {[K in keyof T]: [K, T[K]]}[keyof T];
 // istanbul ignore next
@@ -266,32 +264,41 @@ function typeofCheck(o: unknown) {
 }
 type AssertNever<T extends never> = T;
 // typeofの返値がTypeofResultのキーにない値を取るような仕様変更があれば↓がエラーになる
-type TypeofCheck = AssertNever<Exclude<ReturnType<typeof typeofCheck>, keyof TypeofResult>>;
+type TypeofCheck = AssertNever<
+  Exclude<ReturnType<typeof typeofCheck>, keyof TypeofResult>
+>;
 
 // istanbul ignore next
-function hasProperty<NAME extends string>(o: unknown, name: NAME): o is {[k in NAME]: unknown} {
+function hasProperty<NAME extends string>(
+  o: unknown,
+  name: NAME
+): o is {[k in NAME]: unknown} {
   const [type, obj] = [typeof o, o] as ObjectEntry<TypeofResult>;
   if (obj === undefined || obj === null) {
     return false;
   }
   switch (type) {
-  case 'object':
-  case 'function':
-    return name in obj;
-  case 'number':
-  case 'boolean':
-  case 'string':
-  case 'bigint':
-  case 'symbol':
-    return obj.hasOwnProperty(name) || name in obj.constructor.prototype;
-  default:
-    assertNever(obj);
+    case 'object':
+    case 'function':
+      return name in obj;
+    case 'number':
+    case 'boolean':
+    case 'string':
+    case 'bigint':
+    case 'symbol':
+      return obj.hasOwnProperty(name) || name in obj.constructor.prototype;
+    default:
+      assertNever(obj);
   }
 }
 
 // istanbul ignore next
 function getExceptionMessage(ex: unknown): string {
-  return hasProperty(ex, 'message') ? typeof ex.message === 'string' ? ex.message : String(ex.message) : String(ex)
+  return hasProperty(ex, 'message')
+    ? typeof ex.message === 'string'
+      ? ex.message
+      : String(ex.message)
+    : String(ex);
 }
 
 /**
@@ -330,14 +337,13 @@ export async function tsc4wsh(
       return true;
     } catch (ex) {
       // エラーメッセージはすべて例外として受け取る
-      const message =
-        getExceptionMessage(ex)
-              // LF/CRLFで始まっていなければLFを先頭に挿入
-              .replace(/^(?!\r?\n)/, '\n')
-              // LF/CRLFで終わっていなければLFを最後に追加
-              .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
-              // 各行の行頭にインデントを二つ挿入
-              .replace(/^(?=.)/gm, `    `);
+      const message = getExceptionMessage(ex)
+        // LF/CRLFで始まっていなければLFを先頭に挿入
+        .replace(/^(?!\r?\n)/, '\n')
+        // LF/CRLFで終わっていなければLFを最後に追加
+        .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
+        // 各行の行頭にインデントを二つ挿入
+        .replace(/^(?=.)/gm, `    `);
       stderr.write(`    エラー: ${filepaths[0]}${message}`);
       return false;
     }

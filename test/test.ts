@@ -30,11 +30,11 @@ WScript.Echo(vbsInputBox('何か入力して下さい。', 'InputBoxのテスト
  * @onend
  */
 function onendfunc1() {
-    WScript.Echo('test1 on end');
+  WScript.Echo('test1 on end');
 }
 // @onend
 function onendfunc2() {
-    WScript.Echo('test2 on end');
+  WScript.Echo('test2 on end');
 }
 
 namespace test1 {
