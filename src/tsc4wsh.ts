@@ -88,7 +88,7 @@ function appendScriptElement(
     .replace(/^\ufeff/, '') // remove BOM
     .replace(/\r\n/g, '\n') // CRLF -> LF
     .replace(/^(?!\n)/, '\n') // insert LF to BOS
-    .replace(/[^\n]$/, '$&\n'); // append LF to EOS
+    .replace(/(?<!\n)$/, '\n'); // append LF to EOS
   // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
   if (runtimes.length) {
     // `` WshRuntime`～` `` をXMLとしてパーズする
