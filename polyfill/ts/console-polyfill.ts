@@ -1,23 +1,18 @@
 (function(this: any) {
-  this.console = this.console || {};
+  this.console ??= {
+    log() {
+      output(WScript.StdOut, arguments);
+    },
+    error() {
+      output(WScript.StdErr, arguments);
+    },
+  };
   function output(
     stream: IWshRuntimeLibrary.TextStreamWriter,
     messages: IArguments
   ) {
     stream.WriteLine(
-      `[${new Date().toLocaleTimeString()}] ${Array.from(messages)
-        .map(m => (m === undefined ? 'undefined' : m === null ? 'null' : m))
-        .join(' ')}`
+      `[${new Date().toLocaleTimeString()}] ${Array.from(messages, m => String(m)).join(' ')}`
     );
   }
-  this.console.log =
-    this.console.log ||
-    function log() {
-      output(WScript.StdOut, arguments);
-    };
-  this.console.error =
-    this.console.error ||
-    function error() {
-      output(WScript.StdErr, arguments);
-    };
 })();

@@ -1,13 +1,7 @@
 /// <reference path="./symbol-polyfill.ts" />
 
-interface ObjectConstructor {
-  entries(o: object): Array<[string, any]>;
-  values(obj: any): any[];
-  assign(target: any, ...sources: any[]): any;
-}
-(function(this: any) {
+(function () {
   const hasOwnProperty = Object.prototype.hasOwnProperty;
-  const hasDontEnumBug = !{toString: null}.propertyIsEnumerable('toString');
   const dontEnums = [
     'toString',
     'toLocaleString',
@@ -17,12 +11,10 @@ interface ObjectConstructor {
     'propertyIsEnumerable',
     'constructor',
   ];
-  Object.keys =
-    Object.keys ||
-    function keys(obj: any) {
-      if (
+  Object.keys ??= function keys(obj: unknown) {
+      if (obj === null || 
         typeof obj !== 'function' &&
-        (typeof obj !== 'object' || obj === null)
+        typeof obj !== 'object'
       ) {
         throw new TypeError('Object.keys called on non-object');
       }
@@ -37,30 +29,24 @@ interface ObjectConstructor {
         }
         result.push(prop);
       }
-
-      if (hasDontEnumBug) {
-        for (const name of dontEnums) {
-          if (!hasOwnProperty.call(obj, name)) {
-            continue;
-          }
-          result.push(name);
+      for (const name of dontEnums) {
+        if (!hasOwnProperty.call(obj, name)) {
+          continue;
         }
+        result.push(name);
       }
       return result;
     };
-  Object.entries =
-    Object.entries ||
-    function entries(obj: any) {
-      return Object.keys(obj).map<[string, any]>(key => [key, obj[key]]);
+  Object.entries ??=
+    function entries(obj: unknown) {
+      return Object.keys(obj).map<[string, unknown]>(key => [key, obj[key]]);
     };
-  (Object.values as any) =
-    (Object.values as any) ||
-    function values(obj: any) {
+  Object.values ??=
+    function values(obj: unknown) {
       return Object.keys(obj).map(key => obj[key]);
     };
-  Object.create =
-    Object.create ||
-    function create(proto: any, propertiesObject?: any) {
+  Object.create ??=
+    function create(proto: unknown, propertiesObject?: unknown) {
       if (typeof proto !== 'object' && typeof proto !== 'function') {
         throw new TypeError('Object prototype may only be an Object: ' + proto);
       }
@@ -79,13 +65,12 @@ interface ObjectConstructor {
       F.prototype = proto;
       return new (F as any)();
     };
-  (Object.assign as any) =
-    (Object.assign as any) ||
-    function assign(target: any, ...sources: any[]) {
+  Object.assign ??=
+    function assign(target: unknown, ...sources: unknown[]) {
       if (target == null) {
         throw new TypeError('Cannot convert null or undefined to object');
       }
-      const to: {[name: string]: any} = new Object(target);
+      const to: Record<string, unknown> = new Object(target);
       for (const source of sources) {
         for (const name of Object.keys(source)) {
           to[name] = source[name];

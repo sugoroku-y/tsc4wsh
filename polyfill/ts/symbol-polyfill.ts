@@ -5,11 +5,6 @@ function Symbol(description: string): symbol {
   return (Symbol as any).newSymbol(description);
 }
 
-declare namespace Symbol {
-  const iterator: unique symbol;
-  const split: unique symbol;
-}
-
 (() => {
   const symbols: {[id: string]: true} = {};
   // Symbolの実装
