@@ -2,15 +2,15 @@
   "compilerOptions": {
     "target": "es3",
     "module": "none",
-    "lib": ["es5"],
+    "lib": ["esnext"],
     "outFile": "../index.js",
     "downlevelIteration": true,
     "strict": true,
-    "strictNullChecks": true,
     "types": [
       "windows-script-host",
       "activex-scripting"
     ],
+    "forceConsistentCasingInFileNames": true,
     "removeComments": true
   },
   "include": ["./*.ts"]

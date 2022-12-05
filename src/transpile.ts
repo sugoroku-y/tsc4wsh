@@ -57,11 +57,12 @@ function adjustConfig(config: {[key: string]: any}) {
     downlevelIteration: true,
     // 型チェックを厳しく
     strict: true,
-    strictNullChecks: true,
     // デフォルトで読み込む定義ファイル
     types: ['wsh', 'windows-script-host', 'activex-scripting', 'activex-adodb'],
     // エラー発生時は出力しない
     noEmitOnError: true,
+    // 最近のtscはこれがないと警告を出す
+    forceConsistentCasingInFileNames: true,
   });
   // 無ければ補完する設定値
   // libの指定が無ければESNextを指定

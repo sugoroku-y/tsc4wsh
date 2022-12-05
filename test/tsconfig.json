@@ -5,7 +5,7 @@
         "outFile": "./dummy.js",
         "downlevelIteration": true,
         "strict": true,
-        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
         "types": [
             "wsh",
             "windows-script-host",
@@ -14,7 +14,7 @@
             "wshtest"
         ],
         "lib": [
-            "es2018"
+            "ESNext"
         ],
         "typeRoots": [
           "./node_modules",
