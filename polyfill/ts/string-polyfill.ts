@@ -1,13 +1,13 @@
 (function () {
   String.prototype.repeat ??=
-    function repeat(this: string, length: number): string {
+    function repeat(this: string, count: number): string {
       if (count < 0) {
         throw new Error('repeat count must be non-negative');
       }
       if (count === Infinity) {
         throw new Error('repeat count must be less than infinity');
       }
-      return Array(length).fill(this).join('');
+      return Array(count).fill(this).join('');
     };
   // もともとsubstrは存在しているが、負の数を指定したときの扱いがES2015のsubstrと違うので上書き
   String.prototype.substr = function substr(
@@ -71,7 +71,7 @@
     function includes(this: string, searchString: string, position?: number):boolean {
       return this.indexOf(searchString, position) >= 0
     };
-  const original_split = String.prototype.split
+  const original_split: (sep: string, limit?: number) => string[] = String.prototype.split;
   // separatorにキャプチャを含む正規正規表現を指定したときの挙動、およびSymbol.splitの扱いがES2015のものと合わないので上書き
   String.prototype.split = function split(
     this: string,
@@ -99,13 +99,13 @@
     for (const match of this.matchAll(pattern)) {
       if (index === match.index && match[0].length === 0) continue;
       result.push(str.slice(index, match.index), ...match.slice(1));
-      index = match.index;
+      index = match.index!;
     }
     // 最後の部分を追加
     result.push(str.slice(index));
     return result;
   };
-  String.prototype.matchAll ??= function* matchAll(_pattern: RegExp): Generator<RegExpExecArray, void> {
+  String.prototype.matchAll ??= function* matchAll(this: string, _pattern: RegExp): Generator<RegExpExecArray, void> {
     const pattern = new RegExp(_pattern.source, _pattern.flags);
     let match;
     while (!!(match = pattern.exec(this))) {

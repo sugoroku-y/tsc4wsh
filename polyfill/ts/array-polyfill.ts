@@ -1,49 +1,52 @@
 (function () {
-  Array.isArray ??= function isArray(obj: unknown): obj is unknown[] {
+  Array.isArray ??= (obj: unknown): obj is unknown[] => {
     return Object.prototype.toString.call(obj) === "[object Array]";
   };
-  Array.of ??= function of<T>(..._: T[]): T[] {
-    return Array.prototype.slice.call(arguments);
-  };
+  Array.of ??= <T>(...args: T[]): T[] => args;
   Array.from ??= function from<T, R, THIS>(
     arrayLike: { length: number; [index: number]: T },
-    mapFn?: (this: THIS, e: T, i: number) => R,
+    mapFn?: (this: typeof thisArg, e: T, i: number) => R,
     thisArg?: THIS
   ): R[] {
     if (
-      typeof mapFn !== "function" &&
+      !mapFn ||
+      typeof mapFn !== "function" ||
       Object.prototype.toString.call(mapFn) !== "[object Function]"
     ) {
-      mapFn = (e) => e;
+      mapFn = function (this: typeof thisArg, e: T): R {return e as unknown as R;};
     }
     // もともとarrayLikeが配列ならmapを呼ぶだけ
     if (Array.isArray(arrayLike)) {
       return arrayLike.map(mapFn, thisArg);
     }
-    // Enumeratorが使えるなら使って配列化
-    if (
-      typeof arrayLike === "object" &&
-      (typeof arrayLike.Item === "function" ||
-        typeof arrayLike.item === "function")
-    ) {
+    if ('length' in arrayLike) {
+      const length = +arrayLike.length || 0;
       const array = [];
-      let i = 0;
-      for (const e = new Enumerator(arrayLike); !e.atEnd(); e.moveNext()) {
-        array.push(mapFn.call(thisArg, e.item(), i++));
+      for (let i = 0; i < length; ++i) {
+        array[i] = mapFn.call(thisArg, arrayLike[i], i);
       }
       return array;
     }
-    const length = +arrayLike.length || 0;
+    if (Symbol.iterator in arrayLike) {
+      const array = [];
+      const iterator = (arrayLike as any)[Symbol.iterator]();
+      let i = 0;
+      for (let result; !(result = iterator.next()).done; ) {
+        array.push(mapFn.call(thisArg, result.value, i++));
+      }
+      return array;
+    }
     const array = [];
-    for (let i = 0; i < length; ++i) {
-      array[i] = mapFn.call(thisArg, arrayLike[i], i);
+    let i = 0;
+    for (const e = new Enumerator<T>(arrayLike as {Item(index: number): T} & ArrayLike<T>); !e.atEnd(); e.moveNext()) {
+      array.push(mapFn.call(thisArg, e.item(), i++));
     }
     return array;
   };
 
   Array.prototype.some ??= function some<T, THIS>(
     this: T[],
-    callback: (this: THIS, e: T, i: number, a: T[]) => unknown,
+    callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
     thisObj?: THIS
   ): boolean {
     for (let i = 0; i < this.length; ++i) {
@@ -58,7 +61,7 @@
   };
   Array.prototype.every ??= function every<T, THIS>(
     this: T[],
-    callback: (this: THIS, e: T, i: number, a: T[]) => unknown,
+    callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
     thisObj?: THIS
   ) {
     for (let i = 0; i < this.length; ++i) {
@@ -83,10 +86,10 @@
       if (!(index in this)) {
         continue;
       }
-      result = callback.call(null, result, this[index], index, this);
+      result = callback(result, this[index], index, this);
     }
     return result;
-  };
+  } as typeof Array.prototype.reduce;
   Array.prototype.reduceRight ??= function reduceRight<T, R>(
     this: T[],
     callback: (r: R, e: T, i: number, a: T[]) => R,
@@ -98,13 +101,13 @@
       if (!(index in this)) {
         continue;
       }
-      result = callback.call(null, result, this[index], index, this);
+      result = callback(result, this[index], index, this);
     }
     return result;
-  };
+  } as typeof Array.prototype.reduceRight;
   Array.prototype.forEach ??= function forEach<T, THIS>(
     this: T[],
-    callback: (this: THIS, e: T, i: number, a: T[]) => unknown,
+    callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
     thisObj: THIS
   ) {
     for (let index = 0; index < this.length; ++index) {
@@ -133,8 +136,8 @@
   };
   Array.prototype.map ??= function map<T, R, THIS>(
     this: T[],
-    callback: (this: THIS, e: T, i: number, a: T[]) => R,
-    thisObj: any
+    callback: (this: typeof thisObj, e: T, i: number, a: T[]) => R,
+    thisObj?: THIS
   ): R[] {
     const result: R[] = [];
     for (let index = 0; index < this.length; ++index) {
@@ -159,44 +162,41 @@
    * @returns 調整後のインデックス
    */
   function adjustIndex(
-    this: unknown[],
-    args: IArguments,
-    index: number,
-    defaultValue?: number
-  ) {
-    if (index >= args.length) {
-      if (defaultValue === undefined) {
-        throw new Error("arguments[" + index + "] required");
-      }
-      return defaultValue;
+    value: number | undefined,
+    length: number,
+  ): number | undefined {
+    if (value === undefined) {
+      return undefined;
     }
-    let value = +args[index];
     if (value < 0) {
-      value += this.length;
+      value += length;
     }
     if (value < 0) {
       value = 0;
     } else if (value > length) {
-      value = this.length;
+      value = length;
     }
     return value;
   }
   Array.prototype.copyWithin ??= function copyWithin<T>(
     this: T[],
-    target: number,
-    start?: number,
-    end?: number
+    _target: number,
+    _start?: number,
+    _end?: number
   ): T[] {
-    const target = adjustIndex.call(this, arguments, 0);
-    const start = adjustIndex.call(this, arguments, 1, 0);
-    const end = adjustIndex.call(this, arguments, 2, this.length);
-    const source = this.slice(start, end);
-    const length = Math.min(source.length, this.length - target);
-    for (let i = target; i < length; ++i) {
-      if (i in source) {
-        this[target + i] = source[i];
-      } else {
-        delete this[target + i];
+    const target = adjustIndex(_target, this.length) ?? 0;
+    const start = adjustIndex(_start, this.length) ?? 0;
+    if (target === start) {
+      return this;
+    }
+    const end = adjustIndex(_end, this.length) ?? this.length;
+    if (target < start) {
+      for (let s = start, d = target; s < end && d < this.length; ++s, ++d) {
+        this[d] = this[s];
+      }
+    } else {
+      for (let s = end - 1, d = target + (end - 1 - start); s >= start && d >= 0; --s, --d) {
+        this[d] = this[s];
       }
     }
     return this;
@@ -204,11 +204,11 @@
   Array.prototype.fill ??= function fill<T>(
     this: T[],
     value: T,
-    start?: number,
-    end?: number
+    _start?: number,
+    _end?: number
   ): T[] {
-    const start = adjustIndex.call(this, arguments, 1, 0);
-    const end = adjustIndex.call(this, arguments, 2, this.length);
+    const start = adjustIndex(_start, this.length) ?? 0;
+    const end = adjustIndex(_end, this.length) ?? this.length;
     for (let i = start; i < end; ++i) {
       this[i] = value;
     }
@@ -263,9 +263,9 @@
   Array.prototype.indexOf ??= function indexOf<T>(
     this: T[],
     searchElement: T,
-    start?: number
+    _start?: number
   ): number {
-    const start = adjustIndex.call(this, arguments, 1, 0);
+    const start = adjustIndex(_start, this.length) ?? 0;
     for (let index = start; index < this.length; ++index) {
       if (this[index] === searchElement) {
         return index;
@@ -275,9 +275,10 @@
   };
   Array.prototype.lastIndexOf ??= function lastIndexOf<T>(
     this: T[],
-    searchElement: T
+    searchElement: T,
+    _start?: number,
   ): number {
-    const start = adjustIndex.call(this, arguments, 1, this.length - 1);
+    const start = adjustIndex(_start, this.length) ?? this.length - 1;
     for (let index = start; index >= 0; --index) {
       if (this[index] === searchElement) {
         return index;
@@ -286,10 +287,14 @@
     return -1;
   };
 
-  Array.prototype.entries ??= function entries<T>(this: T[]): [number, T][] {
-    return this.map((value, index) => [index, value]);
+  Array.prototype.entries ??= function* entries<T>(this: T[]): Generator<[number, T], void> {
+    for (let i = 0; i < this.length; ++i) {
+      yield [i, this[i]];
+    }
   };
-  Array.prototype.keys ??= function keys<T>(this: T[]): number[] {
-    return this.map((_, index) => index);
+  Array.prototype.keys ??= function* keys<T>(this: T[]): Generator<number, void> {
+    for (let i = 0; i < this.length; ++i) {
+      yield i;
+    }
   };
 })();
