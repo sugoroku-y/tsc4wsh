@@ -20,7 +20,7 @@ const cachedProgid: {[name: string]: string} = {
   fso: 'Scripting.FileSystemObject',
   installer: 'WindowsInstaller.Installer',
 };
-(function(this: any) {
+(function (this: any) {
   const args: string[] = [];
   const g = Iterables.from(WScript.Arguments)[Symbol.iterator]();
   for (let ir = g.next(); !ir.done; ir = g.next()) {
@@ -32,36 +32,36 @@ const cachedProgid: {[name: string]: string} = {
       break;
     }
     switch (arg) {
-    case '-r':
-    case '--require':
-      // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
+      case '-r':
+      case '--require':
+        // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
         const nextarg = ((ir = g.next()), ir.done && usage(), ir.value);
         const eqIndex = nextarg.indexOf('=');
         const {name, progid} = (() => {
-      if (eqIndex <= 0) {
+          if (eqIndex <= 0) {
             if (!(nextarg in cachedProgid)) {
               return usage();
             }
             return {name: nextarg, progid: cachedProgid[nextarg]};
-      } else {
+          } else {
             return {
               name: nextarg.substr(0, eqIndex),
               progid: nextarg.substr(eqIndex + 1),
             };
-      }
+          }
         })();
-      this[name] = WScript.CreateObject(progid as any);
-      continue;
-    case '-l':
-    case '--load':
-      // 外部スクリプトを読み込めるようにする
+        this[name] = WScript.CreateObject(progid as any);
+        continue;
+      case '-l':
+      case '--load':
+        // 外部スクリプトを読み込めるようにする
         const loadpath = ((ir = g.next()), ir.done && usage(), ir.value);
         new Function(
           WScript.CreateObject('Scripting.FileSystemObject')
             .OpenTextFile(loadpath)
             .ReadAll()
         ).call(this);
-      continue;
+        continue;
     }
     args.push(arg);
   }
@@ -93,9 +93,13 @@ const cachedProgid: {[name: string]: string} = {
     WScript.Quit(+r || 0);
   } catch (ex) {
     WScript.StdErr.WriteLine(
-      `${debugContext.hasProperty(ex, 'name') && ex.name || ''}${(debugContext.hasProperty(ex, 'number') && typeof ex.number === 'number' &&
-        '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')') ||
-        ''}${debugContext.hasProperty(ex, 'message') && ex.message || ''}`
+      typeof ex === 'object' && ex
+        ? `${('name' in ex && ex.name) || ''}${
+            'number' in ex && typeof ex.number === 'number'
+              ? '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')'
+              : ''
+          }${('message' in ex && ex.message) || ''}`
+        : String(ex)
     );
     WScript.Quit(1);
   }
