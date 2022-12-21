@@ -56,7 +56,7 @@ namespace XmlWriter {
     prefix: string;
     namespaceURI: string;
   }
-  function ensurePrifix(
+  function ensurePrefix(
     {prefix, namespaceURI, nodeType}: DOM3.Node,
     map: INamespace[],
     appendix: INamespace[]
@@ -214,11 +214,11 @@ namespace XmlWriter {
                 xml += currentIndent;
                 xml += `<${node.nodeName}`;
                 const appendix: INamespace[] = [];
-                let currentMap = ensurePrifix(node, map, appendix);
+                let currentMap = ensurePrefix(node, map, appendix);
                 for (const attr of Iterables.from(node.attributes)) {
                   xml += ` ${attr.nodeName}="${escapeXml(attr.value)}"`;
                   if (attr.prefix) {
-                    currentMap = ensurePrifix(attr, currentMap, appendix);
+                    currentMap = ensurePrefix(attr, currentMap, appendix);
                   }
                 }
                 for (const {prefix, namespaceURI} of appendix) {
