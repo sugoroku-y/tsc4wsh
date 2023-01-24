@@ -6,6 +6,7 @@
       "ESNext"
     ],
     "downlevelIteration": true,
+    "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       ".",
       "@types"

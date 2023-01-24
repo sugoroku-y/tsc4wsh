@@ -5,8 +5,9 @@
     "downlevelIteration": true,
     "strict": true,
     "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
     "types": [
-      "window-script-host",
+      "windows-script-host",
       "activex-scripting",
       "activex-adodb",
       "wshtest"

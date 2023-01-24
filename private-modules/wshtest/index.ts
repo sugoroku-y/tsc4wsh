@@ -103,7 +103,7 @@ class TestResult<T> {
     if (isIterable(expected)) {
       if (!isIterable(this.actual)) {
         throw new TestFailed(
-          `expected is an Iteable, but actual is not an Iterable: expected: ${toString(
+          `expected is an Iterable, but actual is not an Iterable: expected: ${toString(
             expected
           )}, actual:${toString(this.actual)}`
         );

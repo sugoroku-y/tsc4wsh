@@ -2,452 +2,312 @@
 <job>
 <script language="JScript"><![CDATA[
 "use strict";
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
 };
 (function () {
-    Array.isArray =
-        Array.isArray ||
-            function isArray(obj) {
-                return Object.prototype.toString.call(obj) === '[object Array]';
-            };
-    Array.of =
-        Array.of ||
-            function of() {
-                return Array.prototype.slice.call(arguments);
-            };
-    Array.from =
-        Array.from ||
-            function from(arrayLike, mapFn, thisArg) {
-                if (typeof mapFn !== 'function' &&
-                    Object.prototype.toString.call(mapFn) !== '[object Function]') {
-                    mapFn = function (e) { return e; };
-                }
-                var array;
-                if (Array.isArray(arrayLike)) {
-                    array = arrayLike.map(mapFn, thisArg);
-                }
-                else if (typeof arrayLike === 'object' &&
-                    (typeof arrayLike.Item === 'function' ||
-                        typeof arrayLike.item === 'function')) {
-                    array = new Array();
-                    var i = 0;
-                    for (var e = new Enumerator(arrayLike); !e.atEnd(); e.moveNext()) {
-                        array.push(mapFn.call(thisArg, e.item(), i++));
-                    }
-                }
-                else {
-                    var len = +arrayLike.length || 0;
-                    array = new Array(len);
-                    for (var i = 0; i < len; ++i) {
-                        array[i] = mapFn.call(thisArg, arrayLike[i], i);
-                    }
-                }
-                return array;
-            };
-    Array.prototype.some =
-        Array.prototype.some ||
-            function some(callback, thisObj) {
-                for (var i = 0; i < this.length; ++i) {
-                    if (!(i in this)) {
-                        continue;
-                    }
-                    if (callback.call(thisObj, this[i], i, this)) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-    Array.prototype.every =
-        Array.prototype.every ||
-            function every(callback, thisObj) {
-                return !this.some(function (e, i, a) { return !callback.call(thisObj, e, i, a); });
-            };
-    Array.prototype.reduce =
-        Array.prototype.reduce ||
-            function reduce(callback, initialValue) {
-                var index = 0;
-                var result = 1 < arguments.length ? initialValue : this[index++];
-                for (; index < this.length; ++index) {
-                    if (!(index in this)) {
-                        continue;
-                    }
-                    result = callback.call(null, result, this[index], index, this);
-                }
-                return result;
-            };
-    Array.prototype.reduceRight =
-        Array.prototype.reduceRight ||
-            function reduceRight(callback, initialValue) {
-                var index = this.length;
-                var result = 1 < arguments.length ? initialValue : this[--index];
-                while (index-- > 0) {
-                    if (!(index in this)) {
-                        continue;
-                    }
-                    result = callback.call(null, result, this[index], index, this);
-                }
-                return result;
-            };
-    Array.prototype.forEach =
-        Array.prototype.forEach ||
-            function forEach(callback, thisObj) {
-                this.reduce(function (r, e, i, a) { return callback.call(thisObj, e, i, a) && false; }, false);
-            };
-    Array.prototype.filter =
-        Array.prototype.filter ||
-            function filter(callback, thisObj) {
-                return this.reduce(function (r, e, i, a) {
-                    if (callback.call(thisObj, e, i, a)) {
-                        r.push(e);
-                    }
-                    return r;
-                }, []);
-            };
-    Array.prototype.map =
-        Array.prototype.map ||
-            function map(callback, thisObj) {
-                return this.reduce(function (r, e, i, a) {
-                    r[i] = callback.call(thisObj, e, i, a);
-                    return r;
-                }, []);
-            };
-    var adjustIndex = function (args, index, length, defaultValue) {
-        var value = args.length > index ? +args[index] : NaN;
-        if (isNaN(value)) {
-            if (defaultValue === undefined) {
-                throw new Error('arguments[' + index + '] required');
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
+    var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
+    (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
+        return Object.prototype.toString.call(obj) === "[object Array]";
+    });
+    (_b = Array.of) !== null && _b !== void 0 ? _b : (Array.of = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        return args;
+    });
+    (_c = Array.from) !== null && _c !== void 0 ? _c : (Array.from = function from(arrayLike, mapFn, thisArg) {
+        if (!mapFn ||
+            typeof mapFn !== "function" ||
+            Object.prototype.toString.call(mapFn) !== "[object Function]") {
+            mapFn = function (e) { return e; };
+        }
+        if (Array.isArray(arrayLike)) {
+            return arrayLike.map(mapFn, thisArg);
+        }
+        if ('length' in arrayLike) {
+            var length = +arrayLike.length || 0;
+            var array_1 = [];
+            for (var i_1 = 0; i_1 < length; ++i_1) {
+                array_1[i_1] = mapFn.call(thisArg, arrayLike[i_1], i_1);
             }
-            value = defaultValue;
+            return array_1;
+        }
+        if (Symbol.iterator in arrayLike) {
+            var array_2 = [];
+            var iterator = arrayLike[Symbol.iterator]();
+            var i_2 = 0;
+            for (var result = void 0; !(result = iterator.next()).done;) {
+                array_2.push(mapFn.call(thisArg, result.value, i_2++));
+            }
+            return array_2;
+        }
+        var array = [];
+        var i = 0;
+        for (var e = new Enumerator(arrayLike); !e.atEnd(); e.moveNext()) {
+            array.push(mapFn.call(thisArg, e.item(), i++));
+        }
+        return array;
+    });
+    (_d = (_v = Array.prototype).some) !== null && _d !== void 0 ? _d : (_v.some = function some(callback, thisObj) {
+        for (var i = 0; i < this.length; ++i) {
+            if (!(i in this)) {
+                continue;
+            }
+            if (callback.call(thisObj, this[i], i, this)) {
+                return true;
+            }
+        }
+        return false;
+    });
+    (_e = (_w = Array.prototype).every) !== null && _e !== void 0 ? _e : (_w.every = function every(callback, thisObj) {
+        for (var i = 0; i < this.length; ++i) {
+            if (!(i in this)) {
+                continue;
+            }
+            if (!callback.call(thisObj, this[i], i, this)) {
+                return false;
+            }
+        }
+        return true;
+    });
+    (_f = (_x = Array.prototype).reduce) !== null && _f !== void 0 ? _f : (_x.reduce = function reduce(callback, initialValue) {
+        var index = 0;
+        var result = 1 < arguments.length ? initialValue : this[index++];
+        for (; index < this.length; ++index) {
+            if (!(index in this)) {
+                continue;
+            }
+            result = callback(result, this[index], index, this);
+        }
+        return result;
+    });
+    (_g = (_y = Array.prototype).reduceRight) !== null && _g !== void 0 ? _g : (_y.reduceRight = function reduceRight(callback, initialValue) {
+        var index = this.length;
+        var result = 1 < arguments.length ? initialValue : this[--index];
+        while (index-- > 0) {
+            if (!(index in this)) {
+                continue;
+            }
+            result = callback(result, this[index], index, this);
+        }
+        return result;
+    });
+    (_h = (_z = Array.prototype).forEach) !== null && _h !== void 0 ? _h : (_z.forEach = function forEach(callback, thisObj) {
+        for (var index = 0; index < this.length; ++index) {
+            if (!(index in this)) {
+                continue;
+            }
+            callback.call(thisObj, this[index], index, this);
+        }
+    });
+    (_j = (_0 = Array.prototype).filter) !== null && _j !== void 0 ? _j : (_0.filter = function filter(callback, thisObj) {
+        var result = [];
+        for (var index = 0; index < this.length; ++index) {
+            if (!(index in this)) {
+                continue;
+            }
+            var element = this[index];
+            if (callback.call(thisObj, element, index, this)) {
+                result.push(element);
+            }
+        }
+        return result;
+    });
+    (_k = (_1 = Array.prototype).map) !== null && _k !== void 0 ? _k : (_1.map = function map(callback, thisObj) {
+        var result = [];
+        for (var index = 0; index < this.length; ++index) {
+            if (!(index in this)) {
+                continue;
+            }
+            result[index] = callback.call(thisObj, this[index], index, this);
+        }
+        return result;
+    });
+    function adjustIndex(value, length) {
+        if (value === undefined) {
+            return undefined;
         }
         if (value < 0) {
             value += length;
-            if (value < 0) {
-                value = 0;
-            }
+        }
+        if (value < 0) {
+            value = 0;
+        }
+        else if (value > length) {
+            value = length;
         }
         return value;
-    };
-    Array.prototype.copyWithin =
-        Array.prototype.copyWithin ||
-            function copyWithin() {
-                var target = adjustIndex(arguments, 1, this.length);
-                var start = adjustIndex(arguments, 1, this.length, 0);
-                var end = adjustIndex(arguments, 2, this.length, this.length);
-                var targetEnd = Math.min(target + (end - start), this.length);
-                if (target < start) {
-                    for (var i = target; i < targetEnd; ++i) {
-                        if (!(i in this)) {
-                            continue;
-                        }
-                        this[i] = this[start + i - target];
-                    }
-                }
-                else {
-                    for (var i = targetEnd; --i >= target;) {
-                        if (!(i in this)) {
-                            continue;
-                        }
-                        this[i] = this[start + i - target];
-                    }
-                }
-                return this;
-            };
-    Array.prototype.fill =
-        Array.prototype.fill ||
-            function fill(value) {
-                var start = adjustIndex(arguments, 1, this.length, 0);
-                var end = adjustIndex(arguments, 2, this.length, this.length);
-                for (var i = start; i < end; ++i) {
-                    this[i] = value;
-                }
-                return this;
-            };
-    Array.prototype.find =
-        Array.prototype.find ||
-            function find(pred, thisArg) {
-                var result;
-                this.some(function (e, i, a) { return pred.call(thisArg, e, i, a) && ((result = e), true); });
-                return result;
-            };
-    Array.prototype.findIndex =
-        Array.prototype.findIndex ||
-            function findIndex(pred, thisArg) {
-                var result = -1;
-                this.some(function (e, i, a) { return pred.call(thisArg, e, i, a) && ((result = i), true); });
-                return result;
-            };
-    Array.prototype.includes =
-        Array.prototype.includes ||
-            function includes(searchElement) {
-                var e_1, _a;
-                try {
-                    for (var _b = __values(this), _c = _b.next(); !_c.done; _c = _b.next()) {
-                        var e = _c.value;
-                        if (e === searchElement) {
-                            return true;
-                        }
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                return false;
-            };
-    Array.prototype.indexOf =
-        Array.prototype.lastIndexOf ||
-            function indexOf(searchElement) {
-                for (var index = adjustIndex(arguments, 1, this.length, 0); index < this.length; ++index) {
-                    if (this[index] === searchElement) {
-                        return index;
-                    }
-                }
-                return -1;
-            };
-    Array.prototype.lastIndexOf =
-        Array.prototype.lastIndexOf ||
-            function lastIndexOf(searchElement) {
-                for (var index = adjustIndex(arguments, 1, this.length, this.length - 1); index >= 0; --index) {
-                    if (this[index] === searchElement) {
-                        return index;
-                    }
-                }
-                return -1;
-            };
-    Array.prototype.entries =
-        Array.prototype.entries ||
-            function entries() {
-                return this.map(function (value, index) { return [index, value]; });
-            };
-    Array.prototype.keys =
-        Array.prototype.keys ||
-            function keys() {
-                return this.map(function (_, index) { return index; });
-            };
-})();
-(function () {
-    this.console = this.console || {};
-    function output(stream, messages) {
-        stream.WriteLine("[" + new Date().toLocaleTimeString() + "] " + Array.from(messages)
-            .map(function (m) { return (m === undefined ? 'undefined' : m === null ? 'null' : m); })
-            .join(' '));
     }
-    this.console.log =
-        this.console.log ||
-            function log() {
-                output(WScript.StdOut, arguments);
-            };
-    this.console.error =
-        this.console.error ||
-            function error() {
-                output(WScript.StdErr, arguments);
-            };
-})();
-(function () {
-    Date.prototype.toISOString =
-        Date.prototype.toISOString ||
-            function toISOString() {
-                return (this.getUTCFullYear() +
-                    '-' +
-                    ('' + (this.getUTCMonth() + 1)).padStart(2, '0') +
-                    '-' +
-                    ('' + this.getUTCDate()).padStart(2, '0') +
-                    'T' +
-                    ('' + this.getUTCHours()).padStart(2, '0') +
-                    ':' +
-                    ('' + this.getUTCMinutes()).padStart(2, '0') +
-                    ':' +
-                    ('' + this.getUTCSeconds()).padStart(2, '0') +
-                    '.' +
-                    ('' + this.getUTCMilliseconds()).padStart(3, '0') +
-                    'Z');
-            };
-    Date.now =
-        Date.now ||
-            function now() {
-                return new Date().getTime();
-            };
-})();
-function Symbol(description) {
-    return Symbol.newSymbol(description);
-}
-(function () {
-    var _a, _b;
-    var _c, _d, _e, _f;
-    var symbols = {};
-    Symbol.newSymbol = function (description) {
-        var id = "Symbol@@" + description + "@@" + new Date().getTime() + "@@" + Math.random();
-        symbols[id] = true;
-        return {
-            toString: function () {
-                return id;
-            },
-            valueOf: function () {
-                return description || '';
-            }
-        };
-    };
-    Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
-    var registered = {};
-    var keys = {};
-    Symbol["for"] = function (key) {
-        var existing = registered[key];
-        if (existing) {
-            return existing;
+    (_l = (_2 = Array.prototype).copyWithin) !== null && _l !== void 0 ? _l : (_2.copyWithin = function copyWithin(_target, _start, _end) {
+        var _a, _b, _c;
+        var target = (_a = adjustIndex(_target, this.length)) !== null && _a !== void 0 ? _a : 0;
+        var start = (_b = adjustIndex(_start, this.length)) !== null && _b !== void 0 ? _b : 0;
+        if (target === start) {
+            return this;
         }
-        var sym = Symbol(key);
-        registered[key] = sym;
-        keys[sym.toString()] = key;
-        return sym;
-    };
-    Symbol.keyFor = function (sym) { return keys[sym.toString()]; };
-    Symbol.iterator = Symbol('iterator');
-    Symbol.split = Symbol('split');
-    (_a = (_c = Array.prototype)[_d = Symbol.iterator]) !== null && _a !== void 0 ? _a : (_c[_d] = function () {
-        var _this = this;
-        var i = 0;
-        var next = function () {
-            return i < _this.length ? { value: _this[i++] } : { done: true };
-        };
-        return { next: next };
+        var end = (_c = adjustIndex(_end, this.length)) !== null && _c !== void 0 ? _c : this.length;
+        if (target < start) {
+            for (var s = start, d = target; s < end && d < this.length; ++s, ++d) {
+                this[d] = this[s];
+            }
+        }
+        else {
+            for (var s = end - 1, d = target + (end - 1 - start); s >= start && d >= 0; --s, --d) {
+                this[d] = this[s];
+            }
+        }
+        return this;
     });
-    (_b = (_e = String.prototype)[_f = Symbol.iterator]) !== null && _b !== void 0 ? _b : (_e[_f] = function () {
-        var _this = this;
-        var i = 0;
-        var next = function () {
-            return i < _this.length ? { value: _this.charAt(i++) } : { done: true };
-        };
-        return { next: next };
+    (_m = (_3 = Array.prototype).fill) !== null && _m !== void 0 ? _m : (_3.fill = function fill(value, _start, _end) {
+        var _a, _b;
+        var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : 0;
+        var end = (_b = adjustIndex(_end, this.length)) !== null && _b !== void 0 ? _b : this.length;
+        for (var i = start; i < end; ++i) {
+            this[i] = value;
+        }
+        return this;
+    });
+    (_o = (_4 = Array.prototype).find) !== null && _o !== void 0 ? _o : (_4.find = function find(pred, thisArg) {
+        for (var i = 0; i < this.length; ++i) {
+            if (!(i in this)) {
+                continue;
+            }
+            var e = this[i];
+            if (pred.call(thisArg, e, i, this)) {
+                return e;
+            }
+        }
+        return undefined;
+    });
+    (_p = (_5 = Array.prototype).findIndex) !== null && _p !== void 0 ? _p : (_5.findIndex = function findIndex(pred, thisArg) {
+        for (var i = 0; i < this.length; ++i) {
+            if (!(i in this)) {
+                continue;
+            }
+            var e = this[i];
+            if (pred.call(thisArg, e, i, this)) {
+                return i;
+            }
+        }
+        return -1;
+    });
+    (_q = (_6 = Array.prototype).includes) !== null && _q !== void 0 ? _q : (_6.includes = function includes(searchElement) {
+        for (var i = 0; i < this.length; ++i) {
+            if (!(i in this)) {
+                continue;
+            }
+            if (this[i] === searchElement) {
+                return true;
+            }
+        }
+        return false;
+    });
+    (_r = (_7 = Array.prototype).indexOf) !== null && _r !== void 0 ? _r : (_7.indexOf = function indexOf(searchElement, _start) {
+        var _a;
+        var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : 0;
+        for (var index = start; index < this.length; ++index) {
+            if (this[index] === searchElement) {
+                return index;
+            }
+        }
+        return -1;
+    });
+    (_s = (_8 = Array.prototype).lastIndexOf) !== null && _s !== void 0 ? _s : (_8.lastIndexOf = function lastIndexOf(searchElement, _start) {
+        var _a;
+        var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : this.length - 1;
+        for (var index = start; index >= 0; --index) {
+            if (this[index] === searchElement) {
+                return index;
+            }
+        }
+        return -1;
+    });
+    (_t = (_9 = Array.prototype).entries) !== null && _t !== void 0 ? _t : (_9.entries = function entries() {
+        var i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    i = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(i < this.length)) return [3, 4];
+                    return [4, [i, this[i]]];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    ++i;
+                    return [3, 1];
+                case 4: return [2];
+            }
+        });
+    });
+    (_u = (_10 = Array.prototype).keys) !== null && _u !== void 0 ? _u : (_10.keys = function keys() {
+        var i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    i = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(i < this.length)) return [3, 4];
+                    return [4, i];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    ++i;
+                    return [3, 1];
+                case 4: return [2];
+            }
+        });
     });
 })();
 (function () {
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var hasDontEnumBug = !{ toString: null }.propertyIsEnumerable('toString');
-    var dontEnums = [
-        'toString',
-        'toLocaleString',
-        'valueOf',
-        'hasOwnProperty',
-        'isPrototypeOf',
-        'propertyIsEnumerable',
-        'constructor',
-    ];
-    Object.keys =
-        Object.keys ||
-            function keys(obj) {
-                var e_2, _a;
-                if (typeof obj !== 'function' &&
-                    (typeof obj !== 'object' || obj === null)) {
-                    throw new TypeError('Object.keys called on non-object');
-                }
-                var result = [];
-                for (var prop in obj) {
-                    if (Symbol.isSymbol(prop)) {
-                        continue;
-                    }
-                    if (!hasOwnProperty.call(obj, prop)) {
-                        continue;
-                    }
-                    result.push(prop);
-                }
-                if (hasDontEnumBug) {
-                    try {
-                        for (var dontEnums_1 = __values(dontEnums), dontEnums_1_1 = dontEnums_1.next(); !dontEnums_1_1.done; dontEnums_1_1 = dontEnums_1.next()) {
-                            var name = dontEnums_1_1.value;
-                            if (!hasOwnProperty.call(obj, name)) {
-                                continue;
-                            }
-                            result.push(name);
-                        }
-                    }
-                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                    finally {
-                        try {
-                            if (dontEnums_1_1 && !dontEnums_1_1.done && (_a = dontEnums_1["return"])) _a.call(dontEnums_1);
-                        }
-                        finally { if (e_2) throw e_2.error; }
-                    }
-                }
-                return result;
-            };
-    Object.entries =
-        Object.entries ||
-            function entries(obj) {
-                return Object.keys(obj).map(function (key) { return [key, obj[key]]; });
-            };
-    Object.values =
-        Object.values ||
-            function values(obj) {
-                return Object.keys(obj).map(function (key) { return obj[key]; });
-            };
-    Object.create =
-        Object.create ||
-            function create(proto, propertiesObject) {
-                if (typeof proto !== 'object' && typeof proto !== 'function') {
-                    throw new TypeError('Object prototype may only be an Object: ' + proto);
-                }
-                if (proto === null) {
-                    throw new Error("This Object.create is a shim and doesn't support 'null' as the first argument.");
-                }
-                if (propertiesObject !== undefined) {
-                    throw new Error("This Object.create is a shim and doesn't support a second argument.");
-                }
-                var F = function () { };
-                F.prototype = proto;
-                return new F();
-            };
-    Object.assign =
-        Object.assign ||
-            function assign(target) {
-                var e_3, _a, e_4, _b;
-                var sources = [];
-                for (var _i = 1; _i < arguments.length; _i++) {
-                    sources[_i - 1] = arguments[_i];
-                }
-                if (target == null) {
-                    throw new TypeError('Cannot convert null or undefined to object');
-                }
-                var to = new Object(target);
-                try {
-                    for (var sources_1 = __values(sources), sources_1_1 = sources_1.next(); !sources_1_1.done; sources_1_1 = sources_1.next()) {
-                        var source = sources_1_1.value;
-                        try {
-                            for (var _c = (e_4 = void 0, __values(Object.keys(source))), _d = _c.next(); !_d.done; _d = _c.next()) {
-                                var name = _d.value;
-                                to[name] = source[name];
-                            }
-                        }
-                        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-                        finally {
-                            try {
-                                if (_d && !_d.done && (_b = _c["return"])) _b.call(_c);
-                            }
-                            finally { if (e_4) throw e_4.error; }
-                        }
-                    }
-                }
-                catch (e_3_1) { e_3 = { error: e_3_1 }; }
-                finally {
-                    try {
-                        if (sources_1_1 && !sources_1_1.done && (_a = sources_1["return"])) _a.call(sources_1);
-                    }
-                    finally { if (e_3) throw e_3.error; }
-                }
-                return to;
-            };
+    var _a;
+    (_a = this.console) !== null && _a !== void 0 ? _a : (this.console = {
+        log: function () {
+            output(WScript.StdOut, arguments);
+        },
+        error: function () {
+            output(WScript.StdErr, arguments);
+        }
+    });
+    function output(stream, messages) {
+        stream.WriteLine("[".concat(new Date().toLocaleTimeString(), "] ").concat(Array.from(messages, function (m) { return String(m); }).join(' ')));
+    }
 })();
+var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
+    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+    return cooked;
+};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -465,6 +325,297 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 (function () {
+    var _a, _b;
+    var _c;
+    function format(template) {
+        var values = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            values[_i - 1] = arguments[_i];
+        }
+        return template.reduce(function (r, e, i) {
+            var v = values[i - 1];
+            var _a = __read(Array.isArray(v) ? v : [v, 2], 2), num = _a[0], digits = _a[1];
+            return r + (digits ? num.toString().padStart(digits, "0") : num) + e;
+        });
+    }
+    (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
+        return format(__makeTemplateObject(["", "-", "-", "T", ":", ":", ".", "Z"], ["", "-", "-", "T", ":", ":", ".", "Z"]), this.getUTCFullYear(), this.getUTCMonth() + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds(), [
+            this.getUTCMilliseconds(),
+            3,
+        ]);
+    });
+    (_b = Date.now) !== null && _b !== void 0 ? _b : (Date.now = function now() {
+        return new Date().getTime();
+    });
+})();
+var _a, _b;
+var _c, _d, _e, _f;
+(function () {
+    var symbols = {};
+    this.Symbol = function Symbol(description) {
+        var id = "Symbol@@".concat(description, "@@").concat(new Date().getTime(), "@@").concat(Math.random());
+        symbols[id] = true;
+        var symbol = {
+            toString: function () {
+                return id;
+            },
+            valueOf: function () {
+                return description || "";
+            }
+        };
+        return symbol;
+    };
+    Symbol.isSymbol = function (symbol) {
+        return String(symbol) in symbols;
+    };
+    var registered = {};
+    Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
+    Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
+        var _b = __read(_a, 2), symbol = _b[1];
+        return symbol === sym;
+    })) === null || _a === void 0 ? void 0 : _a[0]; };
+    this.Symbol.iterator = Symbol("iterator");
+    this.Symbol.hasInstance = Symbol('hasInstance');
+    this.Symbol.isConcatSpreadable = Symbol('isConcatSpreadable');
+    this.Symbol.match = Symbol('match');
+    this.Symbol.replace = Symbol('replace');
+    this.Symbol.search = Symbol('search');
+    this.Symbol.species = Symbol('species');
+    this.Symbol.split = Symbol("split");
+    this.Symbol.toPrimitive = Symbol('toPrimitive');
+    this.Symbol.toStringTag = Symbol('toStringTag');
+    this.Symbol.unscopables = Symbol('unscopables');
+    this.Symbol.matchAll = Symbol('matchAll');
+})();
+(_a = (_c = Array.prototype)[_d = Symbol.iterator]) !== null && _a !== void 0 ? _a : (_c[_d] = function () {
+    var i;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                i = 0;
+                _a.label = 1;
+            case 1:
+                if (!this.length) return [3, 4];
+                return [4, this[i]];
+            case 2:
+                _a.sent();
+                _a.label = 3;
+            case 3:
+                ++i;
+                return [3, 1];
+            case 4: return [2];
+        }
+    });
+});
+(_b = (_e = String.prototype)[_f = Symbol.iterator]) !== null && _b !== void 0 ? _b : (_e[_f] = function () {
+    var i;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                i = 0;
+                _a.label = 1;
+            case 1:
+                if (!(i < this.length)) return [3, 4];
+                return [4, this.charAt(i)];
+            case 2:
+                _a.sent();
+                _a.label = 3;
+            case 3:
+                ++i;
+                return [3, 1];
+            case 4: return [2];
+        }
+    });
+});
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+(function () {
+    var _a, _b, _c, _d, _e;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    var dontEnums = [
+        'toString',
+        'toLocaleString',
+        'valueOf',
+        'hasOwnProperty',
+        'isPrototypeOf',
+        'propertyIsEnumerable',
+        'constructor',
+    ];
+    function keys(name, obj) {
+        var _a, _b, _c, _i, prop, dontEnums_1, dontEnums_1_1, name_1, e_1_1;
+        var e_1, _d;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
+                case 0:
+                    if (obj === null ||
+                        typeof obj !== 'function' &&
+                            typeof obj !== 'object') {
+                        throw new TypeError("".concat(name, " called on non-object"));
+                    }
+                    _a = obj;
+                    _b = [];
+                    for (_c in _a)
+                        _b.push(_c);
+                    _i = 0;
+                    _e.label = 1;
+                case 1:
+                    if (!(_i < _b.length)) return [3, 4];
+                    _c = _b[_i];
+                    if (!(_c in _a)) return [3, 3];
+                    prop = _c;
+                    if (Symbol.isSymbol(prop)) {
+                        return [3, 3];
+                    }
+                    if (!hasOwnProperty.call(obj, prop)) {
+                        return [3, 3];
+                    }
+                    return [4, prop];
+                case 2:
+                    _e.sent();
+                    _e.label = 3;
+                case 3:
+                    _i++;
+                    return [3, 1];
+                case 4:
+                    _e.trys.push([4, 9, 10, 11]);
+                    dontEnums_1 = __values(dontEnums), dontEnums_1_1 = dontEnums_1.next();
+                    _e.label = 5;
+                case 5:
+                    if (!!dontEnums_1_1.done) return [3, 8];
+                    name_1 = dontEnums_1_1.value;
+                    if (!hasOwnProperty.call(obj, name_1)) {
+                        return [3, 7];
+                    }
+                    return [4, name_1];
+                case 6:
+                    _e.sent();
+                    _e.label = 7;
+                case 7:
+                    dontEnums_1_1 = dontEnums_1.next();
+                    return [3, 5];
+                case 8: return [3, 11];
+                case 9:
+                    e_1_1 = _e.sent();
+                    e_1 = { error: e_1_1 };
+                    return [3, 11];
+                case 10:
+                    try {
+                        if (dontEnums_1_1 && !dontEnums_1_1.done && (_d = dontEnums_1["return"])) _d.call(dontEnums_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                    return [7];
+                case 11: return [2];
+            }
+        });
+    }
+    function map(iterable, pred) {
+        var iterable_1, iterable_1_1, e, e_2_1;
+        var e_2, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 5, 6, 7]);
+                    iterable_1 = __values(iterable), iterable_1_1 = iterable_1.next();
+                    _b.label = 1;
+                case 1:
+                    if (!!iterable_1_1.done) return [3, 4];
+                    e = iterable_1_1.value;
+                    return [4, pred(e)];
+                case 2:
+                    _b.sent();
+                    _b.label = 3;
+                case 3:
+                    iterable_1_1 = iterable_1.next();
+                    return [3, 1];
+                case 4: return [3, 7];
+                case 5:
+                    e_2_1 = _b.sent();
+                    e_2 = { error: e_2_1 };
+                    return [3, 7];
+                case 6:
+                    try {
+                        if (iterable_1_1 && !iterable_1_1.done && (_a = iterable_1["return"])) _a.call(iterable_1);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                    return [7];
+                case 7: return [2];
+            }
+        });
+    }
+    (_a = Object.keys) !== null && _a !== void 0 ? _a : (Object.keys = function (obj) { return __spreadArray([], __read(keys('Object.keys', obj)), false); });
+    (_b = Object.entries) !== null && _b !== void 0 ? _b : (Object.entries = function (obj) { return __spreadArray([], __read(map(keys('Object.entries', obj), function (name) { return [name, obj[name]]; })), false); });
+    (_c = Object.values) !== null && _c !== void 0 ? _c : (Object.values = function (obj) { return __spreadArray([], __read(map(keys('', obj), function (name) { return obj[name]; })), false); });
+    (_d = Object.create) !== null && _d !== void 0 ? _d : (Object.create = function (proto, propertiesObject) {
+        if (typeof proto !== 'object' && typeof proto !== 'function') {
+            throw new TypeError("Object prototype may only be an Object: ".concat(proto));
+        }
+        if (proto === null) {
+            throw new Error("This Object.create is a shim and doesn't support 'null' as the first argument.");
+        }
+        if (propertiesObject !== undefined) {
+            throw new Error("This Object.create is a shim and doesn't support a second argument.");
+        }
+        var F = function () { };
+        F.prototype = proto;
+        return new F();
+    });
+    (_e = Object.assign) !== null && _e !== void 0 ? _e : (Object.assign = function (target) {
+        var e_3, _a, e_4, _b;
+        var sources = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            sources[_i - 1] = arguments[_i];
+        }
+        if (target == null) {
+            throw new TypeError('Cannot convert null or undefined to object');
+        }
+        var to = new Object(target);
+        try {
+            for (var sources_1 = __values(sources), sources_1_1 = sources_1.next(); !sources_1_1.done; sources_1_1 = sources_1.next()) {
+                var source = sources_1_1.value;
+                try {
+                    for (var _c = (e_4 = void 0, __values(Object.keys(source))), _d = _c.next(); !_d.done; _d = _c.next()) {
+                        var name = _d.value;
+                        to[name] = source[name];
+                    }
+                }
+                catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_b = _c["return"])) _b.call(_c);
+                    }
+                    finally { if (e_4) throw e_4.error; }
+                }
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (sources_1_1 && !sources_1_1.done && (_a = sources_1["return"])) _a.call(sources_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        return to;
+    });
+})();
+(function () {
     var ENQUOTE = {
         '\b': '\\b',
         '\t': '\\t',
@@ -475,13 +626,16 @@ var __read = (this && this.__read) || function (o, n) {
         '/': '\\/',
         '\\': '\\\\'
     };
-    var DEQUOTE = Object.keys(ENQUOTE).reduce(function (r, ch) { return ((r[ENQUOTE[ch].charAt(1)] = ch), r); }, {});
-    var ENQUOTE_RE = new RegExp("[" + Object.keys(ENQUOTE)
+    var DEQUOTE = Object.entries(ENQUOTE).reduce(function (r, _a) {
+        var _b = __read(_a, 2), ch = _b[0], enquote = _b[1];
+        return ((r[enquote.charAt(1)] = ch), r);
+    }, {});
+    var ENQUOTE_RE = new RegExp("[".concat(Object.keys(ENQUOTE)
         .map(function (ch) { return (ch === '\\' ? '\\\\' : ch); })
-        .join('') + "\0-\u001F]", 'g');
-    var DEQUOTE_RE = new RegExp("\\\\(?:([" + Object.keys(DEQUOTE)
+        .join(''), "\0-\u001F]"), 'g');
+    var DEQUOTE_RE = new RegExp("\\\\(?:([".concat(Object.keys(DEQUOTE)
         .map(function (ch) { return (ch === '\\' ? '\\\\' : ch); })
-        .join('') + "])|u([0-9A-Fa-f]{4}))", 'g');
+        .join(''), "])|u([0-9A-Fa-f]{4}))"), 'g');
     var ACCEPT_TYPES = {
         boolean: true,
         number: true,
@@ -491,14 +645,14 @@ var __read = (this && this.__read) || function (o, n) {
     };
     this.JSON = this.JSON || {};
     function enquote(str) {
-        return "\"" + str.replace(ENQUOTE_RE, function (ch) {
+        return "\"".concat(str.replace(ENQUOTE_RE, function (ch) {
             return ENQUOTE[ch] ||
                 '\\u' +
                     ch
                         .charCodeAt(0)
                         .toString(16)
                         .padStart(4, '0');
-        }) + "\"";
+        }), "\"");
     }
     function dequote(quoted) {
         return quoted
@@ -544,7 +698,7 @@ var __read = (this && this.__read) || function (o, n) {
         };
         Parser.prototype.stickyMatch = function (pattern) {
             var re = cache[pattern] ||
-                (cache[pattern] = new RegExp("(?:" + pattern + ")|(?=([\\s\\S]))", 'g'));
+                (cache[pattern] = new RegExp("(?:".concat(pattern, ")|(?=([\\s\\S]))"), 'g'));
             re.lastIndex = this.index;
             var match = re.exec(this.str);
             if (!match || match[match.length - 1]) {
@@ -572,7 +726,7 @@ var __read = (this && this.__read) || function (o, n) {
                 bol = eol;
             }
             var column = this.index - bol;
-            throw new Error("unexpected: " + this.str.substr(this.index, 10) + " at line: " + line + ", column: " + column);
+            throw new Error("unexpected: ".concat(this.str.substr(this.index, 10), " at line: ").concat(line, ", column: ").concat(column));
         };
         Parser.prototype.skipWS = function () {
             this.stickyMatch("\\s+");
@@ -729,7 +883,7 @@ var __read = (this && this.__read) || function (o, n) {
                             })
                                 .map(function (_a) {
                                 var _b = __read(_a, 2), k = _b[0], sv = _b[1];
-                                return k + ":" + (space ? ' ' : '') + sv;
+                                return "".concat(k, ":").concat(space ? ' ' : '').concat(sv);
                             });
                             if (entries.length === 0) {
                                 return '{}';
@@ -747,162 +901,112 @@ var __read = (this && this.__read) || function (o, n) {
             };
 })();
 (function () {
-    String.prototype.repeat =
-        String.prototype.repeat ||
-            function repeat(count) {
-                if (count < 0) {
-                    throw new Error('repeat count must be non-negative');
-                }
-                if (count === Infinity) {
-                    throw new Error('repeat count must be less than infinity');
-                }
-                if (this.length === 0) {
-                    if (count < 1) {
-                        return '';
-                    }
-                    throw new Error('empty string');
-                }
-                var r = '';
-                while (count-- > 0) {
-                    r += this;
-                }
-                return r;
-            };
-    var originalSubstr = String.prototype.substr;
-    String.prototype.substr = function substr(start, length) {
-        if (start < 0) {
-            start += this.length;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _j, _k, _l, _m, _o, _p, _q, _r;
+    (_a = (_j = String.prototype).repeat) !== null && _a !== void 0 ? _a : (_j.repeat = function repeat(count) {
+        if (count < 0) {
+            throw new Error('repeat count must be non-negative');
         }
-        length =
-            length !== undefined
-                ? length < 0
-                    ? length + this.length - start
-                    : length
-                : this.length - start;
-        return originalSubstr.call(this, start, length);
+        if (count === Infinity) {
+            throw new Error('repeat count must be less than infinity');
+        }
+        return Array(count).fill(this).join('');
+    });
+    String.prototype.substr = function substr(start, length) {
+        var end = start !== undefined && length !== undefined && length >= 0 ? start + length : length;
+        return this.slice(start, end);
     };
-    String.prototype.padStart =
-        String.prototype.padStart ||
-            function padStart(length, paddings) {
-                var count = length - this.length;
-                if (count <= 0) {
-                    return this;
-                }
-                paddings = paddings || ' ';
-                return (paddings
-                    .repeat((count + paddings.length - 1) / paddings.length)
-                    .substr(0, count) + this);
-            };
-    String.prototype.padEnd =
-        String.prototype.padEnd ||
-            function padEnd(length, paddings) {
-                var count = length - this.length;
-                if (count <= 0) {
-                    return this;
-                }
-                paddings = paddings || ' ';
-                return (this +
-                    paddings
-                        .repeat((count + paddings.length - 1) / paddings.length)
-                        .substr(0, count));
-            };
-    String.prototype.startsWith =
-        String.prototype.startsWith ||
-            function startsWith(searchString, position) {
-                position = position !== undefined ? position : 0;
-                return (this.length - position >= searchString.length &&
-                    this.lastIndexOf(searchString, position) === position);
-            };
-    String.prototype.endsWith =
-        String.prototype.endsWith ||
-            function endsWith(searchString, position) {
-                position =
-                    (position !== undefined ? position : this.length) - searchString.length;
-                return position >= 0 && this.indexOf(searchString, position) === position;
-            };
-    String.prototype.trim =
-        String.prototype.trim ||
-            function trim() {
-                var match = /(?:\S(?:.*\S)?)(?=\s*$)/.exec(this);
-                return (match && match[0]) || '';
-            };
-    String.prototype.includes =
-        String.prototype.includes ||
-            function includes(searchString, position) {
-                if (typeof position !== 'number') {
-                    position = 0;
-                }
-                return (position + searchString.length <= this.length &&
-                    this.indexOf(searchString, position) >= 0);
-            };
+    (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
+        var count = length - this.length;
+        if (count <= 0) {
+            return this;
+        }
+        paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
+        return (paddings
+            .repeat(length / paddings.length + 1)
+            .substr(0, count) + this);
+    });
+    (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
+        var count = length - this.length;
+        if (count <= 0) {
+            return this;
+        }
+        paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
+        return (this +
+            paddings
+                .repeat(length / paddings.length + 1)
+                .substr(0, count));
+    });
+    (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
+        if (!position) {
+            return this.lastIndexOf(searchString, 0) === 0;
+        }
+        return this.slice(position, searchString.length) === searchString;
+    });
+    (_e = (_o = String.prototype).endsWith) !== null && _e !== void 0 ? _e : (_o.endsWith = function endsWith(searchString, position) {
+        if (!position) {
+            var pos_1 = this.length - searchString.length;
+            return this.indexOf(searchString, pos_1) === pos_1;
+        }
+        var pos = position - searchString.length;
+        return pos >= 0 && this.slice(pos, position) === searchString;
+    });
+    (_f = (_p = String.prototype).trim) !== null && _f !== void 0 ? _f : (_p.trim = function trim() {
+        var _a, _b;
+        return (_b = (_a = /(?:\S(?:.*\S)?)(?=\s*$)/s.exec(this)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : '';
+    });
+    (_g = (_q = String.prototype).includes) !== null && _g !== void 0 ? _g : (_q.includes = function includes(searchString, position) {
+        return this.indexOf(searchString, position) >= 0;
+    });
+    var original_split = String.prototype.split;
     String.prototype.split = function split(separator, limit) {
+        var e_6, _a;
         var str = '' + this;
-        if (separator &&
-            typeof separator !== 'string' &&
-            !(separator instanceof RegExp) &&
-            typeof separator[Symbol.split] === 'function') {
+        if (typeof separator === 'string') {
+            return original_split.call(str, separator, limit);
+        }
+        if (!(separator instanceof RegExp)) {
             return separator[Symbol.split](str, limit);
         }
+        var pattern = new RegExp(separator.source, separator.flags + 'g');
         var index = 0;
         var result = [];
-        if (separator instanceof RegExp) {
-            var prev = 0;
-            var re = separator.global
-                ? separator
-                : new RegExp(separator.source, "g" + (separator.multiline ? 'm' : '') + (separator.ignoreCase ? 'i' : ''));
-            while (true) {
-                re.lastIndex = index;
-                var match = re.exec(str);
-                if (!match) {
-                    break;
-                }
-                if (match[0].length) {
-                    var next = match.index;
-                    var splitted = str.substr(prev, next - prev);
-                    result.push(splitted);
-                    prev = index = next + match[0].length;
-                }
-                else {
-                    if (index === prev) {
-                        index = prev + 1;
-                        if (index >= str.length) {
-                            return result;
-                        }
-                        continue;
-                    }
-                    if (index >= str.length) {
-                        break;
-                    }
-                    var next = index;
-                    var splitted = str.substr(prev, next - prev);
-                    prev = next;
-                    result.push(splitted);
-                    ++index;
-                }
-                for (var i = 1; i < match.length; ++i) {
-                    result.push(match[i]);
-                }
+        try {
+            for (var _b = __values(this.matchAll(pattern)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var match = _c.value;
+                if (index === match.index && match[0].length === 0)
+                    continue;
+                result.push.apply(result, __spreadArray([str.slice(index, match.index)], __read(match.slice(1)), false));
+                index = match.index;
             }
-            result.push(str.substr(prev));
-            return result;
         }
-        if (!separator) {
-            return Array(str.length)
-                .fill(0)
-                .map(function (_, i) { return str.substr(i, 1); });
-        }
-        separator = '' + separator;
-        while (index < str.length) {
-            var next = str.indexOf(separator, index);
-            if (next < 0) {
-                break;
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            result.push(str.substr(index, next - index));
-            index = next + separator.length;
+            finally { if (e_6) throw e_6.error; }
         }
-        result.push(str.substr(index));
+        result.push(str.slice(index));
         return result;
     };
+    (_h = (_r = String.prototype).matchAll) !== null && _h !== void 0 ? _h : (_r.matchAll = function matchAll(_pattern) {
+        var pattern, match;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    pattern = new RegExp(_pattern.source, _pattern.flags);
+                    _a.label = 1;
+                case 1:
+                    if (!!!(match = pattern.exec(this))) return [3, 3];
+                    return [4, match];
+                case 2:
+                    _a.sent();
+                    return [3, 1];
+                case 3: return [2];
+            }
+        });
+    });
 })();
 (function () {
 "use strict";
@@ -912,7 +1016,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -1512,39 +1616,13 @@ var debugContext;
                 WScript.StdOut.WriteLine(inspect(eval(expr)));
             }
             catch (e) {
-                WScript.StdOut.WriteLine(hasProperty(e, 'number') && typeof e.number === 'number' && hasProperty(e, 'description') ?
+                WScript.StdOut.WriteLine(typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e ?
                     "Error Code: 0x".concat(toHexadecimal(e.number, 8), ": ").concat(e.description)
                     : String(e));
             }
         }
     }
     debugContext.breakpoint = breakpoint;
-    function assertNever(o) {
-        throw new Error();
-    }
-    function hasProperty(o, name) {
-        var _a = __read([typeof o, o], 2), type = _a[0], obj = _a[1];
-        if (obj === undefined || obj === null) {
-            return false;
-        }
-        switch (type) {
-            case 'object':
-            case 'function':
-                return name in obj;
-            // @ts-expect-error WSHのVerDateはビルトイン型で、typeofで'date'を返し、プロパティを持たない
-            case 'date':
-                return false;
-            case 'boolean':
-            case 'number':
-            case 'string':
-            case 'symbol':
-            case 'bigint':
-                return obj.hasOwnProperty(name);
-            default:
-                assertNever(obj);
-        }
-    }
-    debugContext.hasProperty = hasProperty;
 })(debugContext || (debugContext = {}));
 /// <reference types="iterables" />
 /// <reference types="debug-context" />
@@ -1637,9 +1715,11 @@ var cachedProgid = {
         WScript.Quit(+r || 0);
     }
     catch (ex) {
-        WScript.StdErr.WriteLine("".concat(debugContext.hasProperty(ex, 'name') && ex.name || '').concat((debugContext.hasProperty(ex, 'number') && typeof ex.number === 'number' &&
-            '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')') ||
-            '').concat(debugContext.hasProperty(ex, 'message') && ex.message || ''));
+        WScript.StdErr.WriteLine(typeof ex === 'object' && ex
+            ? "".concat(('name' in ex && ex.name) || '').concat('number' in ex && typeof ex.number === 'number'
+                ? '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')'
+                : '').concat(('message' in ex && ex.message) || '')
+            : String(ex));
         WScript.Quit(1);
     }
 })();

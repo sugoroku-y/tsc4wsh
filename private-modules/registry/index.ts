@@ -239,7 +239,7 @@ class Registry {
     >('GetMultiStringValue', {hDefKey, sSubKeyName, sValueName});
     return out === null || out.sValue === null ? null : out.sValue.toArray();
   }
-  public GetBinayValue(
+  public GetBinaryValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string
@@ -311,7 +311,7 @@ class Registry {
       sValue: toSafeArray(sValue),
     });
   }
-  public SetBinayValue(
+  public SetBinaryValue(
     hDefKey: RegRoot,
     sSubKeyName: string,
     sValueName: string,
@@ -351,7 +351,7 @@ class Registry {
       case RegType.REG_EXPAND_SZ:
         return this.GetExpandedStringValue(hDefKey, sSubKeyName, sValueName);
       case RegType.REG_BINARY:
-        return this.GetBinayValue(hDefKey, sSubKeyName, sValueName);
+        return this.GetBinaryValue(hDefKey, sSubKeyName, sValueName);
       case RegType.REG_DWORD:
         return this.GetDWORDValue(hDefKey, sSubKeyName, sValueName);
       case RegType.REG_MULTI_SZ:
@@ -433,7 +433,7 @@ class Registry {
         );
         return;
       case RegType.REG_BINARY:
-        this.SetBinayValue(hDefKey, sSubKeyName, sValueName, value as number[]);
+        this.SetBinaryValue(hDefKey, sSubKeyName, sValueName, value as number[]);
         return;
       case RegType.REG_DWORD:
         this.SetDWORDValue(hDefKey, sSubKeyName, sValueName, value as number);

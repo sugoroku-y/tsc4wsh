@@ -11,8 +11,8 @@
     '/': '\\/',
     '\\': '\\\\',
   };
-  const DEQUOTE = Object.keys(ENQUOTE).reduce<{[ch: string]: string}>(
-    (r, ch) => ((r[ENQUOTE[ch].charAt(1)] = ch), r),
+  const DEQUOTE = Object.entries(ENQUOTE).reduce<{[ch: string]: string}>(
+    (r, [ch, enquote]) => ((r[enquote.charAt(1)] = ch), r),
     {}
   );
   const ENQUOTE_RE = new RegExp(

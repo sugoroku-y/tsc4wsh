@@ -67,18 +67,14 @@ describe('tsc4wsh', () => {
   });
 });
 
-function hasProperty<NAME extends string>(o: unknown, name: NAME): o is {[k in NAME]: unknown} {
-  return !!o && name in o
-}
-
 test('generateTSConfig', async () => {
-  try {
-    await fs.promises.mkdir('test/temp');
-  } catch (ex) {
-    if (!hasProperty(ex, 'code') || ex.code !== 'EEXIST') {
-      throw ex;
-    }
-  }
+  await fs.promises
+    .mkdir('test/temp')
+    .catch(ex =>
+      typeof ex === 'object' && ex && 'code' in ex && ex.code === 'EEXIST'
+        ? undefined
+        : Promise.reject(ex)
+    );
   const cwdsave = process.cwd();
   try {
     process.chdir('test/temp');
@@ -98,7 +94,7 @@ test('generateTSConfig', async () => {
         outFile: './dummy.js',
         downlevelIteration: true,
         strict: true,
-        strictNullChecks: true,
+        forceConsistentCasingInFileNames: true,
         types: [
           'wsh',
           'windows-script-host',

@@ -157,47 +157,11 @@ namespace debugContext {
         WScript.StdOut.WriteLine(inspect(eval(expr)));
       } catch (e) {
         WScript.StdOut.WriteLine(
-          hasProperty(e, 'number') && typeof e.number === 'number' && hasProperty(e, 'description') ?
+          typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e ?
           `Error Code: 0x${toHexadecimal(e.number, 8)}: ${e.description}`
             : String(e)
         );
       }
-    }
-  }
-  function assertNever(o: never): never {
-    throw new Error();
-  }
-  type TypeofResult = {
-    object: object | null,
-    function: Function,
-    undefined: undefined,
-    boolean: boolean,
-    number: number,
-    string: string,
-    bigint: bigint,
-    symbol: symbol,
-  };
-  type ObjectEntry<T> = {[K in keyof T]: [K, T[K]]}[keyof T];
-  export function hasProperty<NAME extends string>(o: unknown, name: NAME): o is {[k in NAME]: unknown} {
-    const [type, obj] = [typeof o, o] as ObjectEntry<TypeofResult>;
-    if (obj === undefined || obj === null) {
-      return false;
-    }
-    switch (type) {
-    case 'object':
-    case 'function':
-      return name in obj;
-    // @ts-expect-error WSHのVerDateはビルトイン型で、typeofで'date'を返し、プロパティを持たない
-    case 'date':
-      return false;
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'symbol':
-    case 'bigint':
-      return obj.hasOwnProperty(name);
-    default:
-      assertNever(obj);
     }
   }
 }
