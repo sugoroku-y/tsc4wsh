@@ -954,8 +954,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return pos >= 0 && this.slice(pos, position) === searchString;
     });
     (_f = (_p = String.prototype).trim) !== null && _f !== void 0 ? _f : (_p.trim = function trim() {
-        var _a, _b;
-        return (_b = (_a = /(?:\S(?:.*\S)?)(?=\s*$)/s.exec(this)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : '';
+        return this.replace(/^\s+|\s+$/g, '');
     });
     (_g = (_q = String.prototype).includes) !== null && _g !== void 0 ? _g : (_q.includes = function includes(searchString, position) {
         return this.indexOf(searchString, position) >= 0;

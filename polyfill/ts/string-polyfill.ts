@@ -65,7 +65,7 @@
     };
   String.prototype.trim ??=
     function trim(this: string): string {
-      return /(?:\S(?:.*\S)?)(?=\s*$)/s.exec(this)?.[0] ?? '';
+      return this.replace(/^\s+|\s+$/g, '');
     };
   String.prototype.includes ??=
     function includes(this: string, searchString: string, position?: number):boolean {

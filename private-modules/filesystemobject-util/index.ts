@@ -55,7 +55,7 @@ namespace Scripting.FileSystemObject.Utils {
       splited.push(root);
     }
 
-    const re = /([^\\]+\\+)|./gs;
+    const re = /([^\\]+\\+)|[\s\S]/g;
     let dir;
     while ((dir = re.exec(path)?.[1])) {
       splited.push(dir);
