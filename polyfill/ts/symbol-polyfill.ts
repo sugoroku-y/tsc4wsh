@@ -22,13 +22,13 @@ interface SymbolConstructor {
     return symbol as unknown as symbol;
   };
   // Object.keysでSymbolを除外するために用意
-  Symbol.isSymbol = (symbol: unknown): symbol is symbol =>
+  this.Symbol.isSymbol = (symbol: unknown): symbol is symbol =>
     String(symbol) in symbols;
 
   const registered: { [key: string]: symbol } = {};
 
-  Symbol.for = (key: string) => (registered[key] ??= Symbol(key));
-  Symbol.keyFor = (sym: symbol) =>
+  this.Symbol.for = (key: string) => (registered[key] ??= Symbol(key));
+  this.Symbol.keyFor = (sym: symbol) =>
     Object.entries(registered).find(([, symbol]) => symbol === sym)?.[0];
 
   this.Symbol.iterator = Symbol("iterator");
@@ -46,7 +46,7 @@ interface SymbolConstructor {
 })();
 
 Array.prototype[Symbol.iterator] ??= function* <T>(this: ArrayLike<T>) {
-  for (let i = 0; this.length; ++i) {
+  for (let i = 0; i < this.length; ++i) {
     yield this[i];
   }
 };

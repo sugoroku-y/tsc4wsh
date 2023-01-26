@@ -87,26 +87,38 @@
       return original_split.call(str, separator, limit);
     }
     // Symbol.splitがあればそちらを使う
-    // ※JScriptのRegExpにはSymbol.splitgaがない
+    // ※JScriptのRegExpには当然Symbol.splitがない
     if (!(separator instanceof RegExp)) {
       return separator[Symbol.split](str, limit);
     }
     // gをつけて作り直す
-    const pattern = new RegExp(separator.source, separator.flags + 'g');
+    const flags = `g${separator.ignoreCase ? 'i' : ''}${separator.multiline ? 'm' : ''}`;
+    // JScriptでは
+    // - flagsはない。
+    // - 以下のフラグはサポートされていない。
+    //   - `y`(sticky)
+    //   - `u`(unicode)
+    //   - `s`(dotAll)
+    //   - `d`(hasIndices)
+    const pattern = new RegExp(separator.source, flags);
     // separatorで分割
     let index = 0;
     const result = [];
     for (const match of this.matchAll(pattern)) {
       if (index === match.index && match[0].length === 0) continue;
       result.push(str.slice(index, match.index), ...match.slice(1));
-      index = match.index!;
+      index = match.index! + match[0].length;
     }
     // 最後の部分を追加
     result.push(str.slice(index));
     return result;
   };
   String.prototype.matchAll ??= function* matchAll(this: string, _pattern: RegExp): Generator<RegExpExecArray, void> {
-    const pattern = new RegExp(_pattern.source, _pattern.flags);
+    if (!_pattern.global) {
+      throw new Error(`matchAll with a non-global RegExp`);
+    }
+    const flags = `g${_pattern.ignoreCase ? 'i' : ''}${_pattern.multiline ? 'm' : ''}`;
+    const pattern = new RegExp(_pattern.source, flags);
     let match;
     while (!!(match = pattern.exec(this))) {
       yield match;

@@ -25,10 +25,7 @@ namespace Scripting.FileSystemObject.Utils {
     return sort([...Iterables.from(folder.SubFolders)]);
   }
   export function filesAndSubFolders(folder: Folder) {
-    return sort([
-      ...Iterables.from(folder.Files),
-      ...Iterables.from(folder.SubFolders)
-    ]);
+    return sort([...Iterables.from(folder.Files), ...Iterables.from(folder.SubFolders)]);
   }
   export function getItem(path: string) {
     if (fso.FileExists(path)) {
@@ -43,33 +40,28 @@ namespace Scripting.FileSystemObject.Utils {
     const filename = /[^\\]+$/.exec(path)?.[0];
     path = filename ? path.slice(0, -filename.length) : path;
 
-    const splited: string[] = [];
-    const root = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(
-      path
-    )?.[0];
+    const splitted: string[] = [];
+    const root = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(path)?.[0];
     if (root) {
       if (root && root.charAt(1) === ':' && root.length < 3) {
         throw new Error(`ドライブ指定時には絶対パスで指定してください`);
       }
       path = path.slice(root.length);
-      splited.push(root);
+      splitted.push(root);
     }
 
     const re = /([^\\]+\\+)|[\s\S]/g;
     let dir;
     while ((dir = re.exec(path)?.[1])) {
-      splited.push(dir);
+      splitted.push(dir);
     }
     if (filename) {
-      splited.push(filename);
+      splitted.push(filename);
     }
-    return splited;
+    return splitted;
   }
 
-  export function relativePath(
-    path: string,
-    base?: string | undefined
-  ): string {
+  export function relativePath(path: string, base?: string | undefined): string {
     const absolute = fso.GetAbsolutePathName(path);
     const pathSplitted = splitPath(absolute);
     const aa = fso.GetAbsolutePathName(base || '.');
@@ -78,24 +70,19 @@ namespace Scripting.FileSystemObject.Utils {
     let matchedLength = 0;
     while (
       matchedLength < limit &&
-      pathSplitted[matchedLength].toLowerCase() ===
-        baseSplitted[matchedLength].toLowerCase()
+      pathSplitted[matchedLength].toLowerCase() === baseSplitted[matchedLength].toLowerCase()
     ) {
       ++matchedLength;
     }
     if (!matchedLength) {
       return absolute;
     }
-    if (
-      matchedLength === pathSplitted.length &&
-      matchedLength === baseSplitted.length
-    ) {
+    if (matchedLength === pathSplitted.length && matchedLength === baseSplitted.length) {
       return '.';
     }
     return (
-      (baseSplitted.length > matchedLength
-        ? '..\\'.repeat(baseSplitted.length - matchedLength)
-        : '') + pathSplitted.slice(matchedLength).join('\\')
+      (baseSplitted.length > matchedLength ? '..\\'.repeat(baseSplitted.length - matchedLength) : '') +
+      pathSplitted.slice(matchedLength).join('\\')
     );
   }
 
@@ -120,7 +107,7 @@ namespace Scripting.FileSystemObject.Utils {
           }
           if (i === path.length) {
             return path;
-        }
+          }
           return result.slice(0, i);
         }
         return result;
@@ -134,23 +121,19 @@ namespace Scripting.FileSystemObject.Utils {
     return common.reduce((built, path) => fso.BuildPath(built, path));
   }
 
-  export function* recursiveFolders(
-    folder: Scripting.Folder
-  ): IterableIterator<Scripting.Folder> {
+  export function* recursiveFolders(folder: Scripting.Folder): IterableIterator<Scripting.Folder> {
     yield folder;
     for (const f of Iterables.from(folder.SubFolders)) {
       yield* recursiveFolders(f);
     }
   }
-  export function* recursiveFiles(
-    folder: Scripting.Folder
-  ): IterableIterator<Scripting.Folder | Scripting.File> {
+  export function* recursiveFiles(folder: Scripting.Folder): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
       yield* Iterables.from(f.Files);
     }
   }
   export function* recursiveFolderAndFiles(
-    folder: Scripting.Folder
+    folder: Scripting.Folder,
   ): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
       yield f;
@@ -169,25 +152,25 @@ namespace Scripting.FileSystemObject.Utils {
     const regex =
       '^' +
       pattern.replace(/[\^$()\[\]{}+.*?,]/g, ch => {
-      switch (ch) {
-      case '*':
-        return '.*';
-      case '?':
-        return '.';
-      case '{':
-        ++depth;
-        return '(?:';
-      case '}':
+        switch (ch) {
+          case '*':
+            return '.*';
+          case '?':
+            return '.';
+          case '{':
+            ++depth;
+            return '(?:';
+          case '}':
             if (depth <= 0) {
               throw new Error('Unmatched `}`');
             }
-        --depth;
-        return ')';
-      case ',':
-        return depth > 0 ? '|' : ',';
-      default:
-        return '\\' + ch;
-      }
+            --depth;
+            return ')';
+          case ',':
+            return depth > 0 ? '|' : ',';
+          default:
+            return '\\' + ch;
+        }
       }) +
       '$';
     if (depth > 0) {
@@ -202,9 +185,7 @@ namespace Scripting.FileSystemObject.Utils {
    */
   export function wildcard(pattern: string, basedir?: string) {
     basedir = fso.GetAbsolutePathName(basedir || '.');
-    const fullpath = /^(?:[A-Z]:|\\\\[^\\\\]+\\[^\\\\]+)?\\/i.test(pattern)
-      ? pattern
-      : fso.BuildPath(basedir, pattern);
+    const fullpath = isAbsolute(pattern) ? pattern : fso.BuildPath(basedir, pattern);
     if (!/[*?{]/.test(fullpath)) {
       if (fso.FolderExists(fullpath)) {
         return Iterables.of(fso.GetFolder(fullpath));
@@ -214,13 +195,8 @@ namespace Scripting.FileSystemObject.Utils {
       }
       return Iterables.of<Scripting.File>();
     }
-    const match = fullpath.match(
-      /^(?:[A-Z]:|\\\\[^\\]+\\+[^\\]+)?(?:\\+[^*?{]+)*\\+/i
-    );
-    if (!match || match.index !== 0) {
-      throw new Error('');
-      }
-    if (match.index >= fullpath.length) {
+    const match = fullpath.match(/^(?:[A-Z]:|\\\\[^\\]+\\+[^\\]+)?(?:\\+[^*?{]+)*\\+/i);
+    if (!match) {
       throw new Error('');
     }
     const root = match[0];
@@ -229,7 +205,7 @@ namespace Scripting.FileSystemObject.Utils {
     }
     const folder = fso.GetFolder(root);
     const pathes = fullpath
-      .substr(root.length)
+      .slice(root.length)
       .split(/\\+/)
       .map((pathAtom, index, array) => {
         if (pathAtom === '') {
@@ -237,7 +213,7 @@ namespace Scripting.FileSystemObject.Utils {
             yield f;
           };
         }
-      const last = index + 1 === array.length;
+        const last = index + 1 === array.length;
         if (pathAtom === '**') {
           return last ? recursiveFolderAndFiles : recursiveFolders;
         }
@@ -248,34 +224,31 @@ namespace Scripting.FileSystemObject.Utils {
               if (atomPattern && atomPattern.test(f.Name)) {
                 yield f;
               }
-          }
-          if (last) {
+            }
+            if (last) {
               for (const f of Iterables.from(ff.Files)) {
                 if (atomPattern && atomPattern.test(f.Name)) {
                   yield f;
                 }
+              }
+            }
+          };
+        }
+        return function* (ff: Scripting.Folder) {
+          const lastpath = fso.BuildPath(ff.Path, pathAtom);
+          if (fso.FolderExists(lastpath)) {
+            yield fso.GetFolder(lastpath);
+            return;
+          }
+          if (last) {
+            if (fso.FileExists(lastpath)) {
+              yield fso.GetFile(lastpath);
+              return;
             }
           }
         };
-      }
-        return function* (ff: Scripting.Folder) {
-          const lastpath = fso.BuildPath(ff.Path, pathAtom);
-        if (fso.FolderExists(lastpath)) {
-          yield fso.GetFolder(lastpath);
-          return;
-        }
-        if (last) {
-          if (fso.FileExists(lastpath)) {
-            yield fso.GetFile(lastpath);
-            return;
-          }
-        }
-      };
-    });
-    return (function* traverse(
-      ff: Scripting.Folder,
-      index: number
-    ): Iterable<Scripting.Folder | Scripting.File> {
+      });
+    return (function* traverse(ff: Scripting.Folder, index: number): Iterable<Scripting.Folder | Scripting.File> {
       if (index + 1 === pathes.length) {
         yield* pathes[index](ff);
         return;

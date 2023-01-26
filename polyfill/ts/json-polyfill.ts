@@ -131,14 +131,14 @@
       this.stickyMatch(`\\s+`);
     }
     // 1文字だけ読み込む
-    private scanOne(candidates: string, nothrow?: true) {
+    private scanOne(candidates: string, noThrow?: true) {
       this.skipWS();
       if (!this.isLeft()) {
         return this.failedParsing();
       }
       const ch = this.str.charAt(this.index);
       if (candidates.indexOf(ch) < 0) {
-        if (nothrow) {
+        if (noThrow) {
           return undefined;
         }
         return this.failedParsing();

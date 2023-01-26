@@ -367,12 +367,12 @@ var _c, _d, _e, _f;
         };
         return symbol;
     };
-    Symbol.isSymbol = function (symbol) {
+    this.Symbol.isSymbol = function (symbol) {
         return String(symbol) in symbols;
     };
     var registered = {};
-    Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
-    Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
+    this.Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
+    this.Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
         var _b = __read(_a, 2), symbol = _b[1];
         return symbol === sym;
     })) === null || _a === void 0 ? void 0 : _a[0]; };
@@ -397,7 +397,7 @@ var _c, _d, _e, _f;
                 i = 0;
                 _a.label = 1;
             case 1:
-                if (!this.length) return [3, 4];
+                if (!(i < this.length)) return [3, 4];
                 return [4, this[i]];
             case 2:
                 _a.sent();
@@ -733,14 +733,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         Parser.prototype.skipWS = function () {
             this.stickyMatch("\\s+");
         };
-        Parser.prototype.scanOne = function (candidates, nothrow) {
+        Parser.prototype.scanOne = function (candidates, noThrow) {
             this.skipWS();
             if (!this.isLeft()) {
                 return this.failedParsing();
             }
             var ch = this.str.charAt(this.index);
             if (candidates.indexOf(ch) < 0) {
-                if (nothrow) {
+                if (noThrow) {
                     return undefined;
                 }
                 return this.failedParsing();
@@ -969,7 +969,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (!(separator instanceof RegExp)) {
             return separator[Symbol.split](str, limit);
         }
-        var pattern = new RegExp(separator.source, separator.flags + 'g');
+        var flags = "g".concat(separator.ignoreCase ? 'i' : '').concat(separator.multiline ? 'm' : '');
+        var pattern = new RegExp(separator.source, flags);
         var index = 0;
         var result = [];
         try {
@@ -978,7 +979,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 if (index === match.index && match[0].length === 0)
                     continue;
                 result.push.apply(result, __spreadArray([str.slice(index, match.index)], __read(match.slice(1)), false));
-                index = match.index;
+                index = match.index + match[0].length;
             }
         }
         catch (e_6_1) { e_6 = { error: e_6_1 }; }
@@ -992,11 +993,15 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return result;
     };
     (_h = (_r = String.prototype).matchAll) !== null && _h !== void 0 ? _h : (_r.matchAll = function matchAll(_pattern) {
-        var pattern, match;
+        var flags, pattern, match;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    pattern = new RegExp(_pattern.source, _pattern.flags);
+                    if (!_pattern.global) {
+                        throw new Error("matchAll with a non-global RegExp");
+                    }
+                    flags = "g".concat(_pattern.ignoreCase ? 'i' : '').concat(_pattern.multiline ? 'm' : '');
+                    pattern = new RegExp(_pattern.source, flags);
                     _a.label = 1;
                 case 1:
                     if (!!!(match = pattern.exec(this))) return [3, 3];
@@ -1642,24 +1647,24 @@ var Scripting;
                 var _a, _b, _c;
                 var filename = (_a = /[^\\]+$/.exec(path)) === null || _a === void 0 ? void 0 : _a[0];
                 path = filename ? path.slice(0, -filename.length) : path;
-                var splited = [];
+                var splitted = [];
                 var root = (_b = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(path)) === null || _b === void 0 ? void 0 : _b[0];
                 if (root) {
                     if (root && root.charAt(1) === ':' && root.length < 3) {
                         throw new Error("ドライブ指定時には絶対パスで指定してください");
                     }
                     path = path.slice(root.length);
-                    splited.push(root);
+                    splitted.push(root);
                 }
                 var re = /([^\\]+\\+)|[\s\S]/g;
                 var dir;
                 while ((dir = (_c = re.exec(path)) === null || _c === void 0 ? void 0 : _c[1])) {
-                    splited.push(dir);
+                    splitted.push(dir);
                 }
                 if (filename) {
-                    splited.push(filename);
+                    splitted.push(filename);
                 }
-                return splited;
+                return splitted;
             }
             Utils.splitPath = splitPath;
             function relativePath(path, base) {
@@ -1670,20 +1675,17 @@ var Scripting;
                 var limit = Math.min(pathSplitted.length, baseSplitted.length);
                 var matchedLength = 0;
                 while (matchedLength < limit &&
-                    pathSplitted[matchedLength].toLowerCase() ===
-                        baseSplitted[matchedLength].toLowerCase()) {
+                    pathSplitted[matchedLength].toLowerCase() === baseSplitted[matchedLength].toLowerCase()) {
                     ++matchedLength;
                 }
                 if (!matchedLength) {
                     return absolute;
                 }
-                if (matchedLength === pathSplitted.length &&
-                    matchedLength === baseSplitted.length) {
+                if (matchedLength === pathSplitted.length && matchedLength === baseSplitted.length) {
                     return '.';
                 }
-                return ((baseSplitted.length > matchedLength
-                    ? '..\\'.repeat(baseSplitted.length - matchedLength)
-                    : '') + pathSplitted.slice(matchedLength).join('\\'));
+                return ((baseSplitted.length > matchedLength ? '..\\'.repeat(baseSplitted.length - matchedLength) : '') +
+                    pathSplitted.slice(matchedLength).join('\\'));
             }
             Utils.relativePath = relativePath;
             function commonPath() {
@@ -1881,9 +1883,7 @@ var Scripting;
              */
             function wildcard(pattern, basedir) {
                 basedir = fso.GetAbsolutePathName(basedir || '.');
-                var fullpath = /^(?:[A-Z]:|\\\\[^\\\\]+\\[^\\\\]+)?\\/i.test(pattern)
-                    ? pattern
-                    : fso.BuildPath(basedir, pattern);
+                var fullpath = isAbsolute(pattern) ? pattern : fso.BuildPath(basedir, pattern);
                 if (!/[*?{]/.test(fullpath)) {
                     if (fso.FolderExists(fullpath)) {
                         return Iterables.of(fso.GetFolder(fullpath));
@@ -1894,10 +1894,7 @@ var Scripting;
                     return Iterables.of();
                 }
                 var match = fullpath.match(/^(?:[A-Z]:|\\\\[^\\]+\\+[^\\]+)?(?:\\+[^*?{]+)*\\+/i);
-                if (!match || match.index !== 0) {
-                    throw new Error('');
-                }
-                if (match.index >= fullpath.length) {
+                if (!match) {
                     throw new Error('');
                 }
                 var root = match[0];
@@ -1906,7 +1903,7 @@ var Scripting;
                 }
                 var folder = fso.GetFolder(root);
                 var pathes = fullpath
-                    .substr(root.length)
+                    .slice(root.length)
                     .split(/\\+/)
                     .map(function (pathAtom, index, array) {
                     if (pathAtom === '') {
