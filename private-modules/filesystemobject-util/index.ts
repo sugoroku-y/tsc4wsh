@@ -36,35 +36,22 @@ namespace Scripting.FileSystemObject.Utils {
     }
     return undefined;
   }
+  function error(message?: string): never {
+    throw new Error(message);
+  }
   export function splitPath(path: string): string[] {
-    const filename = /[^\\]+$/.exec(path)?.[0];
-    path = filename ? path.slice(0, -filename.length) : path;
-
-    const splitted: string[] = [];
-    const root = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(path)?.[0];
-    if (root) {
-      if (root && root.charAt(1) === ':' && root.length < 3) {
-        throw new Error(`ドライブ指定時には絶対パスで指定してください`);
-      }
-      path = path.slice(root.length);
-      splitted.push(root);
-    }
-
-    const re = /([^\\]+\\+)|[\s\S]/g;
-    let dir;
-    while ((dir = re.exec(path)?.[1])) {
-      splitted.push(dir);
-    }
-    if (filename) {
-      splitted.push(filename);
-    }
-    return splitted;
+    return [...path.matchAll(/^((?:[A-Z]:|\\{2}[^\\]+\\[^\\]+)?\\)\\*|([^\\]+\\)\\*|([^\\]+)$|[\s\S]/gi)].map(
+      ({1: $1, 2: $2, 3: $3, index}) => $1 || $2 || $3 || error(`不正なパス: ${path}:${index}`),
+    );
+  }
+  function absolutePath(path: string): string {
+    return `${fso.GetAbsolutePathName(path)}${/\\$/.test(path) ? '\\' : ''}`;
   }
 
   export function relativePath(path: string, base?: string | undefined): string {
-    const absolute = fso.GetAbsolutePathName(path);
+    const absolute = absolutePath(path);
     const pathSplitted = splitPath(absolute);
-    const aa = fso.GetAbsolutePathName(base || '.');
+    const aa = absolutePath(`${base || '.'}\\`);
     const baseSplitted = splitPath(aa);
     const limit = Math.min(pathSplitted.length, baseSplitted.length);
     let matchedLength = 0;
@@ -75,14 +62,14 @@ namespace Scripting.FileSystemObject.Utils {
       ++matchedLength;
     }
     if (!matchedLength) {
-      return absolute;
+      return pathSplitted.join('');
     }
     if (matchedLength === pathSplitted.length && matchedLength === baseSplitted.length) {
       return '.';
     }
     return (
       (baseSplitted.length > matchedLength ? '..\\'.repeat(baseSplitted.length - matchedLength) : '') +
-      pathSplitted.slice(matchedLength).join('\\')
+      pathSplitted.slice(matchedLength).join('')
     );
   }
 

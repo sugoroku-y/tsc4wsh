@@ -1684,34 +1684,23 @@ var Scripting;
                 return undefined;
             }
             Utils.getItem = getItem;
+            function error(message) {
+                throw new Error(message);
+            }
             function splitPath(path) {
-                var _a, _b, _c;
-                var filename = (_a = /[^\\]+$/.exec(path)) === null || _a === void 0 ? void 0 : _a[0];
-                path = filename ? path.slice(0, -filename.length) : path;
-                var splitted = [];
-                var root = (_b = /^(?:([A-Z]):|\\{2}[^\\]+\\[^\\]+)?(?:\\|$)/i.exec(path)) === null || _b === void 0 ? void 0 : _b[0];
-                if (root) {
-                    if (root && root.charAt(1) === ':' && root.length < 3) {
-                        throw new Error("ドライブ指定時には絶対パスで指定してください");
-                    }
-                    path = path.slice(root.length);
-                    splitted.push(root);
-                }
-                var re = /([^\\]+\\+)|[\s\S]/g;
-                var dir;
-                while ((dir = (_c = re.exec(path)) === null || _c === void 0 ? void 0 : _c[1])) {
-                    splitted.push(dir);
-                }
-                if (filename) {
-                    splitted.push(filename);
-                }
-                return splitted;
+                return __spreadArray([], __read(path.matchAll(/^((?:[A-Z]:|\\{2}[^\\]+\\[^\\]+)?\\)\\*|([^\\]+\\)\\*|([^\\]+)$|[\s\S]/gi)), false).map(function (_a) {
+                    var $1 = _a[1], $2 = _a[2], $3 = _a[3], index = _a.index;
+                    return $1 || $2 || $3 || error("不正なパス: ".concat(path, ":").concat(index));
+                });
             }
             Utils.splitPath = splitPath;
+            function absolutePath(path) {
+                return "".concat(fso.GetAbsolutePathName(path)).concat(/\\$/.test(path) ? '\\' : '');
+            }
             function relativePath(path, base) {
-                var absolute = fso.GetAbsolutePathName(path);
+                var absolute = absolutePath(path);
                 var pathSplitted = splitPath(absolute);
-                var aa = fso.GetAbsolutePathName(base || '.');
+                var aa = absolutePath("".concat(base || '.', "\\"));
                 var baseSplitted = splitPath(aa);
                 var limit = Math.min(pathSplitted.length, baseSplitted.length);
                 var matchedLength = 0;
@@ -1720,13 +1709,13 @@ var Scripting;
                     ++matchedLength;
                 }
                 if (!matchedLength) {
-                    return absolute;
+                    return pathSplitted.join('');
                 }
                 if (matchedLength === pathSplitted.length && matchedLength === baseSplitted.length) {
                     return '.';
                 }
                 return ((baseSplitted.length > matchedLength ? '..\\'.repeat(baseSplitted.length - matchedLength) : '') +
-                    pathSplitted.slice(matchedLength).join('\\'));
+                    pathSplitted.slice(matchedLength).join(''));
             }
             Utils.relativePath = relativePath;
             function commonPath() {
@@ -1779,7 +1768,7 @@ var Scripting;
                             _d.label = 2;
                         case 2:
                             _d.trys.push([2, 7, 8, 9]);
-                            _a = __values(Iterables.from(folder.SubFolders)), _b = _a.next();
+                            _a = __values(subFolders(folder)), _b = _a.next();
                             _d.label = 3;
                         case 3:
                             if (!!_b.done) return [3 /*break*/, 6];
@@ -1819,7 +1808,7 @@ var Scripting;
                         case 1:
                             if (!!_b.done) return [3 /*break*/, 4];
                             f = _b.value;
-                            return [5 /*yield**/, __values(Iterables.from(f.Files))];
+                            return [5 /*yield**/, __values(files(f))];
                         case 2:
                             _d.sent();
                             _d.label = 3;
@@ -1857,7 +1846,7 @@ var Scripting;
                             return [4 /*yield*/, f];
                         case 2:
                             _d.sent();
-                            return [5 /*yield**/, __values(Iterables.from(f.Files))];
+                            return [5 /*yield**/, __values(files(f))];
                         case 3:
                             _d.sent();
                             _d.label = 4;
@@ -1972,7 +1961,7 @@ var Scripting;
                                 switch (_g.label) {
                                     case 0:
                                         _g.trys.push([0, 5, 6, 7]);
-                                        _a = __values(Iterables.from(ff.SubFolders)), _b = _a.next();
+                                        _a = __values(subFolders(ff)), _b = _a.next();
                                         _g.label = 1;
                                     case 1:
                                         if (!!_b.done) return [3 /*break*/, 4];
@@ -2001,7 +1990,7 @@ var Scripting;
                                         _g.label = 8;
                                     case 8:
                                         _g.trys.push([8, 13, 14, 15]);
-                                        _c = __values(Iterables.from(ff.Files)), _d = _c.next();
+                                        _c = __values(files(ff)), _d = _c.next();
                                         _g.label = 9;
                                     case 9:
                                         if (!!_d.done) return [3 /*break*/, 12];
