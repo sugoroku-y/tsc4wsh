@@ -123,13 +123,13 @@ namespace Scripting.FileSystemObject.Utils {
 
   export function* recursiveFolders(folder: Scripting.Folder): IterableIterator<Scripting.Folder> {
     yield folder;
-    for (const f of Iterables.from(folder.SubFolders)) {
+    for (const f of subFolders(folder)) {
       yield* recursiveFolders(f);
     }
   }
   export function* recursiveFiles(folder: Scripting.Folder): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
-      yield* Iterables.from(f.Files);
+      yield* files(f);
     }
   }
   export function* recursiveFolderAndFiles(
@@ -137,7 +137,7 @@ namespace Scripting.FileSystemObject.Utils {
   ): IterableIterator<Scripting.Folder | Scripting.File> {
     for (const f of recursiveFolders(folder)) {
       yield f;
-      yield* Iterables.from(f.Files);
+      yield* files(f);
     }
   }
 
@@ -220,13 +220,13 @@ namespace Scripting.FileSystemObject.Utils {
         if (/[*?{]/.test(pathAtom)) {
           const atomPattern = wildcardToRegExp(pathAtom);
           return function* (ff: Scripting.Folder) {
-            for (const f of Iterables.from(ff.SubFolders)) {
+            for (const f of subFolders(ff)) {
               if (atomPattern && atomPattern.test(f.Name)) {
                 yield f;
               }
             }
             if (last) {
-              for (const f of Iterables.from(ff.Files)) {
+              for (const f of files(ff)) {
                 if (atomPattern && atomPattern.test(f.Name)) {
                   yield f;
                 }
