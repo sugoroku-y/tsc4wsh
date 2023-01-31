@@ -10,6 +10,9 @@
     });
   }
   Date.prototype.toISOString ??= function toISOString(this: Date): string {
+    if (isNaN(this.getTime())) {
+      throw new Error('Invalid date');
+    }
     return format`${this.getUTCFullYear()}-${
       this.getUTCMonth() + 1
     }-${this.getUTCDate()}T${this.getUTCHours()}:${this.getUTCMinutes()}:${this.getUTCSeconds()}.${[
