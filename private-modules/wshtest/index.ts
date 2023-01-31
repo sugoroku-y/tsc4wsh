@@ -33,7 +33,7 @@ function isIterable(o: unknown): o is Iterable<unknown> {
   return (
     typeof o === 'object' &&
     o !== null &&
-    // @ts-ignore
+    Symbol.iterator in o &&
     typeof o[Symbol.iterator] === 'function'
   );
 }
@@ -49,22 +49,35 @@ class IllegalTest extends Error {
   }
 }
 
-function arraytest<T>(actual: T[], expected: T[]): void {
-  if (actual.length !== expected.length) {
-    throw new TestFailed(
-      `expected.length: ${expected.length}, but actual.length: ${actual.length}`
-    );
+function sortedEntries(o: object): [string, unknown][] {
+  return Object.entries(o).sort(([a], [b]) => a === b ? 0 : a < b ? -1 : 1);
+}
+
+function equal(actual: unknown, expected: unknown): boolean {
+  // Primitive型と関数は単純な比較
+  if (isPrimitive(expected) || typeof expected === 'function') {
+    return expected === actual;
   }
-  for (let i = 0; i < actual.length; ++i) {
-    if (actual[i] === expected[i]) {
-      continue;
+  // Iterable同士は順次要素を比較する
+  if (isIterable(expected)) {
+    if (!isIterable(actual)) {
+      return false;
     }
-    throw new TestFailed(
-      `expected[${i}]: ${JSON.stringify(expected[i])}, but actual[${i}]: ${
-        actual[i]
-      }`
-    );
+    const iteratorA = actual[Symbol.iterator]();
+    const iteratorE = expected[Symbol.iterator]();
+    let a, e;
+    while (a = iteratorA.next(), e = iteratorE.next(), !a.done && !e.done) {
+      if (!equal(a.value, e.value)) {
+        return false;
+      }
+    }
+    if (!a.done || !e.done) {
+      return false;
+    }
+    return true;
   }
+  // Objectは名前でソートしたentries同士を比較する
+  return equal(sortedEntries(actual as object), sortedEntries(expected as object));
 }
 
 class TestResult<T> {
@@ -85,56 +98,9 @@ class TestResult<T> {
     if (typeof this.actual === 'function') {
       throw new IllegalTest('Unsupported value type: function');
     }
-    if (isPrimitive(expected)) {
-      this.toBe(expected);
-      return;
+    if (!equal(this.actual, expected)) {
+      throw new TestFailed(`expected: ${toString(expected)}, but actual: ${toString(this.actual)}`);
     }
-    if (Array.isArray(expected)) {
-      if (!Array.isArray(this.actual)) {
-        throw new TestFailed(
-          `expected is an Array, but actual is not an Array: expected: ${toString(
-            expected
-          )}, actual:${toString(this.actual)}`
-        );
-      }
-      arraytest(this.actual, expected);
-      return;
-    }
-    if (isIterable(expected)) {
-      if (!isIterable(this.actual)) {
-        throw new TestFailed(
-          `expected is an Iterable, but actual is not an Iterable: expected: ${toString(
-            expected
-          )}, actual:${toString(this.actual)}`
-        );
-      }
-      arraytest([...this.actual], [...expected]);
-      return;
-    }
-    if (typeof expected === 'object') {
-      if (typeof this.actual !== 'object') {
-        throw new TestFailed(`expected does not equal to actual: expected: ${toString(
-            expected
-          )}, actual:${toString(this.actual)}`)
-        }
-        const expectedKeys = Object.keys(expected);
-        const actualKeys = Object.keys(this.actual);
-        arraytest(actualKeys, expectedKeys);
-      for (const key of actualKeys) {
-          // @ts-ignore
-          if (this.actual[key] !== expected[key]) {
-            throw new TestFailed(`expected.${key} does not equal to actual.${key}: expected.${key}: ${toString(
-              // @ts-ignore
-              expected[key]
-              )}, actual.${key}:${toString(
-              // @ts-ignore
-              this.actual[key]
-            )}`)
-        }
-      }
-      return;
-    }
-    throw new IllegalTest(`Unsupported type: expected: ${toString(expected)}`);
   }
   public toThrow(): void;
   public toThrow(checker: (ex: unknown) => unknown): void;
