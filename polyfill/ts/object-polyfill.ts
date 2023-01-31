@@ -42,7 +42,7 @@
   }
   Object.keys ??= (obj: Record<string, unknown>): string[] => [...keys('Object.keys', obj)];
   Object.entries ??= <T>(obj: Record<string, T>): [string, T][] => [...map(keys('Object.entries', obj), (name): [string, T] => [name, obj[name]])];
-  Object.values ??= <T>(obj: Record<string, T>): T[] => [...map(keys('', obj), name => obj[name])];
+  Object.values ??= <T>(obj: Record<string, T>): T[] => [...map(keys('Object.values', obj), name => obj[name])];
 
   Object.create ??= (proto: Record<string, unknown>, propertiesObject?: Record<string, unknown>) => {
     if (typeof proto !== 'object' && typeof proto !== 'function') {
