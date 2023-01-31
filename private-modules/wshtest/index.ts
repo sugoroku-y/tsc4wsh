@@ -158,8 +158,9 @@ class TestResult<T> {
         }
         return;
       }
-      const exString: string =
-        ex.message ?? ex.Message ?? ex.toString?.() ?? String(ex);
+      const exString: string = String(
+        (typeof ex === 'object' && ex && (('message' in ex && ex.message) || ('Message' in ex && ex.Message))) || ex,
+      );
       if (checker instanceof RegExp) {
         if (!checker.test(exString)) {
           throw new TestFailed(`message not matched(${checker}): ${exString}`);
@@ -224,7 +225,7 @@ function wshtestRun() {
           );
         } else {
           WScript.StdErr.WriteLine(
-            `FAILED: ${caption}: ${ex.message ?? ex.Message ?? String(ex)}`
+            `FAILED: ${caption}: ${typeof ex === 'object' && ex && ('message' in ex && ex.message || 'Message' in ex && ex.Message) || ex}`,
           );
         }
       }
