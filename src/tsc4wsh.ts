@@ -177,7 +177,16 @@ async function makeWsfDom(
   runtimes: string[],
   vbscripts: string[]
 ) {
-  const script = (await polyfill) + transpiled;
+  const script = `
+this.__extends = function __extends(a, b) {
+    if (a && b) {
+      a.prototype = Object.create(b.prototype);
+      a.prototype.constructor = a;
+    }
+};
+${await polyfill}
+${transpiled}
+`;
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
   const jobElement = doc.documentElement!;

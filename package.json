@@ -50,7 +50,8 @@
   },
   "jest": {
     "testMatch": [
-      "**/src/tsc4wsh.test.ts"
+      "**/src/tsc4wsh.test.ts",
+      "**/polyfill/test/*.test.ts"
     ],
     "transform": {
       "\\.ts$": "ts-jest"

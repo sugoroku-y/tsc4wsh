@@ -1,6 +1,9 @@
 (function () {
   String.prototype.repeat ??=
     function repeat(this: string, count: number): string {
+      if (!count) {
+        return '';
+      }
       if (count < 0) {
         throw new Error('repeat count must be non-negative');
       }
@@ -15,35 +18,37 @@
     start: number,
     length?: number
   ): string {
-    const end = start !== undefined && length !== undefined && length >= 0 ? start + length : length;
+    if (length !== undefined && (!length || length < 0)) {
+      return '';
+    }
     // なぜかsliceはES2015のものと同じなのでそちらを使用
-    return this.slice(start, end);
+    return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
   };
   String.prototype.padStart ??=
     function padStart(this: string, length: number, paddings?: string): string {
       const count = length - this.length;
       if (count <= 0) {
-        return this;
+        return `${this}`;
       }
       paddings ??= ' ';
       return (
         paddings
-          .repeat(length / paddings.length + 1)
-          .substr(0, count) + this
+          .repeat((length / paddings.length + 1) | 0)
+          .slice(0, count) + this
       );
     };
   String.prototype.padEnd ??=
     function padEnd(this: string, length: number, paddings?: string): string {
       const count = length - this.length;
       if (count <= 0) {
-        return this;
+        return `${this}`;
       }
       paddings ??= ' ';
       return (
         this +
         paddings
-          .repeat(length / paddings.length + 1)
-          .substr(0, count)
+          .repeat((length / paddings.length + 1) | 0)
+          .slice(0, count)
       );
     };
   String.prototype.startsWith ??=
@@ -51,8 +56,7 @@
       if (!position) {
         return this.lastIndexOf(searchString, 0) === 0;
       }
-      return this.slice(position, searchString.length) === searchString;
-        
+      return this.slice(position, position + searchString.length) === searchString;
     };
   String.prototype.endsWith ??=
     function endsWith(this: string, searchString: string, position?: number): boolean {

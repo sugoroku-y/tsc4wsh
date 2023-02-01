@@ -38,15 +38,29 @@ function isIterable(o: unknown): o is Iterable<unknown> {
   );
 }
 
-class TestFailed extends Error {
-  constructor(message: string) {
-    super(message);
+/**
+ * テスト用例外の基本クラス
+ *
+ * Error派生にするとinstanceofでの切り分けができなくなるので、
+ * 新たに作成してError派生にはしない。
+ */
+class ErrorBase {
+  readonly name: string;
+  constructor(readonly message?: string) {
+    this.name = 'Error';
+  }
+  toString(): string {
+    return `${this.name}: ${this.message ?? ''}`;
   }
 }
-class IllegalTest extends Error {
-  constructor(message: string) {
-    super(message);
-  }
+
+/** テストの失敗 */
+class TestFailed extends ErrorBase {
+  name = 'TestFailed';
+}
+/** テストコード自体に問題がある */
+class IllegalTest extends ErrorBase {
+  name = 'IllegalTest';
 }
 
 function sortedEntries(o: object): [string, unknown][] {
@@ -124,7 +138,7 @@ class TestResult<T> {
         }
         return;
       }
-      const exString: string = String(
+      const exString = String(
         (typeof ex === 'object' && ex && (('message' in ex && ex.message) || ('Message' in ex && ex.Message))) || ex,
       );
       if (checker instanceof RegExp) {
@@ -145,11 +159,78 @@ class TestResult<T> {
     }
     throw new TestFailed('No exception thrown');
   }
+  public not = {
+    toBe: (unexpected: T): void => {
+      try {
+        this.toBe(unexpected);
+        throw new TestFailed(`unexpected value: ${toString(this.actual)}}`);
+      } catch (ex) {
+        if (ex instanceof TestFailed) {
+          return;
+        }
+        throw ex;
+      }
+    },
+    toEqual: (unexpected: T): void => {
+      try {
+        this.toEqual(unexpected);
+        throw new TestFailed(`unexpected value: ${toString(this.actual)}}`);
+      } catch (ex) {
+        if (ex instanceof TestFailed) {
+          return;
+        }
+        throw ex;
+      }
+    },
+    toThrow: (checker?: ((ex: any) => unknown) | RegExp | string): void => {
+      if (typeof this.actual !== 'function') {
+        throw new IllegalTest('not thrown, because it is not function');
+      }
+      try {
+        this.actual();
+      } catch (ex) {
+        const exString = String(
+          (typeof ex === 'object' && ex && (('message' in ex && ex.message) || ('Message' in ex && ex.Message))) || ex,
+        );
+        if (!checker) {
+          throw new TestFailed(`exception thrown: ${exString}`);
+        }
+        if (typeof checker === 'function') {
+          if (checker(ex)) {
+            throw new TestFailed(
+              `The exception matched: ${checker.toString()}`
+            );
+          }
+          return;
+        }
+        if (checker instanceof RegExp) {
+          if (checker.test(exString)) {
+            throw new TestFailed(`message matched(${checker}): ${exString}`);
+          }
+          return;
+        }
+        if (typeof checker === 'string') {
+          if (exString.includes(checker)) {
+            throw new TestFailed(`message matched(${checker}): ${exString}`);
+          }
+          return;
+        }
+        throw new IllegalTest(
+          `Unsupported checker type: ${typeof checker}: ${checker}`
+        );
+      }
+    }
+  }
 }
 const tests: {[caption: string]: Array<() => void>} = {};
 function test(caption: string, testproc: () => void): void {
   tests[caption] ??= [];
   tests[caption].push(testproc);
+}
+namespace test {
+  export function skip(caption: string, testproc: () => void): void {
+    test(caption, testproc);
+  }
 }
 function expect(v: number): TestResult<number>;
 function expect(v: string): TestResult<string>;
@@ -186,14 +267,14 @@ function wshtestRun() {
         ++success;
       } catch (ex) {
         if (ex instanceof IllegalTest) {
-          WScript.StdErr.WriteLine(
-            `Illegal test: ${caption}: ${ex.message ?? String(ex)}`
-          );
-        } else {
-          WScript.StdErr.WriteLine(
-            `FAILED: ${caption}: ${typeof ex === 'object' && ex && ('message' in ex && ex.message || 'Message' in ex && ex.Message) || ex}`,
-          );
+          WScript.StdErr.WriteLine(`Illegal test: ${caption}: ${ex.message}`);
+          continue;
         }
+        if (ex instanceof TestFailed) {
+          WScript.StdErr.WriteLine(`FAILED: ${caption}: ${ex.message}`);
+          continue;
+        }
+        WScript.StdErr.WriteLine(`ERROR: ${caption}: ${(typeof ex === 'object' && ex || typeof ex === 'function') && ('message' in ex && ex.message || 'Message' in ex && ex.Message) || ex}`);
       }
     }
   }

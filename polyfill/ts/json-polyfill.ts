@@ -7,26 +7,10 @@
     '\n': '\\n',
     '\f': '\\f',
     '\r': '\\r',
-    '"': '\\"',
-    '/': '\\/',
-    '\\': '\\\\',
   };
-  const DEQUOTE = Object.entries(ENQUOTE).reduce<{[ch: string]: string}>(
-    (r, [ch, enquote]) => ((r[enquote.charAt(1)] = ch), r),
-    {}
-  );
-  const ENQUOTE_RE = new RegExp(
-    `[${Object.keys(ENQUOTE)
-      .map(ch => (ch === '\\' ? '\\\\' : ch))
-      .join('')}\x00-\x1f\x7f]`,
-    'g'
-  );
-  const DEQUOTE_RE = new RegExp(
-    `\\\\(?:([${Object.keys(DEQUOTE)
-      .map(ch => (ch === '\\' ? '\\\\' : ch))
-      .join('')}])|u([0-9A-Fa-f]{4}))`,
-    'g'
-  );
+  const DEQUOTE = Object.fromEntries(Object.entries(ENQUOTE).map(([ch, enquote]) => [enquote, ch]));
+  const ENQUOTE_RE = /[\x00-\x1f\\"]/g;
+  const DEQUOTE_RE = /\\(?:u([0-9A-Fa-f]{4})|.)/g;
 
   const ACCEPT_TYPES: {[type: string]: true} = {
     boolean: true,
@@ -39,22 +23,19 @@
   this.JSON = this.JSON || {};
 
   function enquote(str: string): string {
-    return `"${str.replace(
-      ENQUOTE_RE,
-      ch =>
-        ENQUOTE[ch] ||
-        '\\u' +
-          ch
-            .charCodeAt(0)
-            .toString(16)
-            .padStart(4, '0')
+    return `"${str.replace(ENQUOTE_RE, ch =>
+      '\\"'.includes(ch)
+        ? `\\${ch}`
+        : ch in ENQUOTE
+        ? ENQUOTE[ch]
+        : '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'),
     )}"`;
   }
   function dequote(quoted: string): string {
     return quoted
-      .substr(1, -1)
-      .replace(DEQUOTE_RE, (_, ch, hex) =>
-        hex ? String.fromCharCode(parseInt(hex, 16)) : DEQUOTE[ch]
+      .slice(1, -1)
+      .replace(DEQUOTE_RE, (enquote, hex) =>
+        hex ? String.fromCharCode(parseInt(hex, 16)) : enquote in DEQUOTE ? DEQUOTE[enquote] : enquote.charAt(1),
       );
   }
 
@@ -86,9 +67,7 @@
     }
     // 現在位置からだけ正規表現がマッチするように
     private stickyMatch(pattern: string) {
-      const re =
-        cache[pattern] ||
-        (cache[pattern] = new RegExp(`(?:${pattern})|(?=([\\s\\S]))`, 'g'));
+      const re = cache[pattern] || (cache[pattern] = new RegExp(`(?:${pattern})|(?=([\\s\\S]))`, 'g'));
       re.lastIndex = this.index;
       const match = re.exec(this.str);
       if (!match || match[match.length - 1]) {
@@ -119,12 +98,7 @@
         bol = eol;
       }
       const column = this.index - bol;
-      throw new Error(
-        `unexpected: ${this.str.substr(
-          this.index,
-          10
-        )} at line: ${line}, column: ${column}`
-      );
+      throw new Error(`unexpected: ${this.str.substr(this.index, 10)} at line: ${line}, column: ${column}`);
     }
     // 空白文字をスキップ
     private skipWS() {
@@ -154,9 +128,7 @@
     // 数値を変換
     private parseNumber() {
       this.skipWS();
-      const match = this.stickyMatch(
-        `-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[Ee][-+]?\\d+)?\\b`
-      );
+      const match = this.stickyMatch(`-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[Ee][-+]?\\d+)?\\b`);
       return match ? +match[0] : this.failedParsing();
     }
     // 文字列を変換
@@ -166,11 +138,7 @@
       return match ? dequote(match[0]) : this.failedParsing();
     }
     // 配列、オブジェクトを変換
-    private parseSequence(
-      terminater: string,
-      initialValue: any,
-      continuousProc: (value: any) => any
-    ) {
+    private parseSequence(terminater: string, initialValue: any, continuousProc: (value: any) => any) {
       ++this.index;
       const value = initialValue;
       if (!this.scanOne(terminater, true)) {
@@ -234,22 +202,16 @@
     function stringify(
       value: any,
       replacer?: Array<string | number> | ((key: string, value: any) => any),
-      space?: number | string
+      space?: number | string,
     ): string {
       // replacerに配列が指定されたらその配列に指定されたキーだけを残す
       const validKeys = Array.isArray(replacer) ? replacer : undefined;
       // replacerに関数が指定されたらその関数を使って変換する
       const p = typeof replacer === 'function' ? replacer : undefined;
       // spaceに数値が指定されたらその文字数分の空白でインデント、文字列が指定されたらその文字列自体でインデントする
-      const indentUnit =
-        typeof space === 'number'
-          ? ' '.repeat(space)
-          : typeof space === 'string'
-          ? space
-          : '';
+      const indentUnit = typeof space === 'number' ? ' '.repeat(space) : typeof space === 'string' ? space : '';
       // spaceとdepthに応じてインデントを入れる
-      const indent = (depth: number) =>
-        (indentUnit && '\n' + indentUnit.repeat(depth)) || '';
+      const indent = (depth: number) => (indentUnit && '\n' + indentUnit.repeat(depth)) || '';
       return (function sub(v: any, depth: number): string {
         // 単純なデータはそのまま
         switch (v) {
@@ -290,7 +252,7 @@
                     (json, i) =>
                       sub(p ? p('' + i, json) : json, depth + 1) ||
                       // 空文字列に変換される値はnullとして扱う
-                      'null'
+                      'null',
                   )
                   .join(',' + indent(depth + 1)) +
                 indent(depth) +
@@ -299,11 +261,7 @@
             }
             // entryの配列に変換
             const entries = Object.entries(o)
-              .filter(
-                ([k, sv]) =>
-                  ACCEPT_TYPES[typeof sv] &&
-                  (!validKeys || validKeys.includes(k))
-              )
+              .filter(([k, sv]) => ACCEPT_TYPES[typeof sv] && (!validKeys || validKeys.includes(k)))
               .map(([k, sv]) => [enquote(k), sub(p ? p(k, sv) : sv, depth + 1)])
               // 空文字列に変換される値は無視
               .filter(([, sv]) => !!sv)
@@ -312,13 +270,7 @@
             if (entries.length === 0) {
               return '{}';
             }
-            return (
-              '{' +
-              indent(depth + 1) +
-              entries.join(',' + indent(depth + 1)) +
-              indent(depth) +
-              '}'
-            );
+            return '{' + indent(depth + 1) + entries.join(',' + indent(depth + 1)) + indent(depth) + '}';
           },
         };
         const handler = handlers[typeof v];

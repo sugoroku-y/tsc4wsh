@@ -12,11 +12,19 @@
     'constructor',
   ];
   function* keys(name: string, obj: Record<string, unknown>): Generator<string, void> {
-      if (obj === null || 
-        typeof obj !== 'function' &&
-        typeof obj !== 'object'
-      ) {
-        throw new TypeError(`${name} called on non-object`);
+      if (obj === null || obj === undefined) {
+          throw new TypeError(`${name} called on non-object`);
+      }
+
+      switch (typeof obj) {
+      case 'object':
+          if (Symbol.isSymbol(obj)) {
+            return;
+          }
+      case 'function':
+          break;
+      default:
+          return;
       }
 
       for (const prop in obj) {
@@ -44,7 +52,10 @@
   Object.entries ??= <T>(obj: Record<string, T>): [string, T][] => [...map(keys('Object.entries', obj), (name): [string, T] => [name, obj[name]])];
   Object.values ??= <T>(obj: Record<string, T>): T[] => [...map(keys('Object.values', obj), name => obj[name])];
 
-  Object.create ??= (proto: Record<string, unknown>, propertiesObject?: Record<string, unknown>) => {
+  Object.fromEntries ??= (entries: [string, unknown][]) =>
+    entries.reduce<Record<string, unknown>>((r, [name, value]) => ((r[name] = value), r), {});
+
+  Object.create ??= <T>(proto: Record<string, unknown>, propertiesObject?: Record<string, unknown>) => {
     if (typeof proto !== 'object' && typeof proto !== 'function') {
       throw new TypeError(`Object prototype may only be an Object: ${proto}`);
     }
@@ -59,7 +70,7 @@
       );
     }
 
-    const F: any = function() {};
+    class F {}
     F.prototype = proto;
     return new F();
   };
