@@ -22,6 +22,12 @@ Function vbsInputBox(msg, title)
 End Function
 ]]></script>
 <script language="JScript"><![CDATA[
+this.__extends = function __extends(a, b) {
+    if (a && b) {
+      a.prototype = Object.create(b.prototype);
+      a.prototype.constructor = a;
+    }
+};
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -360,6 +366,9 @@ var __read = (this && this.__read) || function (o, n) {
         });
     }
     (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
+        if (isNaN(this.getTime())) {
+            throw new Error('Invalid date');
+        }
         return format(__makeTemplateObject(["", "-", "-", "T", ":", ":", ".", "Z"], ["", "-", "-", "T", ":", ":", ".", "Z"]), this.getUTCFullYear(), this.getUTCMonth() + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds(), [
             this.getUTCMilliseconds(),
             3,
@@ -469,7 +478,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 (function () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var dontEnums = [
         'toString',
@@ -486,10 +495,18 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return __generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
-                    if (obj === null ||
-                        typeof obj !== 'function' &&
-                            typeof obj !== 'object') {
+                    if (obj === null || obj === undefined) {
                         throw new TypeError("".concat(name, " called on non-object"));
+                    }
+                    switch (typeof obj) {
+                        case 'object':
+                            if (Symbol.isSymbol(obj)) {
+                                return [2];
+                            }
+                        case 'function':
+                            break;
+                        default:
+                            return [2];
                     }
                     _a = obj;
                     _b = [];
@@ -583,8 +600,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     (_a = Object.keys) !== null && _a !== void 0 ? _a : (Object.keys = function (obj) { return __spreadArray([], __read(keys('Object.keys', obj)), false); });
     (_b = Object.entries) !== null && _b !== void 0 ? _b : (Object.entries = function (obj) { return __spreadArray([], __read(map(keys('Object.entries', obj), function (name) { return [name, obj[name]]; })), false); });
-    (_c = Object.values) !== null && _c !== void 0 ? _c : (Object.values = function (obj) { return __spreadArray([], __read(map(keys('', obj), function (name) { return obj[name]; })), false); });
-    (_d = Object.create) !== null && _d !== void 0 ? _d : (Object.create = function (proto, propertiesObject) {
+    (_c = Object.values) !== null && _c !== void 0 ? _c : (Object.values = function (obj) { return __spreadArray([], __read(map(keys('Object.values', obj), function (name) { return obj[name]; })), false); });
+    (_d = Object.fromEntries) !== null && _d !== void 0 ? _d : (Object.fromEntries = function (entries) {
+        return entries.reduce(function (r, _a) {
+            var _b = __read(_a, 2), name = _b[0], value = _b[1];
+            return ((r[name] = value), r);
+        }, {});
+    });
+    (_e = Object.create) !== null && _e !== void 0 ? _e : (Object.create = function (proto, propertiesObject) {
         if (typeof proto !== 'object' && typeof proto !== 'function') {
             throw new TypeError("Object prototype may only be an Object: ".concat(proto));
         }
@@ -594,11 +617,19 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (propertiesObject !== undefined) {
             throw new Error("This Object.create is a shim and doesn't support a second argument.");
         }
-        var F = function () { };
+        var F = (function () {
+            function F() {
+            }
+            return F;
+        }());
         F.prototype = proto;
+        if (typeof proto === 'function') {
+            var originalToString_1 = proto.toString;
+            proto.toString = function () { return originalToString_1.call(proto); };
+        }
         return new F();
     });
-    (_e = Object.assign) !== null && _e !== void 0 ? _e : (Object.assign = function (target) {
+    (_f = Object.assign) !== null && _f !== void 0 ? _f : (Object.assign = function (target) {
         var e_3, _a, e_4, _b;
         var sources = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -642,21 +673,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         '\t': '\\t',
         '\n': '\\n',
         '\f': '\\f',
-        '\r': '\\r',
-        '"': '\\"',
-        '/': '\\/',
-        '\\': '\\\\'
+        '\r': '\\r'
     };
-    var DEQUOTE = Object.entries(ENQUOTE).reduce(function (r, _a) {
+    var DEQUOTE = Object.fromEntries(Object.entries(ENQUOTE).map(function (_a) {
         var _b = __read(_a, 2), ch = _b[0], enquote = _b[1];
-        return ((r[enquote.charAt(1)] = ch), r);
-    }, {});
-    var ENQUOTE_RE = new RegExp("[".concat(Object.keys(ENQUOTE)
-        .map(function (ch) { return (ch === '\\' ? '\\\\' : ch); })
-        .join(''), "\0-\u001F]"), 'g');
-    var DEQUOTE_RE = new RegExp("\\\\(?:([".concat(Object.keys(DEQUOTE)
-        .map(function (ch) { return (ch === '\\' ? '\\\\' : ch); })
-        .join(''), "])|u([0-9A-Fa-f]{4}))"), 'g');
+        return [enquote, ch];
+    }));
+    var ENQUOTE_RE = /[\x00-\x1f\\"]/g;
+    var DEQUOTE_RE = /\\(?:u([0-9A-Fa-f]{4})|.)/g;
     var ACCEPT_TYPES = {
         boolean: true,
         number: true,
@@ -667,19 +691,18 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     this.JSON = this.JSON || {};
     function enquote(str) {
         return "\"".concat(str.replace(ENQUOTE_RE, function (ch) {
-            return ENQUOTE[ch] ||
-                '\\u' +
-                    ch
-                        .charCodeAt(0)
-                        .toString(16)
-                        .padStart(4, '0');
+            return '\\"'.includes(ch)
+                ? "\\".concat(ch)
+                : ch in ENQUOTE
+                    ? ENQUOTE[ch]
+                    : '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0');
         }), "\"");
     }
     function dequote(quoted) {
         return quoted
-            .substr(1, -1)
-            .replace(DEQUOTE_RE, function (_, ch, hex) {
-            return hex ? String.fromCharCode(parseInt(hex, 16)) : DEQUOTE[ch];
+            .slice(1, -1)
+            .replace(DEQUOTE_RE, function (enquote, hex) {
+            return hex ? String.fromCharCode(parseInt(hex, 16)) : enquote in DEQUOTE ? DEQUOTE[enquote] : enquote.charAt(1);
         });
     }
     var cache = {};
@@ -718,8 +741,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             })('', value);
         };
         Parser.prototype.stickyMatch = function (pattern) {
-            var re = cache[pattern] ||
-                (cache[pattern] = new RegExp("(?:".concat(pattern, ")|(?=([\\s\\S]))"), 'g'));
+            var re = cache[pattern] || (cache[pattern] = new RegExp("(?:".concat(pattern, ")|(?=([\\s\\S]))"), 'g'));
             re.lastIndex = this.index;
             var match = re.exec(this.str);
             if (!match || match[match.length - 1]) {
@@ -845,14 +867,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             function stringify(value, replacer, space) {
                 var validKeys = Array.isArray(replacer) ? replacer : undefined;
                 var p = typeof replacer === 'function' ? replacer : undefined;
-                var indentUnit = typeof space === 'number'
-                    ? ' '.repeat(space)
-                    : typeof space === 'string'
-                        ? space
-                        : '';
-                var indent = function (depth) {
-                    return (indentUnit && '\n' + indentUnit.repeat(depth)) || '';
-                };
+                var indentUnit = typeof space === 'number' ? ' '.repeat(space) : typeof space === 'string' ? space : '';
+                var indent = function (depth) { return (indentUnit && '\n' + indentUnit.repeat(depth)) || ''; };
                 return (function sub(v, depth) {
                     switch (v) {
                         case undefined:
@@ -891,8 +907,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             var entries = Object.entries(o)
                                 .filter(function (_a) {
                                 var _b = __read(_a, 2), k = _b[0], sv = _b[1];
-                                return ACCEPT_TYPES[typeof sv] &&
-                                    (!validKeys || validKeys.includes(k));
+                                return ACCEPT_TYPES[typeof sv] && (!validKeys || validKeys.includes(k));
                             })
                                 .map(function (_a) {
                                 var _b = __read(_a, 2), k = _b[0], sv = _b[1];
@@ -909,11 +924,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             if (entries.length === 0) {
                                 return '{}';
                             }
-                            return ('{' +
-                                indent(depth + 1) +
-                                entries.join(',' + indent(depth + 1)) +
-                                indent(depth) +
-                                '}');
+                            return '{' + indent(depth + 1) + entries.join(',' + indent(depth + 1)) + indent(depth) + '}';
                         }
                     };
                     var handler = handlers[typeof v];
@@ -925,6 +936,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     var _j, _k, _l, _m, _o, _p, _q, _r;
     (_a = (_j = String.prototype).repeat) !== null && _a !== void 0 ? _a : (_j.repeat = function repeat(count) {
+        if (!count) {
+            return '';
+        }
         if (count < 0) {
             throw new Error('repeat count must be non-negative');
         }
@@ -934,35 +948,37 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return Array(count).fill(this).join('');
     });
     String.prototype.substr = function substr(start, length) {
-        var end = start !== undefined && length !== undefined && length >= 0 ? start + length : length;
-        return this.slice(start, end);
+        if (length !== undefined && (!length || length < 0)) {
+            return '';
+        }
+        return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
     };
     (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
         var count = length - this.length;
         if (count <= 0) {
-            return this;
+            return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
         return (paddings
-            .repeat(length / paddings.length + 1)
-            .substr(0, count) + this);
+            .repeat((length / paddings.length + 1) | 0)
+            .slice(0, count) + this);
     });
     (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
         if (count <= 0) {
-            return this;
+            return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
         return (this +
             paddings
-                .repeat(length / paddings.length + 1)
-                .substr(0, count));
+                .repeat((length / paddings.length + 1) | 0)
+                .slice(0, count));
     });
     (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
         if (!position) {
             return this.lastIndexOf(searchString, 0) === 0;
         }
-        return this.slice(position, searchString.length) === searchString;
+        return this.slice(position, position + searchString.length) === searchString;
     });
     (_e = (_o = String.prototype).endsWith) !== null && _e !== void 0 ? _e : (_o.endsWith = function endsWith(searchString, position) {
         if (!position) {
@@ -1033,6 +1049,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         });
     });
 })();
+
 (function () {
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
