@@ -55,7 +55,7 @@
   Object.fromEntries ??= (entries: [string, unknown][]) =>
     entries.reduce<Record<string, unknown>>((r, [name, value]) => ((r[name] = value), r), {});
 
-  Object.create ??= <T>(proto: Record<string, unknown>, propertiesObject?: Record<string, unknown>) => {
+  Object.create ??= <T>(proto: object | null, propertiesObject?: PropertyDescriptorMap & ThisType<T>) => {
     if (typeof proto !== 'object' && typeof proto !== 'function') {
       throw new TypeError(`Object prototype may only be an Object: ${proto}`);
     }
@@ -72,6 +72,11 @@
 
     class F {}
     F.prototype = proto;
+    if (typeof proto === 'function') {
+      // functionのtoStringはthisが関数でないとエラーになるので差し替え
+      const originalToString = proto.toString;
+      proto.toString = () => originalToString.call(proto);
+    }
     return new F();
   };
   Object.assign ??= (target: Record<string, unknown>, ...sources: Record<string, unknown>[]) => {
