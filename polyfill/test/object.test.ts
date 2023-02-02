@@ -79,6 +79,19 @@ test('Object.entries(): string', () => {
   expect(Object.entries('')).toEqual([]);
 });
 
+test('Object.fromEntries(): []', () => {
+  expect(Object.fromEntries([])).toEqual({});
+});
+test('Object.fromEntries(): [[aaa, 1]]', () => {
+  expect(Object.fromEntries([['aaa', 1]])).toEqual({aaa: 1});
+});
+test('Object.fromEntries(): [[aaa, 1],[bbb, true]]', () => {
+  expect(Object.fromEntries([['aaa', 1],['bbb', true]])).toEqual({aaa: 1, bbb: true});
+});
+test('Object.fromEntries(): [[aaa, 1],[aaa, true]]', () => {
+  expect(Object.fromEntries([['aaa', 1],['aaa', true]])).toEqual({aaa: true});
+});
+
 test('Object.create({})', () => {
   expect(Object.create({})).toEqual({});
 });
