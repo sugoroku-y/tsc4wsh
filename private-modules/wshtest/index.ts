@@ -211,7 +211,13 @@ function describe(caption: string, tests: () => unknown): void {
 
 function test(caption: string, testproc: () => void): void {
   const description = currentDescription;
-  suite.push({description, caption, testproc});
+  const testcase = {
+    description,
+    caption,
+    testproc,
+  };
+  testcase.toString = description ? () => `${description} ${caption}` : () => caption;
+  suite.push(testcase);
 }
 namespace test {
   export function skip(caption: string, testproc: () => void): void {
@@ -242,9 +248,7 @@ function wshtestRun() {
           .join('|'),
       )
     : undefined;
-  const executeSuite = filter
-    ? suite.filter(({description, caption}) => filter.test([...(description ? [description] : []), caption].join(' ')))
-    : suite;
+  const executeSuite = filter ? suite.filter(testcase => filter.test(String(testcase))) : suite;
   for (const testcase of executeSuite) {
     try {
       testcase.testproc.call(null);
@@ -252,15 +256,15 @@ function wshtestRun() {
     } catch (ex) {
       testcase.result = false;
       if (ex instanceof IllegalTest) {
-        WScript.StdErr.WriteLine(`Illegal test: ${testcase.caption}: ${ex.message}`);
+        WScript.StdErr.WriteLine(`Illegal test: ${testcase}: ${ex.message}`);
         continue;
       }
       if (ex instanceof TestFailed) {
-        WScript.StdErr.WriteLine(`FAILED: ${testcase.caption}: ${ex.message}`);
+        WScript.StdErr.WriteLine(`FAILED: ${testcase}: ${ex.message}`);
         continue;
       }
       WScript.StdErr.WriteLine(
-        `ERROR: ${testcase.caption}: ${
+        `ERROR: ${testcase}: ${
           (((typeof ex === 'object' && ex) || typeof ex === 'function') &&
             (('message' in ex && ex.message) || ('Message' in ex && ex.Message))) ||
           ex
