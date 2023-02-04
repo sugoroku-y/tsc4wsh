@@ -45,12 +45,12 @@ function isIterable(o: unknown): o is Iterable<unknown> {
  * 新たに作成してError派生にはしない。
  */
 class ErrorBase {
-  readonly name: string;
-  constructor(readonly message?: string) {
+  readonly name;
+  constructor(readonly message: string = '') {
     this.name = 'Error';
   }
   toString(): string {
-    return `${this.name}: ${this.message ?? ''}`;
+    return `${this.name}: ${this.message}`;
   }
 }
 
