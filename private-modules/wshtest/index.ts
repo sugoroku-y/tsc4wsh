@@ -5,10 +5,7 @@ const escapes = {
 };
 function toString(v: unknown): string {
   if (typeof v === 'string') {
-    return `"${v.replace(
-      /[\\""\t\n\r]/g,
-      ch => '\\' + (escapes[ch as keyof typeof escapes] ?? ch)
-    )}"`;
+    return `"${v.replace(/[\\""\t\n\r]/g, ch => '\\' + (escapes[ch as keyof typeof escapes] ?? ch))}"`;
   }
   if (isPrimitive(v)) {
     return String(v);
@@ -16,26 +13,12 @@ function toString(v: unknown): string {
   return `${Object.prototype.toString.call(v)}: ${JSON.stringify(v)}`;
 }
 
-function isPrimitive(
-  o: unknown
-): o is undefined | null | boolean | number | string {
-  return (
-    o === undefined ||
-    o === null ||
-    o === false ||
-    o === true ||
-    typeof o === 'number' ||
-    typeof o === 'string'
-  );
+function isPrimitive(o: unknown): o is undefined | null | boolean | number | string {
+  return o === undefined || o === null || o === false || o === true || typeof o === 'number' || typeof o === 'string';
 }
 
 function isIterable(o: unknown): o is Iterable<unknown> {
-  return (
-    typeof o === 'object' &&
-    o !== null &&
-    Symbol.iterator in o &&
-    typeof o[Symbol.iterator] === 'function'
-  );
+  return typeof o === 'object' && o !== null && Symbol.iterator in o && typeof o[Symbol.iterator] === 'function';
 }
 
 /**
@@ -64,7 +47,7 @@ class IllegalTest extends ErrorBase {
 }
 
 function sortedEntries(o: object): [string, unknown][] {
-  return Object.entries(o).sort(([a], [b]) => a === b ? 0 : a < b ? -1 : 1);
+  return Object.entries(o).sort(([a], [b]) => (a === b ? 0 : a < b ? -1 : 1));
 }
 
 function equal(actual: unknown, expected: unknown): boolean {
@@ -80,7 +63,7 @@ function equal(actual: unknown, expected: unknown): boolean {
     const iteratorA = actual[Symbol.iterator]();
     const iteratorE = expected[Symbol.iterator]();
     let a, e;
-    while (a = iteratorA.next(), e = iteratorE.next(), !a.done && !e.done) {
+    while (((a = iteratorA.next()), (e = iteratorE.next()), !a.done && !e.done)) {
       if (!equal(a.value, e.value)) {
         return false;
       }
@@ -101,11 +84,7 @@ class TestResult<T> {
       throw new IllegalTest('Unsupported value type: function');
     }
     if (this.actual !== expected) {
-      throw new TestFailed(
-        `expected: ${toString(expected)}, but actual: ${toString(
-          this.actual
-        )}`
-      );
+      throw new TestFailed(`expected: ${toString(expected)}, but actual: ${toString(this.actual)}`);
     }
   }
   public toEqual(expected: T): void {
@@ -132,9 +111,7 @@ class TestResult<T> {
       }
       if (typeof checker === 'function') {
         if (!checker(ex)) {
-          throw new TestFailed(
-            `The exception not passed the check: ${checker.toString()}`
-          );
+          throw new TestFailed(`The exception not passed the check: ${checker.toString()}`);
         }
         return;
       }
@@ -153,9 +130,7 @@ class TestResult<T> {
         }
         return;
       }
-      throw new IllegalTest(
-        `Unsupported checker type: ${typeof checker}: ${checker}`
-      );
+      throw new IllegalTest(`Unsupported checker type: ${typeof checker}: ${checker}`);
     }
     throw new TestFailed('No exception thrown');
   }
@@ -197,9 +172,7 @@ class TestResult<T> {
         }
         if (typeof checker === 'function') {
           if (checker(ex)) {
-            throw new TestFailed(
-              `The exception matched: ${checker.toString()}`
-            );
+            throw new TestFailed(`The exception matched: ${checker.toString()}`);
           }
           return;
         }
@@ -215,17 +188,30 @@ class TestResult<T> {
           }
           return;
         }
-        throw new IllegalTest(
-          `Unsupported checker type: ${typeof checker}: ${checker}`
-        );
+        throw new IllegalTest(`Unsupported checker type: ${typeof checker}: ${checker}`);
       }
-    }
+    },
+  };
+}
+
+type TestCase = {description?: string; caption: string; testproc: () => unknown; result?: boolean};
+const suite: TestCase[] = [];
+
+let currentDescription: string | undefined;
+
+function describe(caption: string, tests: () => unknown): void {
+  const save = currentDescription;
+  currentDescription = caption;
+  try {
+    tests();
+  } finally {
+    currentDescription = save;
   }
 }
-const tests: {[caption: string]: Array<() => void>} = {};
+
 function test(caption: string, testproc: () => void): void {
-  tests[caption] ??= [];
-  tests[caption].push(testproc);
+  const description = currentDescription;
+  suite.push({description, caption, testproc});
 }
 namespace test {
   export function skip(caption: string, testproc: () => void): void {
@@ -249,38 +235,44 @@ function expect<T>(v: T): TestResult<T> {
  * 自動的にスクリプトの最後に呼ばれる
  */
 function wshtestRun() {
-  const filter = new RegExp(
-    Iterables.from(WScript.Arguments.Unnamed)
-      .map(pattern => `(?:${pattern})`)
-      .join('|')
-  );
-  let success = 0;
-  let total = 0;
-  for (const caption of Object.keys(tests)) {
-    if (!(filter?.test(caption) ?? true)) {
-      continue;
-    }
-    for (const test of tests[caption]) {
-      ++total;
-      try {
-        test();
-        ++success;
-      } catch (ex) {
-        if (ex instanceof IllegalTest) {
-          WScript.StdErr.WriteLine(`Illegal test: ${caption}: ${ex.message}`);
-          continue;
-        }
-        if (ex instanceof TestFailed) {
-          WScript.StdErr.WriteLine(`FAILED: ${caption}: ${ex.message}`);
-          continue;
-        }
-        WScript.StdErr.WriteLine(`ERROR: ${caption}: ${(typeof ex === 'object' && ex || typeof ex === 'function') && ('message' in ex && ex.message || 'Message' in ex && ex.Message) || ex}`);
+  const filter = WScript.Arguments.Unnamed.length
+    ? new RegExp(
+        Iterables.from(WScript.Arguments.Unnamed)
+          .map(pattern => `(?:${pattern})`)
+          .join('|'),
+      )
+    : undefined;
+  const executeSuite = filter
+    ? suite.filter(({description, caption}) => filter.test([...(description ? [description] : []), caption].join(' ')))
+    : suite;
+  for (const testcase of executeSuite) {
+    try {
+      testcase.testproc.call(null);
+      testcase.result = true;
+    } catch (ex) {
+      testcase.result = false;
+      if (ex instanceof IllegalTest) {
+        WScript.StdErr.WriteLine(`Illegal test: ${testcase.caption}: ${ex.message}`);
+        continue;
       }
+      if (ex instanceof TestFailed) {
+        WScript.StdErr.WriteLine(`FAILED: ${testcase.caption}: ${ex.message}`);
+        continue;
+      }
+      WScript.StdErr.WriteLine(
+        `ERROR: ${testcase.caption}: ${
+          (((typeof ex === 'object' && ex) || typeof ex === 'function') &&
+            (('message' in ex && ex.message) || ('Message' in ex && ex.Message))) ||
+          ex
+        }`,
+      );
     }
   }
+  const executed = suite.filter(({result}) => result !== undefined);
+  const succeeded = executed.filter(({result}) => result);
   WScript.Echo(
-    `Success: ${success} / ${total} : ${
-      (((success / total) * 1000 + 0.5) | 0) / 10
-    }%`
+    `Success: ${succeeded.length} / ${executed.length} : ${
+      (((succeeded.length / executed.length) * 1000 + 0.5) | 0) / 10
+    }%`,
   );
 }
