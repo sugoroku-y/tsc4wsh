@@ -47,17 +47,11 @@ declare namespace UserAgent {
     /** 最後に使用したURLの取得 */
     getOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_URL): string;
     /** 安全でないASCII文字をURLencodeするかどうかを取得 */
-    getOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_ESCAPE_PERCENT_IN_URL
-    ): boolean;
+    getOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_ESCAPE_PERCENT_IN_URL): boolean;
     /** SXH_SERVER_CERT_OPTIONで指定される問題をエラーとするかのフラグを取得 */
-    getOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_IGNORE_SERVER_SSL_CERT_ERROR_FLAGS
-    ): number;
+    getOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_IGNORE_SERVER_SSL_CERT_ERROR_FLAGS): number;
     /** 送信するクライアント証明書の名前を取得。空文字列=ローカルストアの最初の証明書を使用する */
-    getOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_SELECT_CLIENT_SSL_CERT
-    ): string;
+    getOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_SELECT_CLIENT_SSL_CERT): string;
     /** URL文字列をシングルバイト表現に変換するために使用されるコードページを取得。 */
     getOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_URL_CODEPAGE): number;
     /** HTTPレスポンスヘッダの取得 */
@@ -65,13 +59,7 @@ declare namespace UserAgent {
     /** readystateプロパティの変更イベント */
     readonly onreadystatechange: unknown;
     /** HTTP接続を開く */
-    open(
-      method: string,
-      url: string,
-      async?: unknown,
-      user?: unknown,
-      password?: any
-    ): void;
+    open(method: string, url: string, async?: unknown, user?: unknown, password?: any): void;
     /** ready state */
     readonly readyState: number;
     /** レスポンスの内容 */
@@ -85,46 +73,25 @@ declare namespace UserAgent {
     /** HTTPリクエストを送信 */
     send(body?: any): void;
     /** 安全でないASCII文字をURLencodeするかどうか:真偽値(デフォルト:偽) */
-    setOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_ESCAPE_PERCENT_IN_URL,
-      value: boolean
-    ): void;
+    setOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_ESCAPE_PERCENT_IN_URL, value: boolean): void;
     /** SXH_SERVER_CERT_OPTIONで指定される問題をエラーとするかのフラグ:DWORD(デフォルト:0)sendを呼ぶ前に設定する必要がある。 */
-    setOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_IGNORE_SERVER_SSL_CERT_ERROR_FLAGS,
-      value: number
-    ): void;
+    setOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_IGNORE_SERVER_SSL_CERT_ERROR_FLAGS, value: number): void;
     /** 送信するクライアント証明書の名前: 文字列(デフォルト:空文字列=ローカルストアの最初の証明書を使用する) */
-    setOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_SELECT_CLIENT_SSL_CERT,
-      value: string
-    ): void;
+    setOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_SELECT_CLIENT_SSL_CERT, value: string): void;
     /** URL文字列をシングルバイト表現に変換するために使用されるコードページ: 符号なし整数値(デフォルト: CP_UTF8) */
-    setOption(
-      option: SERVERXMLHTTP_OPTION.SXH_OPTION_URL_CODEPAGE,
-      value: number
-    ): void;
+    setOption(option: SERVERXMLHTTP_OPTION.SXH_OPTION_URL_CODEPAGE, value: number): void;
     /** レジストリからプロキシ設定を読み取り */
     setProxy(proxySetting: SXH_PROXY_SETTING.SXH_PROXY_SET_PRECONFIG): void;
     /** プロキシを使用しない */
     setProxy(proxySetting: SXH_PROXY_SETTING.SXH_PROXY_SET_DIRECT): void;
     /** 指定したプロキシを使用する。 */
-    setProxy(
-      proxySetting: SXH_PROXY_SETTING.SXH_PROXY_SET_PROXY,
-      proxyServer: string,
-      bypassList?: string
-    ): void;
+    setProxy(proxySetting: SXH_PROXY_SETTING.SXH_PROXY_SET_PROXY, proxyServer: string, bypassList?: string): void;
     /** プロキシ用の認証情報を設定する。 */
     setProxyCredentials(userName: string, password: string): void;
     /** HTTPリクエストヘッダを設定 */
     setRequestHeader(header: string, value: string): void;
     /** 各種タイムアウトを設定(単位ミリ秒) */
-    setTimeouts(
-      resolveTimeout: number,
-      connectTimeout: number,
-      sendTimeout: number,
-      receiveTimeout: number
-    ): void;
+    setTimeouts(resolveTimeout: number, connectTimeout: number, sendTimeout: number, receiveTimeout: number): void;
     /** HTTPステータスコード */
     readonly status: number;
     /** HTTPステータス */

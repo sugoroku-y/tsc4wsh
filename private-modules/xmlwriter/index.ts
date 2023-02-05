@@ -59,7 +59,7 @@ namespace XmlWriter {
   function ensurePrefix(
     {prefix, namespaceURI, nodeType}: DOM3.Node,
     map: INamespace[],
-    appendix: INamespace[]
+    appendix: INamespace[],
   ): INamespace[] {
     if (prefix && !namespaceURI) {
       throw new Error(`宣言されてない名前空間の接頭語への参照です: ${prefix}`);
@@ -69,20 +69,13 @@ namespace XmlWriter {
     }
     prefix = prefix || '';
     namespaceURI = namespaceURI || '';
-    if (
-      (map.find(({prefix: p}) => prefix === p)?.namespaceURI ?? '') ===
-      namespaceURI
-    ) {
+    if ((map.find(({prefix: p}) => prefix === p)?.namespaceURI ?? '') === namespaceURI) {
       return map;
     }
     appendix.push({prefix, namespaceURI});
     return [{prefix, namespaceURI}, ...map];
   }
-  function insertIndent(
-    node: DOM3.Node,
-    indent: string,
-    depth: number
-  ): string {
+  function insertIndent(node: DOM3.Node, indent: string, depth: number): string {
     if (depth < 0) {
       return '';
     }
@@ -97,17 +90,11 @@ namespace XmlWriter {
           case DOM3.NodeType.ENTITY_REFERENCE_NODE:
             return '';
         }
-        if (
-          node.nodeType === DOM3.NodeType.TEXT_NODE &&
-          !/^\S(?:[\s\S]*\S)?$/.test(node.data)
-        ) {
+        if (node.nodeType === DOM3.NodeType.TEXT_NODE && !/^\S(?:[\s\S]*\S)?$/.test(node.data)) {
           return '';
         }
     }
-    if (
-      node.previousSibling?.nodeType == DOM3.NodeType.TEXT_NODE &&
-      !/\S/.test(node.previousSibling.data)
-    ) {
+    if (node.previousSibling?.nodeType == DOM3.NodeType.TEXT_NODE && !/\S/.test(node.previousSibling.data)) {
       return '';
     }
     return '\n' + indent.repeat(depth);
@@ -119,15 +106,13 @@ namespace XmlWriter {
       xmldecl?: boolean;
       encoding?: string;
       standalone?: boolean;
-    }
+    },
   ): string {
     const indent = (() => {
       const indent = options?.indent ?? {hardTab: false, count: 2};
       if (typeof indent === 'boolean') return indent ? '  ' : '';
       if (typeof indent === 'number') return ' '.repeat(indent);
-      return indent.hardTab
-        ? '\t'.repeat(indent.count ?? 1)
-        : ' '.repeat(indent.count ?? 2);
+      return indent.hardTab ? '\t'.repeat(indent.count ?? 1) : ' '.repeat(indent.count ?? 2);
     })();
     const xmldecl: {
       version: '1.0';
@@ -140,21 +125,14 @@ namespace XmlWriter {
     const {encoding, standalone} =
       doc.firstChild?.nodeType === DOM3.NodeType.PROCESSING_INSTRUCTION_NODE &&
       doc.firstChild.nodeName === 'xml' &&
-      /^version="1.0"( encoding="([^\"]*)")?( standalone="(yes|no)")?$/.test(
-        doc.firstChild.data
-      )
+      /^version="1.0"( encoding="([^\"]*)")?( standalone="(yes|no)")?$/.test(doc.firstChild.data)
         ? {
             encoding: RegExp.$1 ? RegExp.$2 : undefined,
             standalone: RegExp.$3 ? RegExp.$4 : undefined,
           }
         : {
             encoding: options?.encoding,
-            standalone:
-              options?.standalone !== undefined
-                ? options?.standalone
-                  ? 'yes'
-                  : 'no'
-                : undefined,
+            standalone: options?.standalone !== undefined ? (options?.standalone ? 'yes' : 'no') : undefined,
           };
     return (
       ((options?.xmldecl ?? true) &&
@@ -198,11 +176,7 @@ namespace XmlWriter {
               xml += node.data ? '<!--' + node.data + '-->' : '<!-->';
               break;
             case DOM3.NodeType.PROCESSING_INSTRUCTION_NODE:
-              if (
-                depth === 0 &&
-                node.nodeName === 'xml' &&
-                (options?.xmldecl ?? true)
-              ) {
+              if (depth === 0 && node.nodeName === 'xml' && (options?.xmldecl ?? true)) {
                 break;
               }
               xml += insertIndent(node, indent, depth);
@@ -222,18 +196,14 @@ namespace XmlWriter {
                   }
                 }
                 for (const {prefix, namespaceURI} of appendix) {
-                  xml += ` xmlns${prefix ? ':' + prefix : ''}="${escapeXml(
-                    namespaceURI
-                  )}"`;
+                  xml += ` xmlns${prefix ? ':' + prefix : ''}="${escapeXml(namespaceURI)}"`;
                 }
                 if (!node.firstChild) {
                   xml += '/>';
                 } else if (
                   Iterables.from(node.childNodes).every(
                     child =>
-                      [DOM3.NodeType.TEXT_NODE, DOM3.NodeType.ENTITY_REFERENCE_NODE].indexOf(
-                        child.nodeType
-                      ) >= 0
+                      [DOM3.NodeType.TEXT_NODE, DOM3.NodeType.ENTITY_REFERENCE_NODE].indexOf(child.nodeType) >= 0,
                   )
                 ) {
                   xml += '>';
@@ -255,9 +225,7 @@ namespace XmlWriter {
             case DOM3.NodeType.NOTATION_NODE:
             case DOM3.NodeType.ENTITY_NODE:
               throw new Error(
-                `サポート対象外の種類のノードです。: ${
-                  nodeTypeString[node.nodeType] || 'UNKNOWN:' + node.nodeType
-                }`
+                `サポート対象外の種類のノードです。: ${nodeTypeString[node.nodeType] || 'UNKNOWN:' + node.nodeType}`,
               );
           }
         }
@@ -272,9 +240,6 @@ namespace XmlWriter {
     '>': '&gt;',
   } as const;
   function escapeXml(s: string): string {
-    return s.replace(
-      /["&<>]/g,
-      ch => escapeXml_table[ch as keyof typeof escapeXml_table]
-    );
+    return s.replace(/["&<>]/g, ch => escapeXml_table[ch as keyof typeof escapeXml_table]);
   }
 }

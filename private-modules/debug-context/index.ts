@@ -14,9 +14,7 @@ namespace debugContext {
     let buf = '';
     while (digit > 4) {
       const sft = (((digit - 1) / 4) | 0) * 4;
-      buf += ((n >> (sft * 4)) & ((1 << ((digit - sft) * 4)) - 1))
-        .toString(16)
-        .padStart(digit - sft, '0');
+      buf += ((n >> (sft * 4)) & ((1 << ((digit - sft) * 4)) - 1)).toString(16).padStart(digit - sft, '0');
       digit = sft;
       n &= (1 << (digit * 4)) - 1;
     }
@@ -47,10 +45,7 @@ namespace debugContext {
     );
   }
   function getFunctionName(f: Function) {
-    return (
-      (f.toString().match(/\bfunction\s+([^\s()]+)\s*\(/) || [])[1] ||
-      '[anonymous]'
-    );
+    return (f.toString().match(/\bfunction\s+([^\s()]+)\s*\(/) || [])[1] || '[anonymous]';
   }
   function inspect(obj: any): string {
     return (function sub(o: any, depth: number, stack: any[]): string {
@@ -75,23 +70,12 @@ namespace debugContext {
           return '[...]';
         }
         const [prefix, suffix, ePrefix, eSuffix, separator] =
-          o.length <= 3
-            ? ['[',                     ']', '',                 '',    ', ']
-            : ['[\n', '  '.repeat(d) + ']', '  '.repeat(d + 1), ',\n', ''];
-        return (
-          prefix +
-          o
-            .map(e => ePrefix + sub(e, d + 1, stack.concat(o)) + eSuffix)
-            .join(separator) +
-          suffix
-        );
+          o.length <= 3 ? ['[', ']', '', '', ', '] : ['[\n', '  '.repeat(d) + ']', '  '.repeat(d + 1), ',\n', ''];
+        return prefix + o.map(e => ePrefix + sub(e, d + 1, stack.concat(o)) + eSuffix).join(separator) + suffix;
       }
       if (o instanceof Error) {
-        return `[Error {number: 0x${toHexadecimal(
-          o.number,
-          8
-        )}, description: ${quote(o.description)}, message: ${quote(
-          o.message
+        return `[Error {number: 0x${toHexadecimal(o.number, 8)}, description: ${quote(o.description)}, message: ${quote(
+          o.message,
         )}}]`;
       }
       if (o instanceof RegExp) {
@@ -109,17 +93,11 @@ namespace debugContext {
       }
       {
         const [prefix, suffix, ePrefix, eSuffix, separator] =
-          names.length <= 3
-          ? ['{',                    '}', '',                 '',    ', ']
-            : ['{\n', '  '.repeat(d) + '}', '  '.repeat(d + 1), ',\n', ''];
+          names.length <= 3 ? ['{', '}', '', '', ', '] : ['{\n', '  '.repeat(d) + '}', '  '.repeat(d + 1), ',\n', ''];
         return (
           prefix +
           Object.keys(o)
-            .map(n =>
-              ePrefix + /^\w+$/.test(n)
-                ? n
-                : quote(n) + ': ' + sub(o[n], d + 1, stack.concat(o)) + eSuffix
-            )
+            .map(n => (ePrefix + /^\w+$/.test(n) ? n : quote(n) + ': ' + sub(o[n], d + 1, stack.concat(o)) + eSuffix))
             .join(separator) +
           suffix
         );
@@ -137,15 +115,12 @@ namespace debugContext {
         break;
       }
       if (/^\s*:stack\s*$/.test(expr)) {
-        for (
-          let frame = arguments.callee.caller.caller;
-          frame;
-          frame = frame.caller
-        ) {
+        for (let frame = arguments.callee.caller.caller; frame; frame = frame.caller) {
           WScript.StdOut.WriteLine(
-            `function ${getFunctionName(frame)} (${inspect(
-              Array.from(frame.arguments)
-            ).replace(/^\[|\]$/g, '')}) {...}`
+            `function ${getFunctionName(frame)} (${inspect(Array.from(frame.arguments)).replace(
+              /^\[|\]$/g,
+              '',
+            )}) {...}`,
           );
         }
         continue;
@@ -157,9 +132,9 @@ namespace debugContext {
         WScript.StdOut.WriteLine(inspect(eval(expr)));
       } catch (e) {
         WScript.StdOut.WriteLine(
-          typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e ?
-          `Error Code: 0x${toHexadecimal(e.number, 8)}: ${e.description}`
-            : String(e)
+          typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e
+            ? `Error Code: 0x${toHexadecimal(e.number, 8)}: ${e.description}`
+            : String(e),
         );
       }
     }

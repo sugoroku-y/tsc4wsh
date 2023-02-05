@@ -1,4 +1,4 @@
-(function(this: any) {
+(function (this: any) {
   this.console ??= {
     log() {
       output(WScript.StdOut, arguments);
@@ -7,12 +7,7 @@
       output(WScript.StdErr, arguments);
     },
   };
-  function output(
-    stream: IWshRuntimeLibrary.TextStreamWriter,
-    messages: IArguments
-  ) {
-    stream.WriteLine(
-      `[${new Date().toLocaleTimeString()}] ${Array.from(messages, m => String(m)).join(' ')}`
-    );
+  function output(stream: IWshRuntimeLibrary.TextStreamWriter, messages: IArguments) {
+    stream.WriteLine(`[${new Date().toLocaleTimeString()}] ${Array.from(messages, m => String(m)).join(' ')}`);
   }
 })();

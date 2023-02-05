@@ -1159,7 +1159,7 @@ declare namespace VirtualBox {
       hostIP: string,
       hostPort: number,
       guestIP: string,
-      guestPort: number
+      guestPort: number,
     ): void;
     removePortForwardRule(iSipv6: boolean, ruleName: string): void;
     start(trunkType: string): void;
@@ -1179,22 +1179,12 @@ declare namespace VirtualBox {
     addGlobalOption(option: DhcpOpt, value: string): void;
     removeGlobalOption(option: DhcpOpt): void;
     removeGlobalOptions(): void;
-    addVmSlotOption(
-      vmname: string,
-      slot: number,
-      option: DhcpOpt,
-      value: string
-    ): void;
+    addVmSlotOption(vmname: string, slot: number, option: DhcpOpt, value: string): void;
     removeVmSlotOption(vmname: string, slot: number, option: DhcpOpt): void;
     removeVmSlotOptions(vmname: string, slot: number): void;
     getVmSlotOptions(vmname: string, slot: number): SafeArray<string>;
     getMacOptions(mac: string): SafeArray<string>;
-    setConfiguration(
-      IPAddress: string,
-      networkMask: string,
-      FromIPAddress: string,
-      ToIPAddress: string
-    ): void;
+    setConfiguration(IPAddress: string, networkMask: string, FromIPAddress: string, ToIPAddress: string): void;
     start(networkName: string, trunkName: string, trunkType: string): void;
     stop(): void;
     restart(): void;
@@ -1227,18 +1217,13 @@ declare namespace VirtualBox {
     readonly internalNetworks: SafeArray<string>;
     readonly genericNetworkDrivers: SafeArray<string>;
     readonly cloudProviderManager: ICloudProviderManager;
-    composeMachineFilename(
-      name: string,
-      group: string,
-      createFlags: string,
-      baseFolder: string
-    ): string;
+    composeMachineFilename(name: string, group: string, createFlags: string, baseFolder: string): string;
     createMachine(
       settingsFile: string,
       name: string,
       groups: SafeArray<string>,
       osTypeId: string,
-      flags: string
+      flags: string,
     ): IMachine;
     openMachine(settingsFile: string): IMachine;
     registerMachine(machine: IMachine): void;
@@ -1252,25 +1237,15 @@ declare namespace VirtualBox {
     getMachineStates(machines: SafeArray<IMachine>): SafeArray<MachineState>;
     createAppliance(): IAppliance;
     createUnattendedInstaller(): IUnattended;
-    createMedium(
-      format: string,
-      location: string,
-      accessMode: AccessMode,
-      aDeviceTypeType: DeviceType
-    ): IMedium;
-    openMedium(
-      location: string,
-      deviceType: DeviceType,
-      accessMode: AccessMode,
-      forceNewUuid: boolean
-    ): IMedium;
+    createMedium(format: string, location: string, accessMode: AccessMode, aDeviceTypeType: DeviceType): IMedium;
+    openMedium(location: string, deviceType: DeviceType, accessMode: AccessMode, forceNewUuid: boolean): IMedium;
     getGuestOSType(id: string): IGuestOSType;
     createSharedFolder(
       name: string,
       hostPath: string,
       writable: boolean,
       automount: boolean,
-      autoMountPoint: string
+      autoMountPoint: string,
     ): void;
     removeSharedFolder(name: string): void;
     getExtraDataKeys(): SafeArray<string>;
@@ -1287,7 +1262,7 @@ declare namespace VirtualBox {
       firmwareType: FirmwareType,
       version: string,
       url: string /* 本来は参照渡しする必要があるがJScriptでは値渡ししかできないので無意味 */,
-      file: string /* 同上 */
+      file: string /* 同上 */,
     ): boolean;
   } /* interface IVirtualBox */
 
@@ -1301,7 +1276,7 @@ declare namespace VirtualBox {
       /* out */ names: SafeArray<string>,
       /* out */ types: SafeArray<number>,
       /* out */ sizes: SafeArray<number>,
-      /* out */ modes: SafeArray<number>
+      /* out */ modes: SafeArray<number>,
     ): void;
     exists(names: SafeArray<string>): SafeArray<string>;
     remove(names: SafeArray<string>): IProgress;
@@ -1343,18 +1318,11 @@ declare namespace VirtualBox {
     interpret(): void;
     importMachines(options: SafeArray<ImportOptions>): IProgress;
     createVFSExplorer(URI: string): IVFSExplorer;
-    write(
-      format: string,
-      options: SafeArray<ExportOptions>,
-      path: string
-    ): IProgress;
+    write(format: string, options: SafeArray<ExportOptions>, path: string): IProgress;
     getWarnings(): SafeArray<string>;
     getPasswordIds(): SafeArray<string>;
     getMediumIdsForPasswordId(passwordId: string): SafeArray<string>;
-    addPasswords(
-      identifiers: SafeArray<string>,
-      passwords: SafeArray<string>
-    ): void;
+    addPasswords(identifiers: SafeArray<string>, passwords: SafeArray<string>): void;
   } /* interface IAppliance */
 
   interface IVirtualSystemDescription {
@@ -1364,7 +1332,7 @@ declare namespace VirtualBox {
       /* out */ refs: SafeArray<string>,
       /* out */ OVFValues: SafeArray<string>,
       /* out */ VBoxValues: SafeArray<string>,
-      /* out */ extraConfigValues: SafeArray<string>
+      /* out */ extraConfigValues: SafeArray<string>,
     ): void;
     getDescriptionByType(
       type: VirtualSystemDescriptionType,
@@ -1372,23 +1340,16 @@ declare namespace VirtualBox {
       /* out */ refs: SafeArray<string>,
       /* out */ OVFValues: SafeArray<string>,
       /* out */ VBoxValues: SafeArray<string>,
-      /* out */ extraConfigValues: SafeArray<string>
+      /* out */ extraConfigValues: SafeArray<string>,
     ): void;
     removeDescriptionByType(type: VirtualSystemDescriptionType): void;
-    getValuesByType(
-      type: VirtualSystemDescriptionType,
-      which: VirtualSystemDescriptionValueType
-    ): SafeArray<string>;
+    getValuesByType(type: VirtualSystemDescriptionType, which: VirtualSystemDescriptionValueType): SafeArray<string>;
     setFinalValues(
       enabled: SafeArray<boolean>,
       VBoxValues: SafeArray<string>,
-      extraConfigValues: SafeArray<string>
+      extraConfigValues: SafeArray<string>,
     ): void;
-    addDescription(
-      type: VirtualSystemDescriptionType,
-      VBoxValue: string,
-      extraConfigValue: string
-    ): void;
+    addDescription(type: VirtualSystemDescriptionType, VBoxValue: string, extraConfigValue: string): void;
   } /* interface IVirtualSystemDescription */
 
   interface IUnattended {
@@ -1433,11 +1394,7 @@ declare namespace VirtualBox {
     endPowerUp(result: number): void;
     beginPoweringDown(/* out */ progress: IProgress): void;
     endPoweringDown(result: number, errMsg: string): void;
-    runUSBDeviceFilters(
-      device: IUSBDevice,
-      /* out */ matched: boolean,
-      /* out */ maskedInterfaces: number
-    ): void;
+    runUSBDeviceFilters(device: IUSBDevice, /* out */ matched: boolean, /* out */ maskedInterfaces: number): void;
     captureUSBDevice(id: string, captureFilename: string): void;
     detachUSBDevice(id: string, done: boolean): void;
     autoCaptureUSBDevices(): void;
@@ -1448,14 +1405,9 @@ declare namespace VirtualBox {
       /* out */ names: SafeArray<string>,
       /* out */ values: SafeArray<string>,
       /* out */ timestamps: SafeArray<number>,
-      /* out */ flags: SafeArray<string>
+      /* out */ flags: SafeArray<string>,
     ): void;
-    pushGuestProperty(
-      name: string,
-      value: string,
-      timestamp: number,
-      flags: string
-    ): void;
+    pushGuestProperty(name: string, value: string, timestamp: number, flags: string): void;
     lockMedia(): void;
     unlockMedia(): void;
     ejectMedium(attachment: IMediumAttachment): IMediumAttachment;
@@ -1475,12 +1427,9 @@ declare namespace VirtualBox {
       memBalloonTotal: number,
       memSharedTotal: number,
       vmNetRx: number,
-      vmNetTx: number
+      vmNetTx: number,
     ): void;
-    authenticateExternal(
-      authParams: SafeArray<string>,
-      /* out */ result: string
-    ): void;
+    authenticateExternal(authParams: SafeArray<string>, /* out */ result: string): void;
   } /* interface IInternalMachineControl */
 
   interface IBIOSSettings {
@@ -1660,103 +1609,36 @@ declare namespace VirtualBox {
     launchVMProcess(
       session: ISession,
       name: 'gui' | 'headless' | 'sdl' | 'emergencystop' | '',
-      environment: string
+      environment: string,
     ): IProgress;
     setBootOrder(position: number, device: DeviceType): void;
     getBootOrder(position: number): DeviceType;
-    attachDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      type: DeviceType,
-      medium: IMedium
-    ): void;
-    attachDeviceWithoutMedium(
-      name: string,
-      controllerPort: number,
-      device: number,
-      type: DeviceType
-    ): void;
+    attachDevice(name: string, controllerPort: number, device: number, type: DeviceType, medium: IMedium): void;
+    attachDeviceWithoutMedium(name: string, controllerPort: number, device: number, type: DeviceType): void;
     detachDevice(name: string, controllerPort: number, device: number): void;
-    passthroughDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      passthrough: boolean
-    ): void;
-    temporaryEjectDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      temporaryEject: boolean
-    ): void;
-    nonRotationalDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      nonRotational: boolean
-    ): void;
-    setAutoDiscardForDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      discard: boolean
-    ): void;
-    setHotPluggableForDevice(
-      name: string,
-      controllerPort: number,
-      device: number,
-      hotPluggable: boolean
-    ): void;
+    passthroughDevice(name: string, controllerPort: number, device: number, passthrough: boolean): void;
+    temporaryEjectDevice(name: string, controllerPort: number, device: number, temporaryEject: boolean): void;
+    nonRotationalDevice(name: string, controllerPort: number, device: number, nonRotational: boolean): void;
+    setAutoDiscardForDevice(name: string, controllerPort: number, device: number, discard: boolean): void;
+    setHotPluggableForDevice(name: string, controllerPort: number, device: number, hotPluggable: boolean): void;
     setBandwidthGroupForDevice(
       name: string,
       controllerPort: number,
       device: number,
-      bandwidthGroup: IBandwidthGroup
+      bandwidthGroup: IBandwidthGroup,
     ): void;
-    setNoBandwidthGroupForDevice(
-      name: string,
-      controllerPort: number,
-      device: number
-    ): void;
-    unmountMedium(
-      name: string,
-      controllerPort: number,
-      device: number,
-      force: boolean
-    ): void;
-    mountMedium(
-      name: string,
-      controllerPort: number,
-      device: number,
-      medium: IMedium,
-      force: boolean
-    ): void;
+    setNoBandwidthGroupForDevice(name: string, controllerPort: number, device: number): void;
+    unmountMedium(name: string, controllerPort: number, device: number, force: boolean): void;
+    mountMedium(name: string, controllerPort: number, device: number, medium: IMedium, force: boolean): void;
     getMedium(name: string, controllerPort: number, device: number): IMedium;
-    getMediumAttachmentsOfController(
-      name: string
-    ): SafeArray<IMediumAttachment>;
-    getMediumAttachment(
-      name: string,
-      controllerPort: number,
-      device: number
-    ): IMediumAttachment;
-    attachHostPCIDevice(
-      hostAddress: number,
-      desiredGuestAddress: number,
-      tryToUnbind: boolean
-    ): void;
+    getMediumAttachmentsOfController(name: string): SafeArray<IMediumAttachment>;
+    getMediumAttachment(name: string, controllerPort: number, device: number): IMediumAttachment;
+    attachHostPCIDevice(hostAddress: number, desiredGuestAddress: number, tryToUnbind: boolean): void;
     detachHostPCIDevice(hostAddress: number): void;
     getNetworkAdapter(slot: number): INetworkAdapter;
-    addStorageController(
-      name: string,
-      connectionType: StorageBus
-    ): IStorageController;
+    addStorageController(name: string, connectionType: StorageBus): IStorageController;
     getStorageControllerByName(name: string): IStorageController;
-    getStorageControllerByInstance(
-      connectionType: StorageBus,
-      instance: number
-    ): IStorageController;
+    getStorageControllerByInstance(connectionType: StorageBus, instance: number): IStorageController;
     removeStorageController(name: string): void;
     setStorageControllerBootable(name: string, bootable: boolean): void;
     addUSBController(name: string, type: USBControllerType): IUSBController;
@@ -1777,7 +1659,7 @@ declare namespace VirtualBox {
       /* out */ valEax: number,
       /* out */ valEbx: number,
       /* out */ valEcx: number,
-      /* out */ valEdx: number
+      /* out */ valEdx: number,
     ): void;
     getCPUIDLeaf(
       idx: number,
@@ -1785,16 +1667,9 @@ declare namespace VirtualBox {
       /* out */ valEax: number,
       /* out */ valEbx: number,
       /* out */ valEcx: number,
-      /* out */ valEdx: number
+      /* out */ valEdx: number,
     ): void;
-    setCPUIDLeaf(
-      idx: number,
-      idxSub: number,
-      valEax: number,
-      valEbx: number,
-      valEcx: number,
-      valEdx: number
-    ): void;
+    setCPUIDLeaf(idx: number, idxSub: number, valEax: number, valEbx: number, valEcx: number, valEdx: number): void;
     removeCPUIDLeaf(idx: number, idxSub: number): void;
     removeAllCPUIDLeaves(): void;
     getHWVirtExProperty(property: HWVirtExPropertyType): boolean;
@@ -1804,27 +1679,19 @@ declare namespace VirtualBox {
     discardSettings(): void;
     unregister(cleanupMode: CleanupMode): SafeArray<IMedium>;
     deleteConfig(media: SafeArray<IMedium>): IProgress;
-    exportTo(
-      appliance: IAppliance,
-      location: string
-    ): IVirtualSystemDescription;
+    exportTo(appliance: IAppliance, location: string): IVirtualSystemDescription;
     findSnapshot(nameOrId: string): ISnapshot;
     createSharedFolder(
       name: string,
       hostPath: string,
       writable: boolean,
       automount: boolean,
-      autoMountPoint: string
+      autoMountPoint: string,
     ): void;
     removeSharedFolder(name: string): void;
     canShowConsoleWindow(): boolean;
     showConsoleWindow(): number;
-    getGuestProperty(
-      name: string,
-      /* out */ value: string,
-      /* out */ timestamp: number,
-      /* out */ flags: string
-    ): void;
+    getGuestProperty(name: string, /* out */ value: string, /* out */ timestamp: number, /* out */ flags: string): void;
     getGuestPropertyValue(property: string): string;
     getGuestPropertyTimestamp(property: string): number;
     setGuestProperty(property: string, value: string, flags: string): void;
@@ -1835,7 +1702,7 @@ declare namespace VirtualBox {
       /* out */ names: SafeArray<string>,
       /* out */ values: SafeArray<string>,
       /* out */ timestamps: SafeArray<number>,
-      /* out */ flags: SafeArray<string>
+      /* out */ flags: SafeArray<string>,
     ): void;
     querySavedGuestScreenInfo(
       screenId: number,
@@ -1843,24 +1710,24 @@ declare namespace VirtualBox {
       /* out */ originY: number,
       /* out */ width: number,
       /* out */ height: number,
-      /* out */ enabled: boolean
+      /* out */ enabled: boolean,
     ): void;
     readSavedThumbnailToArray(
       screenId: number,
       bitmapFormat: BitmapFormat,
       /* out */ width: number,
-      /* out */ height: number
+      /* out */ height: number,
     ): SafeArray<number>;
     querySavedScreenshotInfo(
       screenId: number,
       /* out */ width: number,
-      /* out */ height: number
+      /* out */ height: number,
     ): SafeArray<BitmapFormat>;
     readSavedScreenshotToArray(
       screenId: number,
       bitmapFormat: BitmapFormat,
       /* out */ width: number,
-      /* out */ height: number
+      /* out */ height: number,
     ): SafeArray<number>;
     hotPlugCPU(cpu: number): void;
     hotUnplugCPU(cpu: number): void;
@@ -1868,21 +1735,12 @@ declare namespace VirtualBox {
     getEffectiveParavirtProvider(): ParavirtProvider;
     queryLogFilename(idx: number): string;
     readLog(idx: number, offset: number, size: number): SafeArray<number>;
-    cloneTo(
-      target: IMachine,
-      mode: CloneMode,
-      options: SafeArray<CloneOptions>
-    ): IProgress;
+    cloneTo(target: IMachine, mode: CloneMode, options: SafeArray<CloneOptions>): IProgress;
     moveTo(folder: string, type: string): IProgress;
     saveState(): IProgress;
     adoptSavedState(savedStateFile: string): void;
     discardSavedState(fRemoveFile: boolean): void;
-    takeSnapshot(
-      name: string,
-      description: string,
-      pause: boolean,
-      /* out */ id: string
-    ): IProgress;
+    takeSnapshot(name: string, description: string, pause: boolean, /* out */ id: string): IProgress;
     deleteSnapshot(id: string): IProgress;
     deleteSnapshotAndAllChildren(id: string): IProgress;
     deleteSnapshotRange(startId: string, endId: string): IProgress;
@@ -1950,25 +1808,12 @@ declare namespace VirtualBox {
       hostPath: string,
       writable: boolean,
       automount: boolean,
-      autoMountPoint: string
+      autoMountPoint: string,
     ): void;
     removeSharedFolder(name: string): void;
-    teleport(
-      hostname: string,
-      tcpport: number,
-      password: string,
-      maxDowntime: number
-    ): IProgress;
-    addDiskEncryptionPassword(
-      id: string,
-      password: string,
-      clearOnSuspend: boolean
-    ): void;
-    addDiskEncryptionPasswords(
-      ids: SafeArray<string>,
-      passwords: SafeArray<string>,
-      clearOnSuspend: boolean
-    ): void;
+    teleport(hostname: string, tcpport: number, password: string, maxDowntime: number): IProgress;
+    addDiskEncryptionPassword(id: string, password: string, clearOnSuspend: boolean): void;
+    addDiskEncryptionPasswords(ids: SafeArray<string>, passwords: SafeArray<string>, clearOnSuspend: boolean): void;
     removeDiskEncryptionPassword(id: string): void;
     clearAllDiskEncryptionPasswords(): void;
   } /* interface IConsole */
@@ -1990,10 +1835,7 @@ declare namespace VirtualBox {
     readonly interfaceType: HostNetworkInterfaceType;
     readonly wireless: boolean;
     enableStaticIPConfig(IPAddress: string, networkMask: string): void;
-    enableStaticIPConfigV6(
-      IPV6Address: string,
-      IPV6NetworkMaskPrefixLength: number
-    ): void;
+    enableStaticIPConfigV6(IPV6Address: string, IPV6NetworkMaskPrefixLength: number): void;
     enableDynamicIPConfig(): void;
     DHCPRediscover(): void;
   } /* interface IHostNetworkInterface */
@@ -2034,11 +1876,9 @@ declare namespace VirtualBox {
       /* out */ valEax: number,
       /* out */ valEbx: number,
       /* out */ valEcx: number,
-      /* out */ valEdx: number
+      /* out */ valEdx: number,
     ): void;
-    createHostOnlyNetworkInterface(
-      /* out */ hostInterface: IHostNetworkInterface
-    ): IProgress;
+    createHostOnlyNetworkInterface(/* out */ hostInterface: IHostNetworkInterface): IProgress;
     removeHostOnlyNetworkInterface(id: string): IProgress;
     createUSBDeviceFilter(name: string): IHostUSBDeviceFilter;
     insertUSBDeviceFilter(position: number, filter: IHostUSBDeviceFilter): void;
@@ -2047,9 +1887,7 @@ declare namespace VirtualBox {
     findHostFloppyDrive(name: string): IMedium;
     findHostNetworkInterfaceByName(name: string): IHostNetworkInterface;
     findHostNetworkInterfaceById(id: string): IHostNetworkInterface;
-    findHostNetworkInterfacesOfType(
-      type: HostNetworkInterfaceType
-    ): SafeArray<IHostNetworkInterface>;
+    findHostNetworkInterfacesOfType(type: HostNetworkInterfaceType): SafeArray<IHostNetworkInterface>;
     findUSBDeviceById(id: string): IHostUSBDevice;
     findUSBDeviceByAddress(name: string): IHostUSBDevice;
     generateMACAddress(): string;
@@ -2058,7 +1896,7 @@ declare namespace VirtualBox {
       id: string,
       address: string,
       propertyNames: SafeArray<string>,
-      propertyValues: SafeArray<string>
+      propertyValues: SafeArray<string>,
     ): void;
     removeUSBDeviceSource(id: string): void;
   } /* interface IHost */
@@ -2097,25 +1935,15 @@ declare namespace VirtualBox {
     proxyMode: ProxyMode;
     proxyURL: string;
     getMaxNetworkAdapters(chipset: ChipsetType): number;
-    getMaxNetworkAdaptersOfType(
-      chipset: ChipsetType,
-      type: NetworkAttachmentType
-    ): number;
+    getMaxNetworkAdaptersOfType(chipset: ChipsetType, type: NetworkAttachmentType): number;
     getMaxDevicesPerPortForStorageBus(bus: StorageBus): number;
     getMinPortCountForStorageBus(bus: StorageBus): number;
     getMaxPortCountForStorageBus(bus: StorageBus): number;
     getMaxInstancesOfStorageBus(chipset: ChipsetType, bus: StorageBus): number;
     getDeviceTypesForStorageBus(bus: StorageBus): SafeArray<DeviceType>;
-    getDefaultIoCacheSettingForStorageController(
-      controllerType: StorageControllerType
-    ): boolean;
-    getStorageControllerHotplugCapable(
-      controllerType: StorageControllerType
-    ): boolean;
-    getMaxInstancesOfUSBControllerType(
-      chipset: ChipsetType,
-      type: USBControllerType
-    ): number;
+    getDefaultIoCacheSettingForStorageController(controllerType: StorageControllerType): boolean;
+    getStorageControllerHotplugCapable(controllerType: StorageControllerType): boolean;
+    getMaxInstancesOfUSBControllerType(chipset: ChipsetType, type: USBControllerType): number;
   } /* interface ISystemProperties */
 
   interface IGuestOSType {
@@ -2173,7 +2001,7 @@ declare namespace VirtualBox {
     dragIsPending(
       screenId: number,
       /* out */ formats: SafeArray<string>,
-      /* out */ allowedActions: SafeArray<DnDAction>
+      /* out */ allowedActions: SafeArray<DnDAction>,
     ): DnDAction;
     drop(format: string, action: DnDAction): IProgress;
     receiveData(): SafeArray<number>;
@@ -2190,7 +2018,7 @@ declare namespace VirtualBox {
       x: number,
       defaultAction: DnDAction,
       allowedActions: SafeArray<DnDAction>,
-      formats: SafeArray<string>
+      formats: SafeArray<string>,
     ): DnDAction;
     move(
       screenId: number,
@@ -2198,7 +2026,7 @@ declare namespace VirtualBox {
       y: number,
       defaultAction: DnDAction,
       allowedActions: SafeArray<DnDAction>,
-      formats: SafeArray<string>
+      formats: SafeArray<string>,
     ): DnDAction;
     leave(screenId: number): void;
     drop(
@@ -2208,13 +2036,9 @@ declare namespace VirtualBox {
       defaultAction: DnDAction,
       allowedActions: SafeArray<DnDAction>,
       formats: SafeArray<string>,
-      /* out */ format: string
+      /* out */ format: string,
     ): DnDAction;
-    sendData(
-      screenId: number,
-      format: string,
-      data: SafeArray<number>
-    ): IProgress;
+    sendData(screenId: number, format: string, data: SafeArray<number>): IProgress;
     cancel(): boolean;
   } /* interface IDnDTarget */
 
@@ -2245,128 +2069,57 @@ declare namespace VirtualBox {
       sources: SafeArray<string>,
       filters: SafeArray<string>,
       flags: SafeArray<string>,
-      destination: string
+      destination: string,
     ): IProgress;
     copyToGuest(
       sources: SafeArray<string>,
       filters: SafeArray<string>,
       flags: SafeArray<string>,
-      destination: string
-    ): IProgress;
-    directoryCopy(
-      source: string,
       destination: string,
-      flags: SafeArray<DirectoryCopyFlag>
     ): IProgress;
-    directoryCopyFromGuest(
-      source: string,
-      destination: string,
-      flags: SafeArray<DirectoryCopyFlag>
-    ): IProgress;
-    directoryCopyToGuest(
-      source: string,
-      destination: string,
-      flags: SafeArray<DirectoryCopyFlag>
-    ): IProgress;
-    directoryCreate(
-      path: string,
-      mode: number,
-      flags: SafeArray<DirectoryCreateFlag>
-    ): void;
-    directoryCreateTemp(
-      templateName: string,
-      mode: number,
-      path: string,
-      secure: boolean
-    ): string;
+    directoryCopy(source: string, destination: string, flags: SafeArray<DirectoryCopyFlag>): IProgress;
+    directoryCopyFromGuest(source: string, destination: string, flags: SafeArray<DirectoryCopyFlag>): IProgress;
+    directoryCopyToGuest(source: string, destination: string, flags: SafeArray<DirectoryCopyFlag>): IProgress;
+    directoryCreate(path: string, mode: number, flags: SafeArray<DirectoryCreateFlag>): void;
+    directoryCreateTemp(templateName: string, mode: number, path: string, secure: boolean): string;
     directoryExists(path: string, followSymlinks: boolean): boolean;
-    directoryOpen(
-      path: string,
-      filter: string,
-      flags: SafeArray<DirectoryOpenFlag>
-    ): IGuestDirectory;
+    directoryOpen(path: string, filter: string, flags: SafeArray<DirectoryOpenFlag>): IGuestDirectory;
     directoryRemove(path: string): void;
-    directoryRemoveRecursive(
-      path: string,
-      flags: SafeArray<DirectoryRemoveRecFlag>
-    ): IProgress;
+    directoryRemoveRecursive(path: string, flags: SafeArray<DirectoryRemoveRecFlag>): IProgress;
     environmentScheduleSet(name: string, value: string): void;
     environmentScheduleUnset(name: string): void;
     environmentGetBaseVariable(name: string): string;
     environmentDoesBaseVariableExist(name: string): boolean;
-    fileCopy(
-      source: string,
-      destination: string,
-      flags: SafeArray<FileCopyFlag>
-    ): IProgress;
-    fileCopyFromGuest(
-      source: string,
-      destination: string,
-      flags: SafeArray<FileCopyFlag>
-    ): IProgress;
-    fileCopyToGuest(
-      source: string,
-      destination: string,
-      flags: SafeArray<FileCopyFlag>
-    ): IProgress;
-    fileCreateTemp(
-      templateName: string,
-      mode: number,
-      path: string,
-      secure: boolean
-    ): IGuestFile;
+    fileCopy(source: string, destination: string, flags: SafeArray<FileCopyFlag>): IProgress;
+    fileCopyFromGuest(source: string, destination: string, flags: SafeArray<FileCopyFlag>): IProgress;
+    fileCopyToGuest(source: string, destination: string, flags: SafeArray<FileCopyFlag>): IProgress;
+    fileCreateTemp(templateName: string, mode: number, path: string, secure: boolean): IGuestFile;
     fileExists(path: string, followSymlinks: boolean): boolean;
-    fileOpen(
-      path: string,
-      accessMode: FileAccessMode,
-      openAction: FileOpenAction,
-      creationMode: number
-    ): IGuestFile;
+    fileOpen(path: string, accessMode: FileAccessMode, openAction: FileOpenAction, creationMode: number): IGuestFile;
     fileOpenEx(
       path: string,
       accessMode: FileAccessMode,
       openAction: FileOpenAction,
       sharingMode: FileSharingMode,
       creationMode: number,
-      flags: SafeArray<FileOpenExFlag>
+      flags: SafeArray<FileOpenExFlag>,
     ): IGuestFile;
     fileQuerySize(path: string, followSymlinks: boolean): number;
     fsObjExists(path: string, followSymlinks: boolean): boolean;
     fsObjQueryInfo(path: string, followSymlinks: boolean): IGuestFsObjInfo;
     fsObjRemove(path: string): void;
     fsObjRemoveArray(path: SafeArray<string>): IProgress;
-    fsObjRename(
-      oldPath: string,
-      newPath: string,
-      flags: SafeArray<FsObjRenameFlag>
-    ): void;
-    fsObjMove(
-      source: string,
-      destination: string,
-      flags: SafeArray<FsObjMoveFlag>
-    ): IProgress;
-    fsObjMoveArray(
-      source: SafeArray<string>,
-      destination: string,
-      flags: SafeArray<FsObjMoveFlag>
-    ): IProgress;
-    fsObjCopyArray(
-      source: SafeArray<string>,
-      destination: string,
-      flags: SafeArray<FileCopyFlag>
-    ): IProgress;
-    fsObjSetACL(
-      path: string,
-      followSymlinks: boolean,
-      acl: string,
-      mode: number
-    ): void;
+    fsObjRename(oldPath: string, newPath: string, flags: SafeArray<FsObjRenameFlag>): void;
+    fsObjMove(source: string, destination: string, flags: SafeArray<FsObjMoveFlag>): IProgress;
+    fsObjMoveArray(source: SafeArray<string>, destination: string, flags: SafeArray<FsObjMoveFlag>): IProgress;
+    fsObjCopyArray(source: SafeArray<string>, destination: string, flags: SafeArray<FileCopyFlag>): IProgress;
+    fsObjSetACL(path: string, followSymlinks: boolean, acl: string, mode: number): void;
     processCreate(
       executable: string,
       arguments: SafeArray<string>,
       environmentChanges: SafeArray<string>,
       flags: SafeArray<ProcessCreateFlag>,
-      timeoutMS: number
+      timeoutMS: number,
     ): IGuestProcess;
     processCreateEx(
       executable: string,
@@ -2375,17 +2128,14 @@ declare namespace VirtualBox {
       flags: SafeArray<ProcessCreateFlag>,
       timeoutMS: number,
       priority: ProcessPriority,
-      affinity: SafeArray<number>
+      affinity: SafeArray<number>,
     ): IGuestProcess;
     processGet(pid: number): IGuestProcess;
     symlinkCreate(symlink: string, target: string, type: SymlinkType): void;
     symlinkExists(symlink: string): boolean;
     symlinkRead(symlink: string, flags: SafeArray<SymlinkReadFlag>): string;
     waitFor(waitFor: number, timeoutMS: number): GuestSessionWaitResult;
-    waitForArray(
-      waitFor: SafeArray<GuestSessionWaitForFlag>,
-      timeoutMS: number
-    ): GuestSessionWaitResult;
+    waitForArray(waitFor: SafeArray<GuestSessionWaitForFlag>, timeoutMS: number): GuestSessionWaitResult;
   } /* interface IGuestSession */
 
   interface IProcess {
@@ -2398,23 +2148,10 @@ declare namespace VirtualBox {
     readonly PID: number;
     readonly status: ProcessStatus;
     waitFor(waitFor: ProcessWaitForFlag, timeoutMS: number): ProcessWaitResult;
-    waitForArray(
-      waitFor: SafeArray<ProcessWaitForFlag>,
-      timeoutMS: number
-    ): ProcessWaitResult;
+    waitForArray(waitFor: SafeArray<ProcessWaitForFlag>, timeoutMS: number): ProcessWaitResult;
     read(handle: number, toRead: number, timeoutMS: number): SafeArray<number>;
-    write(
-      handle: number,
-      flags: number,
-      data: SafeArray<number>,
-      timeoutMS: number
-    ): number;
-    writeArray(
-      handle: number,
-      flags: SafeArray<ProcessInputFlag>,
-      data: SafeArray<number>,
-      timeoutMS: number
-    ): number;
+    write(handle: number, flags: number, data: SafeArray<number>, timeoutMS: number): number;
+    writeArray(handle: number, flags: SafeArray<ProcessInputFlag>, data: SafeArray<number>, timeoutMS: number): number;
     terminate(): void;
   } /* interface IProcess */
 
@@ -2447,11 +2184,7 @@ declare namespace VirtualBox {
     queryInfo(): IFsObjInfo;
     querySize(): number;
     read(toRead: number, timeoutMS: number): SafeArray<number>;
-    readAt(
-      offset: number,
-      toRead: number,
-      timeoutMS: number
-    ): SafeArray<number>;
+    readAt(offset: number, toRead: number, timeoutMS: number): SafeArray<number>;
     seek(offset: number, whence: FileSeekOrigin): number;
     setACL(acl: string, mode: number): void;
     setSize(size: number): void;
@@ -2514,30 +2247,17 @@ declare namespace VirtualBox {
       /* out */ memAllocTotal: number,
       /* out */ memFreeTotal: number,
       /* out */ memBalloonTotal: number,
-      /* out */ memSharedTotal: number
+      /* out */ memSharedTotal: number,
     ): void;
-    getFacilityStatus(
-      facility: AdditionsFacilityType,
-      /* out */ timestamp: number
-    ): AdditionsFacilityStatus;
+    getFacilityStatus(facility: AdditionsFacilityType, /* out */ timestamp: number): AdditionsFacilityStatus;
     getAdditionsStatus(level: AdditionsRunLevelType): boolean;
-    setCredentials(
-      userName: string,
-      password: string,
-      domain: string,
-      allowInteractiveLogon: boolean
-    ): void;
-    createSession(
-      user: string,
-      password: string,
-      domain: string,
-      sessionName: string
-    ): IGuestSession;
+    setCredentials(userName: string, password: string, domain: string, allowInteractiveLogon: boolean): void;
+    createSession(user: string, password: string, domain: string, sessionName: string): IGuestSession;
     findSession(sessionName: string): SafeArray<IGuestSession>;
     updateGuestAdditions(
       source: string,
       arguments: SafeArray<string>,
-      flags: SafeArray<AdditionsUpdateFlag>
+      flags: SafeArray<AdditionsUpdateFlag>,
     ): IProgress;
   } /* interface IGuest */
 
@@ -2566,14 +2286,8 @@ declare namespace VirtualBox {
 
   interface IInternalProgressControl {
     setCurrentOperationProgress(percent: number): void;
-    waitForOtherProgressCompletion(
-      progressOther: IProgress,
-      timeoutMS: number
-    ): void;
-    setNextOperation(
-      nextOperationDescription: string,
-      nextOperationsWeight: number
-    ): void;
+    waitForOtherProgressCompletion(progressOther: IProgress, timeoutMS: number): void;
+    setNextOperation(nextOperationDescription: string, nextOperationsWeight: number): void;
     notifyPointOfNoReturn(): void;
     notifyComplete(resultCode: number, errorInfo: IVirtualBoxErrorInfo): void;
   } /* interface IInternalProgressControl */
@@ -2627,12 +2341,7 @@ declare namespace VirtualBox {
     autoReset: boolean;
     readonly lastAccessError: string;
     readonly machineIds: SafeArray<string>;
-    setIds(
-      setImageId: boolean,
-      imageId: string,
-      setParentId: boolean,
-      parentId: string
-    ): void;
+    setIds(setImageId: boolean, imageId: string, setParentId: boolean, parentId: string): void;
     refreshState(): MediumState;
     getSnapshotIds(machineId: string): SafeArray<string>;
     lockRead(): IToken;
@@ -2640,37 +2349,19 @@ declare namespace VirtualBox {
     close(): void;
     getProperty(name: string): string;
     setProperty(name: string, value: string): void;
-    getProperties(
-      names: string,
-      /* out */ returnNames: SafeArray<string>
-    ): SafeArray<string>;
+    getProperties(names: string, /* out */ returnNames: SafeArray<string>): SafeArray<string>;
     setProperties(names: SafeArray<string>, values: SafeArray<string>): void;
-    createBaseStorage(
-      logicalSize: number,
-      variant: SafeArray<MediumVariant>
-    ): IProgress;
+    createBaseStorage(logicalSize: number, variant: SafeArray<MediumVariant>): IProgress;
     deleteStorage(): IProgress;
-    createDiffStorage(
-      target: IMedium,
-      variant: SafeArray<MediumVariant>
-    ): IProgress;
+    createDiffStorage(target: IMedium, variant: SafeArray<MediumVariant>): IProgress;
     mergeTo(target: IMedium): IProgress;
-    cloneTo(
-      target: IMedium,
-      variant: SafeArray<MediumVariant>,
-      parent: IMedium
-    ): IProgress;
+    cloneTo(target: IMedium, variant: SafeArray<MediumVariant>, parent: IMedium): IProgress;
     cloneToBase(target: IMedium, variant: SafeArray<MediumVariant>): IProgress;
     moveTo(location: string): IProgress;
     compact(): IProgress;
     resize(logicalSize: number): IProgress;
     reset(): IProgress;
-    changeEncryption(
-      currentPassword: string,
-      cipher: string,
-      newPassword: string,
-      newPasswordId: string
-    ): IProgress;
+    changeEncryption(currentPassword: string, cipher: string, newPassword: string, newPasswordId: string): IProgress;
     getEncryptionSettings(/* out */ cipher: string): string;
     checkEncryptionPassword(password: string): void;
     openForIO(writable: boolean, password: string): IMediumIO;
@@ -2680,16 +2371,13 @@ declare namespace VirtualBox {
     readonly id: string;
     readonly name: string;
     readonly capabilities: SafeArray<MediumFormatCapabilities>;
-    describeFileExtensions(
-      /* out */ extensions: SafeArray<string>,
-      /* out */ types: SafeArray<DeviceType>
-    ): void;
+    describeFileExtensions(/* out */ extensions: SafeArray<string>, /* out */ types: SafeArray<DeviceType>): void;
     describeProperties(
       /* out */ names: SafeArray<string>,
       /* out */ descriptions: SafeArray<string>,
       /* out */ types: SafeArray<DataType>,
       /* out */ flags: SafeArray<number>,
-      /* out */ defaults: SafeArray<string>
+      /* out */ defaults: SafeArray<string>,
     ): void;
   } /* interface IMediumFormat */
 
@@ -2705,15 +2393,12 @@ declare namespace VirtualBox {
     read(offset: number, size: number): SafeArray<number>;
     write(offset: number, data: SafeArray<number>): number;
     formatFAT(quick: boolean): void;
-    initializePartitionTable(
-      format: PartitionTableType,
-      wholeDiskInOneEntry: boolean
-    ): void;
+    initializePartitionTable(format: PartitionTableType, wholeDiskInOneEntry: boolean): void;
     convertToStream(
       format: string,
       variant: SafeArray<MediumVariant>,
       bufferSize: number,
-      /* out */ stream: IDataStream
+      /* out */ stream: IDataStream,
     ): IProgress;
     close(): void;
   } /* interface IMediumIO */
@@ -2749,30 +2434,10 @@ declare namespace VirtualBox {
     readonly needsHostCursor: boolean;
     readonly pointerShape: IMousePointerShape;
     readonly eventSource: IEventSource;
-    putMouseEvent(
-      dx: number,
-      dy: number,
-      dz: number,
-      dw: number,
-      buttonState: number
-    ): void;
-    putMouseEventAbsolute(
-      x: number,
-      y: number,
-      dz: number,
-      dw: number,
-      buttonState: number
-    ): void;
-    putEventMultiTouch(
-      count: number,
-      contacts: SafeArray<number>,
-      scanTime: number
-    ): void;
-    putEventMultiTouchString(
-      count: number,
-      contacts: string,
-      scanTime: number
-    ): void;
+    putMouseEvent(dx: number, dy: number, dz: number, dw: number, buttonState: number): void;
+    putMouseEventAbsolute(x: number, y: number, dz: number, dw: number, buttonState: number): void;
+    putEventMultiTouch(count: number, contacts: SafeArray<number>, scanTime: number): void;
+    putEventMultiTouchString(count: number, contacts: string, scanTime: number): void;
   } /* interface IMouse */
 
   interface IDisplaySourceBitmap {
@@ -2783,7 +2448,7 @@ declare namespace VirtualBox {
       /* out */ height: number,
       /* out */ bitsPerPixel: number,
       /* out */ bytesPerLine: number,
-      /* out */ bitmapFormat: BitmapFormat
+      /* out */ bitmapFormat: BitmapFormat,
     ): void;
   } /* interface IDisplaySourceBitmap */
 
@@ -2798,20 +2463,8 @@ declare namespace VirtualBox {
     readonly winId: number;
     readonly capabilities: SafeArray<FramebufferCapabilities>;
     notifyUpdate(x: number, y: number, width: number, height: number): void;
-    notifyUpdateImage(
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      image: SafeArray<number>
-    ): void;
-    notifyChange(
-      screenId: number,
-      xOrigin: number,
-      yOrigin: number,
-      width: number,
-      height: number
-    ): void;
+    notifyUpdateImage(x: number, y: number, width: number, height: number, image: SafeArray<number>): void;
+    notifyChange(screenId: number, xOrigin: number, yOrigin: number, width: number, height: number): void;
     videoModeSupported(width: number, height: number, bpp: number): boolean;
     getVisibleRegion(rectangles: any, count: number): number;
     setVisibleRegion(rectangles: any, count: number): void;
@@ -2849,7 +2502,7 @@ declare namespace VirtualBox {
       /* out */ bitsPerPixel: number,
       /* out */ xOrigin: number,
       /* out */ yOrigin: number,
-      /* out */ guestMonitorStatus: GuestMonitorStatus
+      /* out */ guestMonitorStatus: GuestMonitorStatus,
     ): void;
     attachFramebuffer(screenId: number, framebuffer: IFramebuffer): string;
     detachFramebuffer(screenId: number, id: string): void;
@@ -2862,54 +2515,29 @@ declare namespace VirtualBox {
       originY: number,
       width: number,
       height: number,
-      bitsPerPixel: number
+      bitsPerPixel: number,
     ): void;
     setSeamlessMode(enabled: boolean): void;
-    takeScreenShot(
-      screenId: number,
-      address: any,
-      width: number,
-      height: number,
-      bitmapFormat: BitmapFormat
-    ): void;
+    takeScreenShot(screenId: number, address: any, width: number, height: number, bitmapFormat: BitmapFormat): void;
     takeScreenShotToArray(
       screenId: number,
       width: number,
       height: number,
-      bitmapFormat: BitmapFormat
+      bitmapFormat: BitmapFormat,
     ): SafeArray<number>;
-    drawToScreen(
-      screenId: number,
-      address: any,
-      x: number,
-      y: number,
-      width: number,
-      height: number
-    ): void;
+    drawToScreen(screenId: number, address: any, x: number, y: number, width: number, height: number): void;
     invalidateAndUpdate(): void;
     invalidateAndUpdateScreen(screenId: number): void;
     completeVHWACommand(command: any): void;
-    viewportChanged(
-      screenId: number,
-      x: number,
-      y: number,
-      width: number,
-      height: number
-    ): void;
-    querySourceBitmap(
-      screenId: number,
-      /* out */ displaySourceBitmap: IDisplaySourceBitmap
-    ): void;
+    viewportChanged(screenId: number, x: number, y: number, width: number, height: number): void;
+    querySourceBitmap(screenId: number, /* out */ displaySourceBitmap: IDisplaySourceBitmap): void;
     notifyScaleFactorChange(
       screenId: number,
       u32ScaleFactorWMultiplied: number,
-      u32ScaleFactorHMultiplied: number
+      u32ScaleFactorHMultiplied: number,
     ): void;
     notifyHiDPIOutputPolicyChange(fUnscaledHiDPI: boolean): void;
-    setScreenLayout(
-      screenLayoutMode: ScreenLayoutMode,
-      guestScreenInfo: SafeArray<IGuestScreenInfo>
-    ): void;
+    setScreenLayout(screenLayoutMode: ScreenLayoutMode, guestScreenInfo: SafeArray<IGuestScreenInfo>): void;
     detachScreens(screenIds: SafeArray<number>): void;
     createGuestScreenInfo(
       display: number,
@@ -2920,7 +2548,7 @@ declare namespace VirtualBox {
       originY: number,
       width: number,
       height: number,
-      bitsPerPixel: number
+      bitsPerPixel: number,
     ): IGuestScreenInfo;
   } /* interface IDisplay */
 
@@ -2945,10 +2573,7 @@ declare namespace VirtualBox {
     bandwidthGroup: IBandwidthGroup;
     getProperty(key: string): string;
     setProperty(key: string, value: string): void;
-    getProperties(
-      names: string,
-      /* out */ returnNames: SafeArray<string>
-    ): SafeArray<string>;
+    getProperties(names: string, /* out */ returnNames: SafeArray<string>): SafeArray<string>;
   } /* interface INetworkAdapter */
 
   interface ISerialPort {
@@ -3003,38 +2628,17 @@ declare namespace VirtualBox {
     modifyLogFlags(settings: string): void;
     modifyLogDestinations(settings: string): void;
     readPhysicalMemory(address: number, size: number): SafeArray<number>;
-    writePhysicalMemory(
-      address: number,
-      size: number,
-      bytes: SafeArray<number>
-    ): void;
-    readVirtualMemory(
-      cpuId: number,
-      address: number,
-      size: number
-    ): SafeArray<number>;
-    writeVirtualMemory(
-      cpuId: number,
-      address: number,
-      size: number,
-      bytes: SafeArray<number>
-    ): void;
+    writePhysicalMemory(address: number, size: number, bytes: SafeArray<number>): void;
+    readVirtualMemory(cpuId: number, address: number, size: number): SafeArray<number>;
+    writeVirtualMemory(cpuId: number, address: number, size: number, bytes: SafeArray<number>): void;
     loadPlugIn(name: string): string;
     unloadPlugIn(name: string): void;
     detectOS(): string;
     queryOSKernelLog(maxMessages: number): string;
     getRegister(cpuId: number, name: string): string;
-    getRegisters(
-      cpuId: number,
-      /* out */ names: SafeArray<string>,
-      /* out */ values: SafeArray<string>
-    ): void;
+    getRegisters(cpuId: number, /* out */ names: SafeArray<string>, /* out */ values: SafeArray<string>): void;
     setRegister(cpuId: number, name: string, value: string): void;
-    setRegisters(
-      cpuId: number,
-      names: SafeArray<string>,
-      values: SafeArray<string>
-    ): void;
+    setRegisters(cpuId: number, names: SafeArray<string>, values: SafeArray<string>): void;
     dumpGuestStack(cpuId: number): string;
     resetStats(pattern: string): void;
     dumpStats(pattern: string): void;
@@ -3141,20 +2745,13 @@ declare namespace VirtualBox {
     assignRemoteMachine(machine: IMachine, console: IConsole): void;
     updateMachineState(machineState: MachineState): void;
     uninitialize(): void;
-    onNetworkAdapterChange(
-      networkAdapter: INetworkAdapter,
-      changeAdapter: boolean
-    ): void;
+    onNetworkAdapterChange(networkAdapter: INetworkAdapter, changeAdapter: boolean): void;
     onAudioAdapterChange(audioAdapter: IAudioAdapter): void;
     onSerialPortChange(serialPort: ISerialPort): void;
     onParallelPortChange(parallelPort: IParallelPort): void;
     onStorageControllerChange(): void;
     onMediumChange(mediumAttachment: IMediumAttachment, force: boolean): void;
-    onStorageDeviceChange(
-      mediumAttachment: IMediumAttachment,
-      remove: boolean,
-      silent: boolean
-    ): void;
+    onStorageDeviceChange(mediumAttachment: IMediumAttachment, remove: boolean, silent: boolean): void;
     onClipboardModeChange(clipboardMode: ClipboardMode): void;
     onDnDModeChange(dndMode: DnDMode): void;
     onCPUChange(cpu: number, add: boolean): void;
@@ -3167,14 +2764,10 @@ declare namespace VirtualBox {
       device: IUSBDevice,
       error: IVirtualBoxErrorInfo,
       maskedInterfaces: number,
-      captureFilename: string
+      captureFilename: string,
     ): void;
     onUSBDeviceDetach(id: string, error: IVirtualBoxErrorInfo): void;
-    onShowWindow(
-      check: boolean,
-      /* out */ canShow: boolean,
-      /* out */ winId: number
-    ): void;
+    onShowWindow(check: boolean, /* out */ canShow: boolean, /* out */ winId: number): void;
     onBandwidthGroupChange(bandwidthGroup: IBandwidthGroup): void;
     accessGuestProperty(
       name: string,
@@ -3183,24 +2776,22 @@ declare namespace VirtualBox {
       accessMode: number,
       /* out */ retValue: string,
       /* out */ retTimestamp: number,
-      /* out */ retFlags: string
+      /* out */ retFlags: string,
     ): void;
     enumerateGuestProperties(
       patterns: string,
       /* out */ keys: SafeArray<string>,
       /* out */ values: SafeArray<string>,
       /* out */ timestamps: SafeArray<number>,
-      /* out */ flags: SafeArray<string>
+      /* out */ flags: SafeArray<string>,
     ): void;
     onlineMergeMedium(
       mediumAttachment: IMediumAttachment,
       sourceIdx: number,
       targetIdx: number,
-      progress: IProgress
+      progress: IProgress,
     ): void;
-    reconfigureMediumAttachments(
-      attachments: SafeArray<IMediumAttachment>
-    ): void;
+    reconfigureMediumAttachments(attachments: SafeArray<IMediumAttachment>): void;
     enableVMMStatistics(enable: boolean): void;
     pauseWithReason(reason: Reason): void;
     resumeWithReason(reason: Reason): void;
@@ -3209,14 +2800,10 @@ declare namespace VirtualBox {
       progress: IProgress,
       snapshot: ISnapshot,
       stateFilePath: string,
-      pauseVM: boolean
+      pauseVM: boolean,
     ): boolean;
     cancelSaveStateWithReason(): void;
-    assignMachine(
-      machine: IMachine,
-      lockType: LockType,
-      tokenId: string | IToken
-    ): void;
+    assignMachine(machine: IMachine, lockType: LockType, tokenId: string | IToken): void;
   } /* interface IInternalSessionControl */
 
   interface ISession {
@@ -3265,24 +2852,15 @@ declare namespace VirtualBox {
 
   interface IPerformanceCollector {
     readonly metricNames: SafeArray<string>;
-    getMetrics(
-      metricNames: SafeArray<string>,
-      objects: SafeArray<any>
-    ): SafeArray<IPerformanceMetric>;
+    getMetrics(metricNames: SafeArray<string>, objects: SafeArray<any>): SafeArray<IPerformanceMetric>;
     setupMetrics(
       metricNames: SafeArray<string>,
       objects: SafeArray<any>,
       period: number,
-      count: number
+      count: number,
     ): SafeArray<IPerformanceMetric>;
-    enableMetrics(
-      metricNames: SafeArray<string>,
-      objects: SafeArray<any>
-    ): SafeArray<IPerformanceMetric>;
-    disableMetrics(
-      metricNames: SafeArray<string>,
-      objects: SafeArray<any>
-    ): SafeArray<IPerformanceMetric>;
+    enableMetrics(metricNames: SafeArray<string>, objects: SafeArray<any>): SafeArray<IPerformanceMetric>;
+    disableMetrics(metricNames: SafeArray<string>, objects: SafeArray<any>): SafeArray<IPerformanceMetric>;
     queryMetricsData(
       metricNames: SafeArray<string>,
       objects: SafeArray<any>,
@@ -3292,7 +2870,7 @@ declare namespace VirtualBox {
       /* out */ returnScales: SafeArray<number>,
       /* out */ returnSequenceNumbers: SafeArray<number>,
       /* out */ returnDataIndices: SafeArray<number>,
-      /* out */ returnDataLengths: SafeArray<number>
+      /* out */ returnDataLengths: SafeArray<number>,
     ): SafeArray<number>;
   } /* interface IPerformanceCollector */
 
@@ -3307,19 +2885,13 @@ declare namespace VirtualBox {
     DNSProxy: boolean;
     DNSUseHostResolver: boolean;
     readonly redirects: SafeArray<string>;
-    setNetworkSettings(
-      mtu: number,
-      sockSnd: number,
-      sockRcv: number,
-      TcpWndSnd: number,
-      TcpWndRcv: number
-    ): void;
+    setNetworkSettings(mtu: number, sockSnd: number, sockRcv: number, TcpWndSnd: number, TcpWndRcv: number): void;
     getNetworkSettings(
       /* out */ mtu: number,
       /* out */ sockSnd: number,
       /* out */ sockRcv: number,
       /* out */ TcpWndSnd: number,
-      /* out */ TcpWndRcv: number
+      /* out */ TcpWndRcv: number,
     ): void;
     addRedirect(
       name: string,
@@ -3327,7 +2899,7 @@ declare namespace VirtualBox {
       hostIP: string,
       hostPort: number,
       guestIP: string,
-      guestPort: number
+      guestPort: number,
     ): void;
     removeRedirect(name: string): void;
   } /* interface INATEngine */
@@ -3351,11 +2923,7 @@ declare namespace VirtualBox {
     readonly whyUnusable: string;
     readonly showLicense: boolean;
     readonly license: string;
-    queryLicense(
-      preferredLocale: string,
-      preferredLanguage: string,
-      format: string
-    ): string;
+    queryLicense(preferredLocale: string, preferredLanguage: string, format: string): string;
   } /* interface IExtPackBase */
 
   interface IExtPack extends IExtPackBase {
@@ -3371,11 +2939,7 @@ declare namespace VirtualBox {
     readonly installedExtPacks: SafeArray<IExtPack>;
     find(name: string): IExtPack;
     openExtPackFile(path: string): IExtPackFile;
-    uninstall(
-      name: string,
-      forcedRemoval: boolean,
-      displayInfo: string
-    ): IProgress;
+    uninstall(name: string, forcedRemoval: boolean, displayInfo: string): IProgress;
     cleanup(): void;
     queryAllPlugInsForFrontend(frontendName: string): SafeArray<string>;
     isExtPackUsable(name: string): boolean;
@@ -3390,11 +2954,7 @@ declare namespace VirtualBox {
 
   interface IBandwidthControl {
     readonly numGroups: number;
-    createBandwidthGroup(
-      name: string,
-      type: BandwidthGroupType,
-      maxBytesPerSec: number
-    ): void;
+    createBandwidthGroup(name: string, type: BandwidthGroupType, maxBytesPerSec: number): void;
     deleteBandwidthGroup(name: string): void;
     getBandwidthGroup(name: string): IBandwidthGroup;
     getAllBandwidthGroups(): SafeArray<IBandwidthGroup>;
@@ -3410,11 +2970,7 @@ declare namespace VirtualBox {
   interface IEventSource {
     createListener(): IEventListener;
     createAggregator(subordinates: SafeArray<IEventSource>): IEventSource;
-    registerListener(
-      listener: IEventListener,
-      interesting: SafeArray<VBoxEventType>,
-      active: boolean
-    ): void;
+    registerListener(listener: IEventListener, interesting: SafeArray<VBoxEventType>, active: boolean): void;
     unregisterListener(listener: IEventListener): void;
     fireEvent(event: IEvent, timeout: number): boolean;
     getEvent(listener: IEventListener, timeout: number): IEvent;
@@ -3832,11 +3388,7 @@ declare namespace VirtualBox {
 
   interface ICloudClient {
     getExportLaunchParameters(): string;
-    exportLaunchVM(
-      description: IVirtualSystemDescription,
-      progress: IProgress,
-      virtualBox: IVirtualBox
-    ): void;
+    exportLaunchVM(description: IVirtualSystemDescription, progress: IProgress, virtualBox: IVirtualBox): void;
   } /* interface ICloudClient */
 
   interface ICloudProfile {
@@ -3844,10 +3396,7 @@ declare namespace VirtualBox {
     readonly providerId: string;
     getProperty(name: string): string;
     setProperty(name: string, value: string): void;
-    getProperties(
-      names: string,
-      /* out */ returnNames: SafeArray<string>
-    ): SafeArray<string>;
+    getProperties(names: string, /* out */ returnNames: SafeArray<string>): SafeArray<string>;
     setProperties(names: SafeArray<string>, values: SafeArray<string>): void;
     remove(): void;
     createCloudClient(): ICloudClient;
@@ -3861,11 +3410,7 @@ declare namespace VirtualBox {
     readonly profileNames: SafeArray<string>;
     readonly supportedPropertyNames: SafeArray<string>;
     getPropertyDescription(name: string): string;
-    createProfile(
-      profileName: string,
-      names: SafeArray<string>,
-      values: SafeArray<string>
-    ): void;
+    createProfile(profileName: string, names: SafeArray<string>, values: SafeArray<string>): void;
     importProfiles(): void;
     restoreProfiles(): void;
     saveProfiles(): void;

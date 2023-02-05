@@ -5,10 +5,7 @@ namespace Iterables_from_test {
   declare const fso: Scripting.FileSystemObject;
 
   test('from(fso.GetFolder("temp").SubFolders)', () => {
-    const temp = fso.BuildPath(
-      fso.GetParentFolderName(WScript.ScriptFullName),
-      'temp'
-    );
+    const temp = fso.BuildPath(fso.GetParentFolderName(WScript.ScriptFullName), 'temp');
     // すでに存在していたらまるごと削除
     if (fso.FileExists(temp)) {
       fso.DeleteFile(temp);
@@ -28,9 +25,7 @@ namespace Iterables_from_test {
         try {
           const subfolder2 = fso.GetFolder(path2);
           // 作成したフォルダの一覧がGetFolderしたもの2つと一致するか
-          expect(I.from(folder.SubFolders)).toEqual(
-            I.of(subfolder1, subfolder2)
-          );
+          expect(I.from(folder.SubFolders)).toEqual(I.of(subfolder1, subfolder2));
         } finally {
           fso.DeleteFolder(path2);
         }

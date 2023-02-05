@@ -29,12 +29,7 @@ declare namespace XMLStream {
     processingInstruction(target: string, data: string): void;
     skippedEntity(name: string): void;
     startDocument(): void;
-    startElement(
-      namespaceURI: string,
-      localName: string,
-      qname: string,
-      attributes: Attributes
-    ): void;
+    startElement(namespaceURI: string, localName: string, qname: string, attributes: Attributes): void;
     startPrefixMapping(prefix: string, uri: string): void;
   }
   interface Writer extends ContentHandler {
@@ -50,12 +45,7 @@ declare namespace XMLStream {
   }
   interface DTDHandler {
     notationDecl(name: string, publicId: string, systemId: string): void;
-    unparsedEntityDecl(
-      name: string,
-      publicId: string,
-      systemId: string,
-      notationName: string
-    ): void;
+    unparsedEntityDecl(name: string, publicId: string, systemId: string, notationName: string): void;
   }
   interface EntityResolver {
     resolveEntity(publicId: string, systemId: string): any;
@@ -63,11 +53,7 @@ declare namespace XMLStream {
   interface ErrorHandler {
     error(locator: Locator, errorMessage: string, errorCode: number): void;
     fatalError(locator: Locator, errorMessage: string, errorCode: number): void;
-    ignorableWarning(
-      locator: Locator,
-      errorMessage: string,
-      errorCode: number
-    ): void;
+    ignorableWarning(locator: Locator, errorMessage: string, errorCode: number): void;
   }
   interface Reader {
     baseURL: string;

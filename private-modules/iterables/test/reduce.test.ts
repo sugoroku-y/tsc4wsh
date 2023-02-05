@@ -15,12 +15,8 @@
     expect(I.of(1).reduce((r, e) => r + e)).toBe(1);
   });
   test('reduce((), (r, e) => r + e)', () => {
-    expect(() => I.reduce(I.of(), (_, e) => e)).toThrow(
-      'Reduce of empty Iterable with no initial value'
-    );
-    expect(() => I.of().reduce((_, e) => e)).toThrow(
-      'Reduce of empty Iterable with no initial value'
-    );
+    expect(() => I.reduce(I.of(), (_, e) => e)).toThrow('Reduce of empty Iterable with no initial value');
+    expect(() => I.of().reduce((_, e) => e)).toThrow('Reduce of empty Iterable with no initial value');
   });
   test('reduce((1,2,3))', () => {
     expect(I.reduce(I.of(1, 2, 3), (r, e) => r + e, '')).toBe('123');

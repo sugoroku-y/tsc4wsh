@@ -177,41 +177,18 @@ declare namespace DOM3 {
     createTextNode(data: string): Text;
     createComment(data: string): Comment;
     createCDATASection(data: string): CDATASection;
-    createProcessingInstruction(
-      target: string,
-      data: string
-    ): ProcessingInstruction;
+    createProcessingInstruction(target: string, data: string): ProcessingInstruction;
     createAttribute(name: string): Attr;
     createEntityReference(name: string): EntityReference;
     getElementsByTagName(tagname: string): NodeList;
-    createNode(
-      type: NodeType.ELEMENT_NODE,
-      name: string,
-      namespaceURI: string
-    ): Element;
-    createNode(
-      type: NodeType.ATTRIBUTE_NODE,
-      name: string,
-      namespaceURI: string
-    ): Attr;
-    createNode(
-      type: NodeType.DOCUMENT_FRAGMENT_NODE,
-      _: '',
-      _2: ''
-    ): DocumentFragment;
+    createNode(type: NodeType.ELEMENT_NODE, name: string, namespaceURI: string): Element;
+    createNode(type: NodeType.ATTRIBUTE_NODE, name: string, namespaceURI: string): Attr;
+    createNode(type: NodeType.DOCUMENT_FRAGMENT_NODE, _: '', _2: ''): DocumentFragment;
     createNode(type: NodeType.TEXT_NODE, _: '', _2: ''): Text;
     createNode(type: NodeType.CDATA_SECTION_NODE, _: '', _2: ''): CDATASection;
     createNode(type: NodeType.COMMENT_NODE, _: '', _2: ''): Comment;
-    createNode(
-      type: NodeType.PROCESSING_INSTRUCTION_NODE,
-      target: string,
-      _: ''
-    ): ProcessingInstruction;
-    createNode(
-      type: NodeType.ENTITY_REFERENCE_NODE,
-      name: string,
-      _: ''
-    ): EntityReference;
+    createNode(type: NodeType.PROCESSING_INSTRUCTION_NODE, target: string, _: ''): ProcessingInstruction;
+    createNode(type: NodeType.ENTITY_REFERENCE_NODE, name: string, _: ''): EntityReference;
     abort(): void;
     load(xmlSource: any): boolean;
     loadXML(xml: string): boolean;

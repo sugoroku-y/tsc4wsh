@@ -1,19 +1,17 @@
 (function () {
   Array.isArray ??= (obj: unknown): obj is unknown[] => {
-    return Object.prototype.toString.call(obj) === "[object Array]";
+    return Object.prototype.toString.call(obj) === '[object Array]';
   };
   Array.of ??= <T>(...args: T[]): T[] => args;
   Array.from ??= function from<T, R, THIS>(
-    arrayLike: { length: number; [index: number]: T },
+    arrayLike: {length: number; [index: number]: T},
     mapFn?: (this: typeof thisArg, e: T, i: number) => R,
-    thisArg?: THIS
+    thisArg?: THIS,
   ): R[] {
-    if (
-      !mapFn ||
-      typeof mapFn !== "function" ||
-      Object.prototype.toString.call(mapFn) !== "[object Function]"
-    ) {
-      mapFn = function (this: typeof thisArg, e: T): R {return e as unknown as R;};
+    if (!mapFn || typeof mapFn !== 'function' || Object.prototype.toString.call(mapFn) !== '[object Function]') {
+      mapFn = function (this: typeof thisArg, e: T): R {
+        return e as unknown as R;
+      };
     }
     // もともとarrayLikeが配列ならmapを呼ぶだけ
     if (Array.isArray(arrayLike)) {
@@ -47,7 +45,7 @@
   Array.prototype.some ??= function some<T, THIS>(
     this: T[],
     callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
-    thisObj?: THIS
+    thisObj?: THIS,
   ): boolean {
     for (let i = 0; i < this.length; ++i) {
       if (!(i in this)) {
@@ -62,7 +60,7 @@
   Array.prototype.every ??= function every<T, THIS>(
     this: T[],
     callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
-    thisObj?: THIS
+    thisObj?: THIS,
   ) {
     for (let i = 0; i < this.length; ++i) {
       if (!(i in this)) {
@@ -78,7 +76,7 @@
   Array.prototype.reduce ??= function reduce<T, R>(
     this: T[],
     callback: (r: R, e: T, i: number, a: T[]) => R,
-    initialValue: R
+    initialValue: R,
   ): R {
     let index = 0;
     let result = 1 < arguments.length ? initialValue : (this[index++] as unknown as R);
@@ -93,7 +91,7 @@
   Array.prototype.reduceRight ??= function reduceRight<T, R>(
     this: T[],
     callback: (r: R, e: T, i: number, a: T[]) => R,
-    initialValue: R
+    initialValue: R,
   ): R {
     let index = this.length;
     let result = 1 < arguments.length ? initialValue : (this[--index] as unknown as R);
@@ -108,7 +106,7 @@
   Array.prototype.forEach ??= function forEach<T, THIS>(
     this: T[],
     callback: (this: typeof thisObj, e: T, i: number, a: T[]) => unknown,
-    thisObj: THIS
+    thisObj: THIS,
   ) {
     for (let index = 0; index < this.length; ++index) {
       if (!(index in this)) {
@@ -120,7 +118,7 @@
   Array.prototype.filter ??= function filter<T, THIS>(
     this: T[],
     callback: (e: T, i: number, a: T[]) => unknown,
-    thisObj: THIS
+    thisObj: THIS,
   ) {
     const result = [];
     for (let index = 0; index < this.length; ++index) {
@@ -137,7 +135,7 @@
   Array.prototype.map ??= function map<T, R, THIS>(
     this: T[],
     callback: (this: typeof thisObj, e: T, i: number, a: T[]) => R,
-    thisObj?: THIS
+    thisObj?: THIS,
   ): R[] {
     const result: R[] = [];
     for (let index = 0; index < this.length; ++index) {
@@ -151,7 +149,7 @@
 
   /**
    * 引数で渡されるインデックスを調整する。
-   * 
+   *
    * - 引数が指定されていなければデフォルト値。デフォルト値が省略されているときに引数が指定されていなければエラー。
    * - 負の数が指定されたら、最後から絶対値分遡ったインデックス。
    * - (上記の調整後)指定のインデックスが0未満なら0，lengthより大きければlengthに補正。
@@ -161,10 +159,7 @@
    * @param defaultValue 引数が省略されたときのデフォルト値
    * @returns 調整後のインデックス
    */
-  function adjustIndex(
-    value: number | undefined,
-    length: number,
-  ): number | undefined {
+  function adjustIndex(value: number | undefined, length: number): number | undefined {
     if (value === undefined) {
       return undefined;
     }
@@ -182,7 +177,7 @@
     this: T[],
     _target: number,
     _start?: number,
-    _end?: number
+    _end?: number,
   ): T[] {
     const target = adjustIndex(_target, this.length) ?? 0;
     const start = adjustIndex(_start, this.length) ?? 0;
@@ -201,12 +196,7 @@
     }
     return this;
   };
-  Array.prototype.fill ??= function fill<T>(
-    this: T[],
-    value: T,
-    _start?: number,
-    _end?: number
-  ): T[] {
+  Array.prototype.fill ??= function fill<T>(this: T[], value: T, _start?: number, _end?: number): T[] {
     const start = adjustIndex(_start, this.length) ?? 0;
     const end = adjustIndex(_end, this.length) ?? this.length;
     for (let i = start; i < end; ++i) {
@@ -217,7 +207,7 @@
   Array.prototype.find ??= function find<T, THIS>(
     this: T[],
     pred: (this: THIS, e: T, i: number, a: T[]) => unknown,
-    thisArg: THIS
+    thisArg: THIS,
   ): T | undefined {
     for (let i = 0; i < this.length; ++i) {
       if (!(i in this)) {
@@ -233,7 +223,7 @@
   Array.prototype.findIndex ??= function findIndex<T, THIS>(
     this: T[],
     pred: (this: THIS, e: T, i: number, a: T[]) => unknown,
-    thisArg: THIS
+    thisArg: THIS,
   ): number {
     for (let i = 0; i < this.length; ++i) {
       if (!(i in this)) {
@@ -246,10 +236,7 @@
     }
     return -1;
   };
-  Array.prototype.includes ??= function includes<T>(
-    this: T[],
-    searchElement: T
-  ): boolean {
+  Array.prototype.includes ??= function includes<T>(this: T[], searchElement: T): boolean {
     for (let i = 0; i < this.length; ++i) {
       if (!(i in this)) {
         continue;
@@ -260,11 +247,7 @@
     }
     return false;
   };
-  Array.prototype.indexOf ??= function indexOf<T>(
-    this: T[],
-    searchElement: T,
-    _start?: number
-  ): number {
+  Array.prototype.indexOf ??= function indexOf<T>(this: T[], searchElement: T, _start?: number): number {
     const start = adjustIndex(_start, this.length) ?? 0;
     for (let index = start; index < this.length; ++index) {
       if (this[index] === searchElement) {
@@ -273,11 +256,7 @@
     }
     return -1;
   };
-  Array.prototype.lastIndexOf ??= function lastIndexOf<T>(
-    this: T[],
-    searchElement: T,
-    _start?: number,
-  ): number {
+  Array.prototype.lastIndexOf ??= function lastIndexOf<T>(this: T[], searchElement: T, _start?: number): number {
     const start = adjustIndex(_start, this.length) ?? this.length - 1;
     for (let index = start; index >= 0; --index) {
       if (this[index] === searchElement) {
