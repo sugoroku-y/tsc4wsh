@@ -1,33 +1,35 @@
-test('Array.isArray(): never[]', () => {
+describe('Array.isArray()', () => {
+  test('never[]', () => {
     expect(Array.isArray([])).toBe(true);
-});
-test('Array.isArray(): number[]', () => {
+  });
+  test('number[]', () => {
     expect(Array.isArray([1, 2, 3])).toBe(true);
-});
-test('Array.isArray(): string[]', () => {
+  });
+  test('string[]', () => {
     expect(Array.isArray(['1', '2', '3'])).toBe(true);
-});
-test('Array.isArray(): object[]', () => {
+  });
+  test('object[]', () => {
     expect(Array.isArray([{}, {}, {}])).toBe(true);
-});
-test('Array.isArray(): undefined', () => {
+  });
+  test('undefined', () => {
     expect(Array.isArray(undefined)).toBe(false);
-});
-test('Array.isArray(): null', () => {
+  });
+  test('null', () => {
     expect(Array.isArray(null)).toBe(false);
-});
-test('Array.isArray(): true', () => {
+  });
+  test('true', () => {
     expect(Array.isArray(true)).toBe(false);
-});
-test('Array.isArray(): false', () => {
+  });
+  test('false', () => {
     expect(Array.isArray(false)).toBe(false);
-});
-test('Array.isArray(): number', () => {
+  });
+  test('number', () => {
     expect(Array.isArray(1)).toBe(false);
-});
-test('Array.isArray(): string', () => {
+  });
+  test('string', () => {
     expect(Array.isArray('1')).toBe(false);
-});
-test('Array.isArray(): object', () => {
+  });
+  test('object', () => {
     expect(Array.isArray({})).toBe(false);
+  });
 });
