@@ -3,34 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {DOMParser, DOMImplementation, XMLSerializer} from '@xmldom/xmldom';
 import {transpile} from './transpile';
+import {getErrorCode, indented, isDirectory, mkdirEnsure} from './utils';
 
-interface IWriteStream {
-  write(s: string, ...args: any[]): any;
-  close(): any;
-}
-// istanbul ignore next
-export let stdout: IWriteStream = {
-  write(s) {
-    process.stdout.write(s);
-  },
-  close() {},
-};
-// istanbul ignore next
-export let stderr: IWriteStream = {
-  write(s) {
-    process.stderr.write(s);
-  },
-  close() {},
-};
-
-export function setOutput(stream: IWriteStream): void {
-  stdout.close();
-  stdout = stream;
-}
-export function setError(stream: IWriteStream): void {
-  stderr.close();
-  stderr = stream;
-}
 /**
  * job要素にobject要素を追加する
  * @param jobElement object要素を追加するjob要素
@@ -177,16 +151,17 @@ async function makeWsfDom(
   runtimes: string[],
   vbscripts: string[]
 ) {
-  const script = `
-this.__extends = function __extends(a, b) {
-    if (a && b) {
-      a.prototype = Object.create(b.prototype);
-      a.prototype.constructor = a;
-    }
-};
-${await polyfill}
-${transpiled}
-`;
+  const script = indented`
+    'use strict';
+    this.__extends = function __extends(a, b) {
+        if (a && b) {
+          a.prototype = Object.create(b.prototype);
+          a.prototype.constructor = a;
+        }
+    };
+    ${await polyfill}
+    ${transpiled}
+    `;
   // WSFファイルの生成
   const doc = dom.createDocument(null, 'job', null);
   const jobElement = doc.documentElement!;
@@ -208,16 +183,16 @@ async function writeWsf(
   doc: Document,
   options: {console?: boolean; output?: string}
 ) {
-  const content =
-    '<?xml version="1.0" encoding="utf-8" ?>\n' +
-    serializer.serializeToString(doc) +
-    '\n';
+  const content = indented`
+    <?xml version="1.0" encoding="utf-8" ?>
+    ${serializer.serializeToString(doc)}
+    `;
   // コンソールモードの場合は標準出力に表示して終了
   /* istanbul ignore next */
   if (options.console) {
-    stdout.write(`${filepath}:\n`);
-    stdout.write(content);
-    stdout.write('\n');
+    process.stdout.write(`${filepath}:\n`);
+    process.stdout.write(content);
+    process.stdout.write('\n');
     return;
   }
   // istanbul ignore next
@@ -225,89 +200,30 @@ async function writeWsf(
     // outputの指定が無ければソースファイルの拡張子をWSFに変えたものに出力
     !options.output
       ? filepath.replace(/\.ts$/, '.wsf')
-      : // outputに拡張子WSFのファイル名が指定されていればそのまま使用
-      /\.wsf$/i.test(options.output)
-      ? options.output
-      : // outputに拡張子WSFが指定されていなければディレクトリと見なして
-        // そこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
-        path.join(options.output, path.basename(filepath, '.ts') + '.wsf');
-  const existent = await fs.promises.readFile(outputPath, 'utf8').catch(err => {
-    /* istanbul ignore next */
-    if (err.code === 'ENOENT') {
-      // 存在してなかった場合には空のファイルと同じ扱い
-      return '';
-    }
-    // その他のエラーはエラーとして扱う
-    /* istanbul ignore next */
-    throw err;
-  });
-  /* istanbul ignore next */
+      : // outputがディレクトリならばそこにファイル名をソースファイルの拡張子をWSFに変えたものに出力
+      (await isDirectory(options.output))
+      ? path.join(options.output, path.basename(filepath, '.ts') + '.wsf')
+      : // それ以外はそのままの名前で出力
+        options.output;
+  const existent = await fs.promises.readFile(outputPath, 'utf8').catch(
+    // istanbul ignore next 存在してなかった場合には空のファイルと同じ扱い
+    ex => getErrorCode(ex) === 'ENOENT' ? '' : Promise.reject(ex)
+  );
   if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
-    stdout.write(`\t\t変化なし: ${outputPath}\n`);
+    process.stdout.write(`\t\t変化なし: ${outputPath}\n`);
   } else {
+    await mkdirEnsure(path.dirname(outputPath));
     await fs.promises.writeFile(outputPath, content, 'utf8');
-    stdout.write(`\t\t出力先: ${outputPath}\n`);
-  }
-}
-
-// istanbul ignore next
-function assertNever(o: never): never {
-  throw new Error();
-}
-
-type TypeofResult = {
-  object: object | null;
-  function: Function;
-  undefined: undefined;
-  boolean: boolean;
-  number: number;
-  string: string;
-  bigint: bigint;
-  symbol: symbol;
-};
-type ObjectEntry<T> = {[K in keyof T]: [K, T[K]]}[keyof T];
-// istanbul ignore next
-function typeofCheck(o: unknown) {
-  return typeof o;
-}
-type AssertNever<T extends never> = T;
-// typeofの返値がTypeofResultのキーにない値を取るような仕様変更があれば↓がエラーになる
-type TypeofCheck = AssertNever<
-  Exclude<ReturnType<typeof typeofCheck>, keyof TypeofResult>
->;
-
-// istanbul ignore next
-function hasProperty<NAME extends string>(
-  o: unknown,
-  name: NAME
-): o is {[k in NAME]: unknown} {
-  const [type, obj] = [typeof o, o] as ObjectEntry<TypeofResult>;
-  if (obj === undefined || obj === null) {
-    return false;
-  }
-  switch (type) {
-    case 'object':
-    case 'function':
-      return name in obj;
-    case 'number':
-    case 'boolean':
-    case 'string':
-    case 'bigint':
-    case 'symbol':
-      return obj.hasOwnProperty(name) || name in obj.constructor.prototype;
-    default:
-      assertNever(obj);
+    process.stdout.write(`\t\t出力先: ${outputPath}\n`);
   }
 }
 
 // istanbul ignore next
 function getExceptionMessage(ex: unknown): string {
-  return hasProperty(ex, 'message')
-    ? typeof ex.message === 'string'
-      ? ex.message
-      : String(ex.message)
-    : String(ex);
+  return String(
+    typeof ex === 'object' && ex && 'message' in ex ? ex.message : ex
+  );
 }
 
 /**
@@ -320,7 +236,7 @@ export async function tsc4wsh(
   filepaths: string[],
   options: {console?: boolean; output?: string; watch?: boolean}
 ) {
-  stdout.write(
+  process.stdout.write(
     `${new Date().toLocaleTimeString()} - tsc4wsh 開始 ${
       /* istanbul ignore next */
       options.watch ? ' (監視中)' : ''
@@ -329,7 +245,7 @@ export async function tsc4wsh(
 
   try {
     // 指定されたファイルをコンパイル
-    stdout.write(`  ${filepaths.join(', ')}\n`);
+    process.stdout.write(`  ${filepaths.join(', ')}\n`);
     try {
       // TSファイル以外は対象外
       /* istanbul ignore next */
@@ -353,10 +269,12 @@ export async function tsc4wsh(
         .replace(/[^\r\n](?!\r?\n)$/, '$&\n')
         // 各行の行頭にインデントを二つ挿入
         .replace(/^(?=.)/gm, `    `);
-      stderr.write(`    エラー: ${filepaths[0]}${message}`);
+      process.stderr.write(`    エラー: ${filepaths[0]}${message}`);
       return false;
     }
   } finally {
-    stdout.write(`${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`);
+    process.stdout.write(
+      `${new Date().toLocaleTimeString()} - tsc4wsh 終了.\n`
+    );
   }
 }

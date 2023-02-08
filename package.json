@@ -10,9 +10,9 @@
     "url": "https://github.com/sugoroku-y/tsc4wsh.git"
   },
   "scripts": {
-    "test": "jest --coverage",
-    "pretest:wsh": "node lib/main.js test/wshtest.ts polyfill/**/*.test.ts private-modules/**/*.test.ts test/**/*.test.ts",
-    "test:wsh": "cscript //nologo test/wshtest.wsf",
+    "test": "jest",
+    "pretest:wsh": "node lib/main.js test/wshtest.ts polyfill/**/*.test.ts private-modules/**/*.test.ts test/**/*.test.ts -o test/wshtest.xml",
+    "test:wsh": "cscript //nologo test/wshtest.xml",
     "pretest": "npm run build:polyfill",
     "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
     "build:src": "tsc --build src/tsconfig.json",
@@ -47,25 +47,6 @@
     "jest": "^26.6.3",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^26.5.6"
-  },
-  "jest": {
-    "testMatch": [
-      "**/src/tsc4wsh.test.ts",
-      "**/polyfill/test/*.test.ts"
-    ],
-    "transform": {
-      "\\.ts$": "ts-jest"
-    },
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "src/tsconfig.json"
-      }
-    },
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "src/tsc4wsh.ts",
-      "src/transpile.ts"
-    ]
   },
   "bin": {
     "tsc4wsh": "bin/tsc4wsh.js"

@@ -1,27 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <job>
 <object id="fso" progid="Scripting.FileSystemObject"/>
-<runtime>
-<description>
-  tsc4wshのデバッグ用スクリプト
-</description>
-<named name="?" type="simple" required="false" helpstring="使い方(これ)を表示します。"/>
-<named name="base" type="string" required="true" helpstring="相対パスやワイルドカードの基準となるディレクトリ"/>
-<unnamed name="filename" many="true" required="true" helpstring="処理するファイル。ワイルドカード指定可。"/>
-<example>
-例:
-  test.wsf /?
-    使い方(これ)を表示します。
-  test.wsf /base:\\dokokano\nantoka\Master\Release\Updater **\*.tbl
-    \\dokokano\nantoka\Master\Release\Updater以下にある拡張子がtblのファイルすべてを処理します。
-</example>
-</runtime>
-<script language="VBScript"><![CDATA[
-Function vbsInputBox(msg, title)
-  vbsInputBox = InputBox(msg, title)
-End Function
-]]></script>
+<object id="installer" progid="WindowsInstaller.Installer"/>
 <script language="JScript"><![CDATA[
+'use strict';
 this.__extends = function __extends(a, b) {
     if (a && b) {
       a.prototype = Object.create(b.prototype);
@@ -60,7 +42,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
-        return Object.prototype.toString.call(obj) === "[object Array]";
+        return Object.prototype.toString.call(obj) === '[object Array]';
     });
     (_b = Array.of) !== null && _b !== void 0 ? _b : (Array.of = function () {
         var args = [];
@@ -70,10 +52,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return args;
     });
     (_c = Array.from) !== null && _c !== void 0 ? _c : (Array.from = function from(arrayLike, mapFn, thisArg) {
-        if (!mapFn ||
-            typeof mapFn !== "function" ||
-            Object.prototype.toString.call(mapFn) !== "[object Function]") {
-            mapFn = function (e) { return e; };
+        if (!mapFn || typeof mapFn !== 'function' || Object.prototype.toString.call(mapFn) !== '[object Function]') {
+            mapFn = function (e) {
+                return e;
+            };
         }
         if (Array.isArray(arrayLike)) {
             return arrayLike.map(mapFn, thisArg);
@@ -362,7 +344,7 @@ var __read = (this && this.__read) || function (o, n) {
         return template.reduce(function (r, e, i) {
             var v = values[i - 1];
             var _a = __read(Array.isArray(v) ? v : [v, 2], 2), num = _a[0], digits = _a[1];
-            return r + (digits ? num.toString().padStart(digits, "0") : num) + e;
+            return r + (digits ? num.toString().padStart(digits, '0') : num) + e;
         });
     }
     (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
@@ -390,28 +372,26 @@ var _c, _d, _e, _f;
                 return id;
             },
             valueOf: function () {
-                return description || "";
+                return description || '';
             }
         };
         return symbol;
     };
-    this.Symbol.isSymbol = function (symbol) {
-        return String(symbol) in symbols;
-    };
+    this.Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
     var registered = {};
     this.Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
     this.Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
         var _b = __read(_a, 2), symbol = _b[1];
         return symbol === sym;
     })) === null || _a === void 0 ? void 0 : _a[0]; };
-    this.Symbol.iterator = Symbol("iterator");
+    this.Symbol.iterator = Symbol('iterator');
     this.Symbol.hasInstance = Symbol('hasInstance');
     this.Symbol.isConcatSpreadable = Symbol('isConcatSpreadable');
     this.Symbol.match = Symbol('match');
     this.Symbol.replace = Symbol('replace');
     this.Symbol.search = Symbol('search');
     this.Symbol.species = Symbol('species');
-    this.Symbol.split = Symbol("split");
+    this.Symbol.split = Symbol('split');
     this.Symbol.toPrimitive = Symbol('toPrimitive');
     this.Symbol.toStringTag = Symbol('toStringTag');
     this.Symbol.unscopables = Symbol('unscopables');
@@ -951,7 +931,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (length !== undefined && (!length || length < 0)) {
             return '';
         }
-        return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
+        return this.slice(start, length !== undefined ? (start < 0 && start + length >= 0 ? undefined : start + length) : this.length);
     };
     (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
         var count = length - this.length;
@@ -959,9 +939,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (paddings
-            .repeat((length / paddings.length + 1) | 0)
-            .slice(0, count) + this);
+        return paddings.repeat((length / paddings.length + 1) | 0).slice(0, count) + this;
     });
     (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
@@ -969,10 +947,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (this +
-            paddings
-                .repeat((length / paddings.length + 1) | 0)
-                .slice(0, count));
+        return this + paddings.repeat((length / paddings.length + 1) | 0).slice(0, count);
     });
     (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
         if (!position) {
@@ -1050,6 +1025,111 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
+
+(function () {
+    var registeredObjects = [];
+    var handlers = [];
+
+    var trigger = function (objectIndex, eventName, params) {
+        var obj = registeredObjects[objectIndex];
+        handlers[objectIndex][eventName].forEach(function (x) {
+            x.call(obj, params);
+        });
+    };
+
+    ActiveXObject.on = function (obj, eventName, parameterNames, handler) {
+        if (Object.prototype.toString.call(parameterNames) !== '[object Array]') {
+            //parameterNames is an optional argument
+            handler = parameterNames;
+            parameterNames = [];
+        }
+
+        var objectIndex = registeredObjects.indexOf(obj);
+        if (objectIndex == -1) {
+            registeredObjects.push(obj);
+            objectIndex = registeredObjects.length - 1;
+            handlers[objectIndex] = {};
+        }
+        if (handlers[objectIndex][eventName] === undefined) { //explicit check against undefined, because it might be an empty array
+            var def = "function obj::" + eventName + " (" + parameterNames.join(', ') + ") {" +
+                "var params = { " +
+                parameterNames.map(function (x) {
+                    return x + ':' + x;
+                }).join(',') +
+                " };" +
+                "trigger( " + objectIndex + ", '" + eventName + "', params);" +
+                parameterNames.map(function (x) {
+                    return "if ( " + x + " !== params." + x + " ) " + x + " = params." + x + ";";
+                }).join('\n') +
+                "};";
+            eval(def);
+            handlers[objectIndex][eventName] = [];
+        }
+        handlers[objectIndex][eventName].push(handler);
+    };
+
+    ActiveXObject.off = function (obj, eventName, handler) {
+        if (!obj) {
+            registeredObjects.forEach(function (x) {
+                ActiveXObject.off(x);
+            });
+            registeredObjects = [];
+            return;
+        }
+
+        var objectIndex = registeredObjects.indexOf(obj);
+        var handlersObject = handlers[objectIndex];
+        if (!eventName) {
+            Object.keys(handlersObject).forEach(function (x) {
+                ActiveXObject.off(obj, x);
+            });
+            registeredObjects[objectIndex] = undefined;
+            return;
+        }
+
+        if (!handler) {
+            handlersObject[eventName] = [];
+            return;
+        }
+
+        var handlerIndex = handlersObject[eventName].indexOf(handler);
+        while (handlerIndex > -1) {
+            handlersObject[eventName][handlerIndex] = undefined;
+            handlerIndex = handlersObject[eventName].indexOf(handler);
+        }
+    };
+
+    ActiveXObject.hasRegisteredObjects = function () {
+        return registeredObjects.length > 0;
+    };
+
+    ActiveXObject.set = function (obj, propertyName, parameters, newValue) {
+        /*@cc_on @*/
+        /*@
+        switch (parameters.length) {
+            case 0:
+                obj[propertyName] = newValue;
+                return;
+            case 1:
+                obj[propertyName](parameters[0]) = newValue;
+                return;
+            case 2:
+                obj[propertyName](parameters[0], parameters[1]) = newValue;
+                return;
+            case 3:
+                obj[propertyName](parameters[0], parameters[1], parameters[2]) = newValue;
+                return;
+            default:
+                break; // fallback to eval
+        }
+        @*/
+        var parameterString = parameters.map(function (x, index) {
+            return 'parameters[' + index + ']';
+        }).join(', ');
+        var callString = parameterString ? '(' + parameterString + ')' : "";
+        eval('obj[propertyName]' + callString + ' = newValue');
+    };
+})();
 (function () {
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -1530,150 +1610,6 @@ var Iterables;
         return x && x instanceof IterableEx;
     }
 })(Iterables || (Iterables = {}));
-/// <reference types="dom3" />
-/// <reference types="iterables" />
-var WScriptUtil;
-(function (WScriptUtil) {
-    var Arguments;
-    (function (Arguments) {
-        function Named(params, convArg) {
-            var _a = __read(typeof params === 'string' || Array.isArray(params)
-                ? [params, convArg]
-                : [params.key, params.conv], 2), key = _a[0], conv = _a[1];
-            var keys = Array.isArray(key) ? key : [key];
-            var value = (function () {
-                var e_8, _a;
-                try {
-                    for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
-                        var k = keys_1_1.value;
-                        if (WScript.Arguments.Named.Exists(k)) {
-                            return WScript.Arguments.Named(k);
-                        }
-                    }
-                }
-                catch (e_8_1) { e_8 = { error: e_8_1 }; }
-                finally {
-                    try {
-                        if (keys_1_1 && !keys_1_1.done && (_a = keys_1["return"])) _a.call(keys_1);
-                    }
-                    finally { if (e_8) throw e_8.error; }
-                }
-                return undefined;
-            })();
-            return conv ? conv(value) : value;
-        }
-        Arguments.Named = Named;
-        function Switch(keys) {
-            var e_9, _a;
-            try {
-                for (var _b = __values(Array.isArray(keys) ? keys : [keys]), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var key = _c.value;
-                    if (WScript.Arguments.Named.Exists(key)) {
-                        return true;
-                    }
-                }
-            }
-            catch (e_9_1) { e_9 = { error: e_9_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-                }
-                finally { if (e_9) throw e_9.error; }
-            }
-            return false;
-        }
-        Arguments.Switch = Switch;
-        function Unnamed() {
-            return Iterables.from(WScript.Arguments.Unnamed);
-        }
-        Arguments.Unnamed = Unnamed;
-    })(Arguments = WScriptUtil.Arguments || (WScriptUtil.Arguments = {}));
-    function validateParameters() {
-        var e_10, _a;
-        if (WScript.Arguments.Named.Exists('?') ||
-            WScript.Arguments.Named.Exists('help')) {
-            WScript.Arguments.ShowUsage();
-            return WScript.Quit(0);
-        }
-        var doc = WScript.CreateObject('MSXML2.DOMDocument.6.0');
-        doc.load(WScript.ScriptFullName);
-        var hasError = false;
-        try {
-            for (var _b = __values(Iterables.from(doc.selectNodes('/job/runtime/named'))), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var node = _c.value;
-                if (node.nodeType !== 1 /* DOM3.NodeType.ELEMENT_NODE */) {
-                    continue;
-                }
-                var name = node.getAttribute('name');
-                if (!name) {
-                    continue;
-                }
-                var required = node.getAttribute('required') === 'true';
-                if (!WScript.Arguments.Named.Exists(name)) {
-                    if (required) {
-                        WScript.Echo("".concat(name, " は必須パラメータです。"));
-                        hasError = true;
-                    }
-                    continue;
-                }
-                var value = WScript.Arguments.Named(name);
-                switch (node.getAttribute('type')) {
-                    case 'string':
-                        if (typeof value !== 'string') {
-                            WScript.Echo("".concat(name, " には文字列を指定(/").concat(name, ":文字列)してください。"));
-                            hasError = true;
-                            continue;
-                        }
-                        break;
-                    case 'boolean':
-                        if (typeof value !== 'boolean') {
-                            WScript.Echo("".concat(name, " にはオン(/").concat(name, "+)、もしくはオフ(/").concat(name, "-)を指定してください。"));
-                            hasError = true;
-                            continue;
-                        }
-                        break;
-                    default:
-                        // case 'simple':
-                        if (typeof value !== 'undefined') {
-                            WScript.Echo("".concat(name, " にはパラメータだけ(/").concat(name, ")を指定してください。"));
-                            hasError = true;
-                            continue;
-                        }
-                        break;
-                }
-            }
-        }
-        catch (e_10_1) { e_10 = { error: e_10_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_10) throw e_10.error; }
-        }
-        var unnamedElement = doc.selectSingleNode('/job/runtime/unnamed');
-        if (unnamedElement &&
-            unnamedElement.nodeType === 1 /* DOM3.NodeType.ELEMENT_NODE */) {
-            var isMany = unnamedElement.getAttribute('many') === 'true';
-            var required = (function (value) {
-                return !value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value;
-            })(unnamedElement.getAttribute('required'));
-            if (WScript.Arguments.Unnamed.length < required) {
-                WScript.Echo("パラメータが不足しています(必要数: ".concat(required, "})。"));
-                hasError = true;
-            }
-            else if (WScript.Arguments.Unnamed.length > required && !isMany) {
-                WScript.Echo(required > 0
-                    ? "パラメータが多過ぎます(必要数: ".concat(required, "})。")
-                    : "パラメータは不要です。");
-                hasError = true;
-            }
-        }
-        if (hasError) {
-            return WScript.Quit(1);
-        }
-    }
-    WScriptUtil.validateParameters = validateParameters;
-})(WScriptUtil || (WScriptUtil = {}));
 /// <reference types="iterables" />
 var Scripting;
 (function (Scripting) {
@@ -1792,8 +1728,8 @@ var Scripting;
             }
             Utils.commonPath = commonPath;
             function recursiveFolders(folder) {
-                var _a, _b, f, e_11_1;
-                var e_11, _c;
+                var _a, _b, f, e_8_1;
+                var e_8, _c;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
                         case 0: return [4 /*yield*/, folder];
@@ -1816,14 +1752,14 @@ var Scripting;
                             return [3 /*break*/, 3];
                         case 6: return [3 /*break*/, 9];
                         case 7:
-                            e_11_1 = _d.sent();
-                            e_11 = { error: e_11_1 };
+                            e_8_1 = _d.sent();
+                            e_8 = { error: e_8_1 };
                             return [3 /*break*/, 9];
                         case 8:
                             try {
                                 if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                             }
-                            finally { if (e_11) throw e_11.error; }
+                            finally { if (e_8) throw e_8.error; }
                             return [7 /*endfinally*/];
                         case 9: return [2 /*return*/];
                     }
@@ -1831,8 +1767,8 @@ var Scripting;
             }
             Utils.recursiveFolders = recursiveFolders;
             function recursiveFiles(folder) {
-                var _a, _b, f, e_12_1;
-                var e_12, _c;
+                var _a, _b, f, e_9_1;
+                var e_9, _c;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
                         case 0:
@@ -1851,14 +1787,14 @@ var Scripting;
                             return [3 /*break*/, 1];
                         case 4: return [3 /*break*/, 7];
                         case 5:
-                            e_12_1 = _d.sent();
-                            e_12 = { error: e_12_1 };
+                            e_9_1 = _d.sent();
+                            e_9 = { error: e_9_1 };
                             return [3 /*break*/, 7];
                         case 6:
                             try {
                                 if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                             }
-                            finally { if (e_12) throw e_12.error; }
+                            finally { if (e_9) throw e_9.error; }
                             return [7 /*endfinally*/];
                         case 7: return [2 /*return*/];
                     }
@@ -1866,8 +1802,8 @@ var Scripting;
             }
             Utils.recursiveFiles = recursiveFiles;
             function recursiveFolderAndFiles(folder) {
-                var _a, _b, f, e_13_1;
-                var e_13, _c;
+                var _a, _b, f, e_10_1;
+                var e_10, _c;
                 return __generator(this, function (_d) {
                     switch (_d.label) {
                         case 0:
@@ -1889,14 +1825,14 @@ var Scripting;
                             return [3 /*break*/, 1];
                         case 5: return [3 /*break*/, 8];
                         case 6:
-                            e_13_1 = _d.sent();
-                            e_13 = { error: e_13_1 };
+                            e_10_1 = _d.sent();
+                            e_10 = { error: e_10_1 };
                             return [3 /*break*/, 8];
                         case 7:
                             try {
                                 if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                             }
-                            finally { if (e_13) throw e_13.error; }
+                            finally { if (e_10) throw e_10.error; }
                             return [7 /*endfinally*/];
                         case 8: return [2 /*return*/];
                     }
@@ -1989,8 +1925,8 @@ var Scripting;
                     if (/[*?{]/.test(pathAtom)) {
                         var atomPattern_1 = wildcardToRegExp(pathAtom);
                         return function (ff) {
-                            var _a, _b, f, e_14_1, _c, _d, f, e_15_1;
-                            var e_14, _e, e_15, _f;
+                            var _a, _b, f, e_11_1, _c, _d, f, e_12_1;
+                            var e_11, _e, e_12, _f;
                             return __generator(this, function (_g) {
                                 switch (_g.label) {
                                     case 0:
@@ -2010,14 +1946,14 @@ var Scripting;
                                         return [3 /*break*/, 1];
                                     case 4: return [3 /*break*/, 7];
                                     case 5:
-                                        e_14_1 = _g.sent();
-                                        e_14 = { error: e_14_1 };
+                                        e_11_1 = _g.sent();
+                                        e_11 = { error: e_11_1 };
                                         return [3 /*break*/, 7];
                                     case 6:
                                         try {
                                             if (_b && !_b.done && (_e = _a["return"])) _e.call(_a);
                                         }
-                                        finally { if (e_14) throw e_14.error; }
+                                        finally { if (e_11) throw e_11.error; }
                                         return [7 /*endfinally*/];
                                     case 7:
                                         if (!last) return [3 /*break*/, 15];
@@ -2039,14 +1975,14 @@ var Scripting;
                                         return [3 /*break*/, 9];
                                     case 12: return [3 /*break*/, 15];
                                     case 13:
-                                        e_15_1 = _g.sent();
-                                        e_15 = { error: e_15_1 };
+                                        e_12_1 = _g.sent();
+                                        e_12 = { error: e_12_1 };
                                         return [3 /*break*/, 15];
                                     case 14:
                                         try {
                                             if (_d && !_d.done && (_f = _c["return"])) _f.call(_c);
                                         }
-                                        finally { if (e_15) throw e_15.error; }
+                                        finally { if (e_12) throw e_12.error; }
                                         return [7 /*endfinally*/];
                                     case 15: return [2 /*return*/];
                                 }
@@ -2077,8 +2013,8 @@ var Scripting;
                     };
                 });
                 return (function traverse(ff, index) {
-                    var _a, _b, item, e_16_1;
-                    var e_16, _c;
+                    var _a, _b, item, e_13_1;
+                    var e_13, _c;
                     return __generator(this, function (_d) {
                         switch (_d.label) {
                             case 0:
@@ -2106,14 +2042,14 @@ var Scripting;
                                 return [3 /*break*/, 3];
                             case 6: return [3 /*break*/, 9];
                             case 7:
-                                e_16_1 = _d.sent();
-                                e_16 = { error: e_16_1 };
+                                e_13_1 = _d.sent();
+                                e_13 = { error: e_13_1 };
                                 return [3 /*break*/, 9];
                             case 8:
                                 try {
                                     if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
                                 }
-                                finally { if (e_16) throw e_16.error; }
+                                finally { if (e_13) throw e_13.error; }
                                 return [7 /*endfinally*/];
                             case 9: return [2 /*return*/];
                         }
@@ -2136,7 +2072,7 @@ var Scripting;
             }
             Utils.ensureDirectory = ensureDirectory;
             function resolve() {
-                var e_17, _a;
+                var e_14, _a;
                 var paths = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     paths[_i] = arguments[_i];
@@ -2155,12 +2091,12 @@ var Scripting;
                         }
                     }
                 }
-                catch (e_17_1) { e_17 = { error: e_17_1 }; }
+                catch (e_14_1) { e_14 = { error: e_14_1 }; }
                 finally {
                     try {
                         if (paths_1_1 && !paths_1_1.done && (_a = paths_1["return"])) _a.call(paths_1);
                     }
-                    finally { if (e_17) throw e_17.error; }
+                    finally { if (e_14) throw e_14.error; }
                 }
                 return current;
             }
@@ -2172,59 +2108,66 @@ var Scripting;
         })(Utils = FileSystemObject.Utils || (FileSystemObject.Utils = {}));
     })(FileSystemObject = Scripting.FileSystemObject || (Scripting.FileSystemObject = {}));
 })(Scripting || (Scripting = {}));
-/// <reference types="wscript-util" />
+/// <reference types="windows-installer" />
 /// <reference types="filesystemobject-util" />
-WScript.Echo(vbsInputBox('何か入力して下さい。', 'InputBoxのテスト'));
-/**
- * @onend
- */
-function onendfunc1() {
-    WScript.Echo('test1 on end');
-}
-// @onend
-function onendfunc2() {
-    WScript.Echo('test2 on end');
-}
-var test1;
-(function (test1) {
-    var e_18, _a, e_19, _b;
+/// <reference types="iterables" />
+/// <reference types="activex-helpers" />
+var msiinfo;
+(function (msiinfo) {
+    var e_15, _a, e_16, _b;
     var fsoU = Scripting.FileSystemObject.Utils;
-    var output = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], function (outputPath) {
-        if (outputPath) {
-            return fso.OpenTextFile(outputPath, 2 /* Scripting.IOMode.ForWriting */, true, 0 /* Scripting.Tristate.TristateFalse */);
-        }
-        return WScript.StdOut;
-    });
+    var msiOpenDatabaseModeReadOnly = 0 /* WindowsInstaller.msiOpenDatabaseMode.msiOpenDatabaseModeReadOnly */;
+    WScript.StdOut.WriteLine("パス\t製品名\tバージョン\tProductCode\tPackageCode\tUpgradeCode\t最終更新日時");
     try {
-        for (var _c = __values(WScriptUtil.Arguments.Unnamed()), _d = _c.next(); !_d.done; _d = _c.next()) {
+        for (var _c = __values(Iterables.from(WScript.Arguments.Unnamed)), _d = _c.next(); !_d.done; _d = _c.next()) {
             var arg = _d.value;
             try {
-                for (var _e = (e_19 = void 0, __values(fsoU.wildcard(arg))), _f = _e.next(); !_f.done; _f = _e.next()) {
-                    var item = _f.value;
-                    var d = new Date(item.DateLastModified);
-                    output.WriteLine("".concat(fsoU.relativePath(item.Path), " ").concat(item.Size, " ").concat(d.toLocaleString()));
+                for (var _e = (e_16 = void 0, __values(Iterables.filter(fsoU.wildcard(arg), fsoU.isFile))), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var file = _f.value;
+                    var db = installer.OpenDatabase(file.Path, msiOpenDatabaseModeReadOnly);
+                    var summaryInfo = db.SummaryInformation(20 /* WindowsInstaller.SummaryPropertyId.COUNT_OF_PID */);
+                    var subject = summaryInfo.Property(3 /* WindowsInstaller.SummaryPropertyId.PID_SUBJECT */);
+                    var packageCode = summaryInfo.Property(9 /* WindowsInstaller.SummaryPropertyId.PID_REVNUMBER */);
+                    var lastSaveTime = new Date(summaryInfo.Property(13 /* WindowsInstaller.SummaryPropertyId.PID_LASTSAVE_DTM */)).toISOString();
+                    var view = db.OpenView('SELECT `Value` FROM `Property` WHERE `Property`=?');
+                    var param = installer.CreateRecord(1);
+                    ActiveXObject.set(param, 'StringData', [1], 'ProductVersion');
+                    view.Execute(param);
+                    var productVersion = view.Fetch().StringData(1);
+                    ActiveXObject.set(param, 'StringData', [1], 'ProductCode');
+                    view.Execute(param);
+                    var productCode = view.Fetch().StringData(1);
+                    ActiveXObject.set(param, 'StringData', [1], 'UpgradeCode');
+                    view.Execute(param);
+                    var upgradeCode = view.Fetch().StringData(1);
+                    WScript.StdOut.WriteLine([
+                        file.Path,
+                        subject,
+                        productVersion,
+                        productCode,
+                        packageCode,
+                        upgradeCode,
+                        lastSaveTime,
+                    ].join('\t'));
                 }
             }
-            catch (e_19_1) { e_19 = { error: e_19_1 }; }
+            catch (e_16_1) { e_16 = { error: e_16_1 }; }
             finally {
                 try {
                     if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
                 }
-                finally { if (e_19) throw e_19.error; }
+                finally { if (e_16) throw e_16.error; }
             }
         }
     }
-    catch (e_18_1) { e_18 = { error: e_18_1 }; }
+    catch (e_15_1) { e_15 = { error: e_15_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_18) throw e_18.error; }
+        finally { if (e_15) throw e_15.error; }
     }
-    WScriptUtil.validateParameters();
-})(test1 || (test1 = {}));
-onendfunc1();
-onendfunc2();
+})(msiinfo || (msiinfo = {}));
 })();
 ]]></script>
 </job>

@@ -1,0 +1,19 @@
+{
+  "testMatch": [
+    "**/src/*.test.ts",
+    "**/polyfill/test/*.test.ts"
+  ],
+  "transform": {
+    "\\.ts$": "ts-jest"
+  },
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "src/tsconfig.json"
+    }
+  },
+  "collectCoverageFrom": [
+    "src/utils.ts",
+    "src/tsc4wsh.ts",
+    "src/transpile.ts"
+  ]
+}

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as wildkarte from 'wildkarte';
 import * as optionalist from 'optionalist';
 import {generateTSConfig} from './transpile';
-import {tsc4wsh, stderr} from './tsc4wsh';
+import {tsc4wsh} from './tsc4wsh';
 
 const options = optionalist.parse({
   [optionalist.helpString]: {
@@ -64,25 +64,8 @@ const options = optionalist.parse({
   },
 });
 
-async function ensureDir(p: string) {
-  const d = path.dirname(p);
-  // 存在確認だけでなくディレクトリかどうかもチェック
-  const stat = await fs.promises.stat(d).catch(ex => {
-    if (ex.code === 'ENOENT') {
-      return null;
-    }
-    throw ex;
-  });
-  if (stat?.isDirectory()) {
-    // ディレクトリとして存在していれば何もしないで終了
-    return;
-  }
-  await ensureDir(d);
-  await fs.promises.mkdir(d);
-}
-
 if ('help' in options) {
-  stderr.write(options[optionalist.helpString]);
+  process.stderr.write(options[optionalist.helpString]);
   process.exit(0);
 }
 
@@ -112,7 +95,7 @@ function concat(
 }
 
 if (options.watch && options.console) {
-  stderr.write(
+  process.stderr.write(
     `ファイル更新監視時は変換結果の出力先に標準出力を指定できません。\n`
   );
   process.exit(1);
@@ -124,19 +107,12 @@ if (options.watch && options.console) {
     ...patterns.map(pattern => wildkarte.expand(pattern.replace(/\\/g, `/`)))
   )(process.cwd());
   if (filelist.length === 0) {
-    stderr.write(
+    process.stderr.write(
       `ファイルが見つかりません。: \n${patterns
         .map(s => `    ${s}\n`)
         .join('')}`
     );
     process.exit(1);
-  }
-
-  if (options.output) {
-    const output = /\.wsf$/i.test(options.output)
-      ? options.output
-      : path.join(options.output, 'dummy.wsf');
-    await ensureDir(output);
   }
 
   if (!options.watch) {

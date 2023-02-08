@@ -3,6 +3,7 @@
 <object id="fso" progid="Scripting.FileSystemObject"/>
 <object id="wshshell" progid="WScript.Shell"/>
 <script language="JScript"><![CDATA[
+'use strict';
 this.__extends = function __extends(a, b) {
     if (a && b) {
       a.prototype = Object.create(b.prototype);
@@ -41,7 +42,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
-        return Object.prototype.toString.call(obj) === "[object Array]";
+        return Object.prototype.toString.call(obj) === '[object Array]';
     });
     (_b = Array.of) !== null && _b !== void 0 ? _b : (Array.of = function () {
         var args = [];
@@ -51,10 +52,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return args;
     });
     (_c = Array.from) !== null && _c !== void 0 ? _c : (Array.from = function from(arrayLike, mapFn, thisArg) {
-        if (!mapFn ||
-            typeof mapFn !== "function" ||
-            Object.prototype.toString.call(mapFn) !== "[object Function]") {
-            mapFn = function (e) { return e; };
+        if (!mapFn || typeof mapFn !== 'function' || Object.prototype.toString.call(mapFn) !== '[object Function]') {
+            mapFn = function (e) {
+                return e;
+            };
         }
         if (Array.isArray(arrayLike)) {
             return arrayLike.map(mapFn, thisArg);
@@ -343,7 +344,7 @@ var __read = (this && this.__read) || function (o, n) {
         return template.reduce(function (r, e, i) {
             var v = values[i - 1];
             var _a = __read(Array.isArray(v) ? v : [v, 2], 2), num = _a[0], digits = _a[1];
-            return r + (digits ? num.toString().padStart(digits, "0") : num) + e;
+            return r + (digits ? num.toString().padStart(digits, '0') : num) + e;
         });
     }
     (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
@@ -371,28 +372,26 @@ var _c, _d, _e, _f;
                 return id;
             },
             valueOf: function () {
-                return description || "";
+                return description || '';
             }
         };
         return symbol;
     };
-    this.Symbol.isSymbol = function (symbol) {
-        return String(symbol) in symbols;
-    };
+    this.Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
     var registered = {};
     this.Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
     this.Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
         var _b = __read(_a, 2), symbol = _b[1];
         return symbol === sym;
     })) === null || _a === void 0 ? void 0 : _a[0]; };
-    this.Symbol.iterator = Symbol("iterator");
+    this.Symbol.iterator = Symbol('iterator');
     this.Symbol.hasInstance = Symbol('hasInstance');
     this.Symbol.isConcatSpreadable = Symbol('isConcatSpreadable');
     this.Symbol.match = Symbol('match');
     this.Symbol.replace = Symbol('replace');
     this.Symbol.search = Symbol('search');
     this.Symbol.species = Symbol('species');
-    this.Symbol.split = Symbol("split");
+    this.Symbol.split = Symbol('split');
     this.Symbol.toPrimitive = Symbol('toPrimitive');
     this.Symbol.toStringTag = Symbol('toStringTag');
     this.Symbol.unscopables = Symbol('unscopables');
@@ -932,7 +931,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (length !== undefined && (!length || length < 0)) {
             return '';
         }
-        return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
+        return this.slice(start, length !== undefined ? (start < 0 && start + length >= 0 ? undefined : start + length) : this.length);
     };
     (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
         var count = length - this.length;
@@ -940,9 +939,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (paddings
-            .repeat((length / paddings.length + 1) | 0)
-            .slice(0, count) + this);
+        return paddings.repeat((length / paddings.length + 1) | 0).slice(0, count) + this;
     });
     (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
@@ -950,10 +947,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (this +
-            paddings
-                .repeat((length / paddings.length + 1) | 0)
-                .slice(0, count));
+        return this + paddings.repeat((length / paddings.length + 1) | 0).slice(0, count);
     });
     (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
         if (!position) {

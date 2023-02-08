@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <job>
-<object id="fso" progid="Scripting.FileSystemObject"/>
-<object id="installer" progid="WindowsInstaller.Installer"/>
 <script language="JScript"><![CDATA[
+'use strict';
 this.__extends = function __extends(a, b) {
     if (a && b) {
       a.prototype = Object.create(b.prototype);
@@ -41,7 +40,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
-        return Object.prototype.toString.call(obj) === "[object Array]";
+        return Object.prototype.toString.call(obj) === '[object Array]';
     });
     (_b = Array.of) !== null && _b !== void 0 ? _b : (Array.of = function () {
         var args = [];
@@ -51,10 +50,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return args;
     });
     (_c = Array.from) !== null && _c !== void 0 ? _c : (Array.from = function from(arrayLike, mapFn, thisArg) {
-        if (!mapFn ||
-            typeof mapFn !== "function" ||
-            Object.prototype.toString.call(mapFn) !== "[object Function]") {
-            mapFn = function (e) { return e; };
+        if (!mapFn || typeof mapFn !== 'function' || Object.prototype.toString.call(mapFn) !== '[object Function]') {
+            mapFn = function (e) {
+                return e;
+            };
         }
         if (Array.isArray(arrayLike)) {
             return arrayLike.map(mapFn, thisArg);
@@ -343,7 +342,7 @@ var __read = (this && this.__read) || function (o, n) {
         return template.reduce(function (r, e, i) {
             var v = values[i - 1];
             var _a = __read(Array.isArray(v) ? v : [v, 2], 2), num = _a[0], digits = _a[1];
-            return r + (digits ? num.toString().padStart(digits, "0") : num) + e;
+            return r + (digits ? num.toString().padStart(digits, '0') : num) + e;
         });
     }
     (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
@@ -371,28 +370,26 @@ var _c, _d, _e, _f;
                 return id;
             },
             valueOf: function () {
-                return description || "";
+                return description || '';
             }
         };
         return symbol;
     };
-    this.Symbol.isSymbol = function (symbol) {
-        return String(symbol) in symbols;
-    };
+    this.Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
     var registered = {};
     this.Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
     this.Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
         var _b = __read(_a, 2), symbol = _b[1];
         return symbol === sym;
     })) === null || _a === void 0 ? void 0 : _a[0]; };
-    this.Symbol.iterator = Symbol("iterator");
+    this.Symbol.iterator = Symbol('iterator');
     this.Symbol.hasInstance = Symbol('hasInstance');
     this.Symbol.isConcatSpreadable = Symbol('isConcatSpreadable');
     this.Symbol.match = Symbol('match');
     this.Symbol.replace = Symbol('replace');
     this.Symbol.search = Symbol('search');
     this.Symbol.species = Symbol('species');
-    this.Symbol.split = Symbol("split");
+    this.Symbol.split = Symbol('split');
     this.Symbol.toPrimitive = Symbol('toPrimitive');
     this.Symbol.toStringTag = Symbol('toStringTag');
     this.Symbol.unscopables = Symbol('unscopables');
@@ -932,7 +929,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (length !== undefined && (!length || length < 0)) {
             return '';
         }
-        return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
+        return this.slice(start, length !== undefined ? (start < 0 && start + length >= 0 ? undefined : start + length) : this.length);
     };
     (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
         var count = length - this.length;
@@ -940,9 +937,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (paddings
-            .repeat((length / paddings.length + 1) | 0)
-            .slice(0, count) + this);
+        return paddings.repeat((length / paddings.length + 1) | 0).slice(0, count) + this;
     });
     (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
@@ -950,10 +945,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (this +
-            paddings
-                .repeat((length / paddings.length + 1) | 0)
-                .slice(0, count));
+        return this + paddings.repeat((length / paddings.length + 1) | 0).slice(0, count);
     });
     (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
         if (!position) {
@@ -1031,111 +1023,6 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
-
-(function () {
-    var registeredObjects = [];
-    var handlers = [];
-
-    var trigger = function (objectIndex, eventName, params) {
-        var obj = registeredObjects[objectIndex];
-        handlers[objectIndex][eventName].forEach(function (x) {
-            x.call(obj, params);
-        });
-    };
-
-    ActiveXObject.on = function (obj, eventName, parameterNames, handler) {
-        if (Object.prototype.toString.call(parameterNames) !== '[object Array]') {
-            //parameterNames is an optional argument
-            handler = parameterNames;
-            parameterNames = [];
-        }
-
-        var objectIndex = registeredObjects.indexOf(obj);
-        if (objectIndex == -1) {
-            registeredObjects.push(obj);
-            objectIndex = registeredObjects.length - 1;
-            handlers[objectIndex] = {};
-        }
-        if (handlers[objectIndex][eventName] === undefined) { //explicit check against undefined, because it might be an empty array
-            var def = "function obj::" + eventName + " (" + parameterNames.join(', ') + ") {" +
-                "var params = { " +
-                parameterNames.map(function (x) {
-                    return x + ':' + x;
-                }).join(',') +
-                " };" +
-                "trigger( " + objectIndex + ", '" + eventName + "', params);" +
-                parameterNames.map(function (x) {
-                    return "if ( " + x + " !== params." + x + " ) " + x + " = params." + x + ";";
-                }).join('\n') +
-                "};";
-            eval(def);
-            handlers[objectIndex][eventName] = [];
-        }
-        handlers[objectIndex][eventName].push(handler);
-    };
-
-    ActiveXObject.off = function (obj, eventName, handler) {
-        if (!obj) {
-            registeredObjects.forEach(function (x) {
-                ActiveXObject.off(x);
-            });
-            registeredObjects = [];
-            return;
-        }
-
-        var objectIndex = registeredObjects.indexOf(obj);
-        var handlersObject = handlers[objectIndex];
-        if (!eventName) {
-            Object.keys(handlersObject).forEach(function (x) {
-                ActiveXObject.off(obj, x);
-            });
-            registeredObjects[objectIndex] = undefined;
-            return;
-        }
-
-        if (!handler) {
-            handlersObject[eventName] = [];
-            return;
-        }
-
-        var handlerIndex = handlersObject[eventName].indexOf(handler);
-        while (handlerIndex > -1) {
-            handlersObject[eventName][handlerIndex] = undefined;
-            handlerIndex = handlersObject[eventName].indexOf(handler);
-        }
-    };
-
-    ActiveXObject.hasRegisteredObjects = function () {
-        return registeredObjects.length > 0;
-    };
-
-    ActiveXObject.set = function (obj, propertyName, parameters, newValue) {
-        /*@cc_on @*/
-        /*@
-        switch (parameters.length) {
-            case 0:
-                obj[propertyName] = newValue;
-                return;
-            case 1:
-                obj[propertyName](parameters[0]) = newValue;
-                return;
-            case 2:
-                obj[propertyName](parameters[0], parameters[1]) = newValue;
-                return;
-            case 3:
-                obj[propertyName](parameters[0], parameters[1], parameters[2]) = newValue;
-                return;
-            default:
-                break; // fallback to eval
-        }
-        @*/
-        var parameterString = parameters.map(function (x, index) {
-            return 'parameters[' + index + ']';
-        }).join(', ');
-        var callString = parameterString ? '(' + parameterString + ')' : "";
-        eval('obj[propertyName]' + callString + ' = newValue');
-    };
-})();
 (function () {
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -1616,564 +1503,226 @@ var Iterables;
         return x && x instanceof IterableEx;
     }
 })(Iterables || (Iterables = {}));
-/// <reference types="iterables" />
-var Scripting;
-(function (Scripting) {
-    var FileSystemObject;
-    (function (FileSystemObject) {
-        var Utils;
-        (function (Utils) {
-            function isFolder(f) {
-                return 'Files' in f;
+var debugContext;
+(function (debugContext) {
+    function toHexadecimal(n, digit) {
+        var buf = '';
+        while (digit > 4) {
+            var sft = (((digit - 1) / 4) | 0) * 4;
+            buf += ((n >> (sft * 4)) & ((1 << ((digit - sft) * 4)) - 1)).toString(16).padStart(digit - sft, '0');
+            digit = sft;
+            n &= (1 << (digit * 4)) - 1;
+        }
+        return buf + n.toString(16).padStart(digit, '0');
+    }
+    debugContext.toHexadecimal = toHexadecimal;
+    function quote(s, q) {
+        if (q === void 0) { q = '"'; }
+        return (q +
+            s.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
+                if (ch === q) {
+                    return '\\' + q;
+                }
+                switch (ch) {
+                    case '\r':
+                        return '\\r';
+                    case '\n':
+                        return '\\n';
+                    case '\t':
+                        return '\\t';
+                    case '\\':
+                        return '\\\\';
+                    case '\t':
+                        return '\\t';
+                }
+                return '\\x' + toHexadecimal(ch.charCodeAt(0), 2);
+            }) +
+            q);
+    }
+    function getFunctionName(f) {
+        return (f.toString().match(/\bfunction\s+([^\s()]+)\s*\(/) || [])[1] || '[anonymous]';
+    }
+    function inspect(obj) {
+        return (function sub(o, depth, stack) {
+            var d = depth || 0;
+            if (typeof o === 'string') {
+                return quote(o);
             }
-            Utils.isFolder = isFolder;
-            function isFile(f) {
-                return !isFolder(f);
+            if (typeof o === 'number') {
+                return o ? '' + o : Infinity / o > 0 ? '0' : '-0';
             }
-            Utils.isFile = isFile;
-            function sort(array) {
-                return array.sort(function (a, b) {
-                    var aa = a.Name.toUpperCase();
-                    var bb = b.Name.toUpperCase();
-                    return aa === bb ? 0 : aa < bb ? -1 : 1;
-                });
+            if (!o || o === true) {
+                return '' + o;
             }
-            function files(folder) {
-                return sort(__spreadArray([], __read(Iterables.from(folder.Files)), false));
+            if (typeof o === 'function') {
+                return "function ".concat(getFunctionName(o), " () {...}");
             }
-            Utils.files = files;
-            function subFolders(folder) {
-                return sort(__spreadArray([], __read(Iterables.from(folder.SubFolders)), false));
+            if (Array.isArray(o)) {
+                if (o.length === 0) {
+                    return '[]';
+                }
+                if (stack.includes(o)) {
+                    return '[...]';
+                }
+                var _a = __read(o.length <= 3 ? ['[', ']', '', '', ', '] : ['[\n', '  '.repeat(d) + ']', '  '.repeat(d + 1), ',\n', ''], 5), prefix = _a[0], suffix = _a[1], ePrefix_1 = _a[2], eSuffix_1 = _a[3], separator = _a[4];
+                return prefix + o.map(function (e) { return ePrefix_1 + sub(e, d + 1, stack.concat(o)) + eSuffix_1; }).join(separator) + suffix;
             }
-            Utils.subFolders = subFolders;
-            function filesAndSubFolders(folder) {
-                return sort(__spreadArray(__spreadArray([], __read(Iterables.from(folder.Files)), false), __read(Iterables.from(folder.SubFolders)), false));
+            if (o instanceof Error) {
+                return "[Error {number: 0x".concat(toHexadecimal(o.number, 8), ", description: ").concat(quote(o.description), ", message: ").concat(quote(o.message), "}]");
             }
-            Utils.filesAndSubFolders = filesAndSubFolders;
-            function getItem(path) {
-                if (fso.FileExists(path)) {
-                    return fso.GetFile(path);
-                }
-                if (fso.FolderExists(path)) {
-                    return fso.GetFolder(path);
-                }
-                return undefined;
+            if (o instanceof RegExp) {
+                return o.toString();
             }
-            Utils.getItem = getItem;
-            function error(message) {
-                throw new Error(message);
+            if (o instanceof Date) {
+                return "[Date ".concat(o.toISOString(), "]");
             }
-            function splitPath(path) {
-                return __spreadArray([], __read(path.matchAll(/^((?:[A-Z]:|\\{2}[^\\]+\\[^\\]+)?\\)\\*|([^\\]+\\)\\*|([^\\]+)$|[\s\S]/gi)), false).map(function (_a) {
-                    var $1 = _a[1], $2 = _a[2], $3 = _a[3], index = _a.index;
-                    return $1 || $2 || $3 || error("不正なパス: ".concat(path, ":").concat(index));
-                });
+            var names = Object.keys(o);
+            if (names.length === 0) {
+                return '{}';
             }
-            Utils.splitPath = splitPath;
-            function absolutePath(path) {
-                return "".concat(fso.GetAbsolutePathName(path)).concat(/\\$/.test(path) ? '\\' : '');
+            if (stack.includes(o)) {
+                return '{...}';
             }
-            function relativePath(path, base) {
-                var absolute = absolutePath(path);
-                var pathSplitted = splitPath(absolute);
-                var aa = absolutePath("".concat(base || '.', "\\"));
-                var baseSplitted = splitPath(aa);
-                var limit = Math.min(pathSplitted.length, baseSplitted.length);
-                var matchedLength = 0;
-                while (matchedLength < limit &&
-                    pathSplitted[matchedLength].toLowerCase() === baseSplitted[matchedLength].toLowerCase()) {
-                    ++matchedLength;
-                }
-                if (!matchedLength) {
-                    return pathSplitted.join('');
-                }
-                if (matchedLength === pathSplitted.length && matchedLength === baseSplitted.length) {
-                    return '.';
-                }
-                return ((baseSplitted.length > matchedLength ? '..\\'.repeat(baseSplitted.length - matchedLength) : '') +
-                    pathSplitted.slice(matchedLength).join(''));
+            {
+                var _b = __read(names.length <= 3 ? ['{', '}', '', '', ', '] : ['{\n', '  '.repeat(d) + '}', '  '.repeat(d + 1), ',\n', ''], 5), prefix = _b[0], suffix = _b[1], ePrefix_2 = _b[2], eSuffix_2 = _b[3], separator = _b[4];
+                return (prefix +
+                    Object.keys(o)
+                        .map(function (n) { return (ePrefix_2 + /^\w+$/.test(n) ? n : quote(n) + ': ' + sub(o[n], d + 1, stack.concat(o)) + eSuffix_2); })
+                        .join(separator) +
+                    suffix);
             }
-            Utils.relativePath = relativePath;
-            function commonPath() {
-                var paths = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    paths[_i] = arguments[_i];
-                }
-                if (!paths.length) {
-                    return '';
-                }
-                if (paths.length === 1) {
-                    return paths[0];
-                }
-                var common = paths
-                    .map(function (path) { return fso.GetAbsolutePathName(path); })
-                    .map(function (path) { return splitPath(path); })
-                    .reduce(function (result, path) {
-                    var limit = Math.max(result.length, path.length);
-                    for (var i = 0; i < limit; ++i) {
-                        if (result[i] === path[i]) {
-                            continue;
-                        }
-                        if (i === result.length) {
-                            return result;
-                        }
-                        if (i === path.length) {
-                            return path;
-                        }
-                        return result.slice(0, i);
-                    }
-                    return result;
-                });
-                if (common.length === 0) {
-                    return undefined;
-                }
-                if (common.length === 1) {
-                    return common[0];
-                }
-                return common.reduce(function (built, path) { return fso.BuildPath(built, path); });
+        })(obj, 0, []);
+    }
+    function breakpoint() {
+        while (true) {
+            WScript.StdOut.Write('> ');
+            if (WScript.StdIn.AtEndOfStream) {
+                break;
             }
-            Utils.commonPath = commonPath;
-            function recursiveFolders(folder) {
-                var _a, _b, f, e_8_1;
-                var e_8, _c;
-                return __generator(this, function (_d) {
-                    switch (_d.label) {
-                        case 0: return [4 /*yield*/, folder];
-                        case 1:
-                            _d.sent();
-                            _d.label = 2;
-                        case 2:
-                            _d.trys.push([2, 7, 8, 9]);
-                            _a = __values(subFolders(folder)), _b = _a.next();
-                            _d.label = 3;
-                        case 3:
-                            if (!!_b.done) return [3 /*break*/, 6];
-                            f = _b.value;
-                            return [5 /*yield**/, __values(recursiveFolders(f))];
-                        case 4:
-                            _d.sent();
-                            _d.label = 5;
-                        case 5:
-                            _b = _a.next();
-                            return [3 /*break*/, 3];
-                        case 6: return [3 /*break*/, 9];
-                        case 7:
-                            e_8_1 = _d.sent();
-                            e_8 = { error: e_8_1 };
-                            return [3 /*break*/, 9];
-                        case 8:
-                            try {
-                                if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
-                            }
-                            finally { if (e_8) throw e_8.error; }
-                            return [7 /*endfinally*/];
-                        case 9: return [2 /*return*/];
-                    }
-                });
+            var expr = WScript.StdIn.ReadLine();
+            if (/^\s*:continue\s*$/.test(expr)) {
+                break;
             }
-            Utils.recursiveFolders = recursiveFolders;
-            function recursiveFiles(folder) {
-                var _a, _b, f, e_9_1;
-                var e_9, _c;
-                return __generator(this, function (_d) {
-                    switch (_d.label) {
-                        case 0:
-                            _d.trys.push([0, 5, 6, 7]);
-                            _a = __values(recursiveFolders(folder)), _b = _a.next();
-                            _d.label = 1;
-                        case 1:
-                            if (!!_b.done) return [3 /*break*/, 4];
-                            f = _b.value;
-                            return [5 /*yield**/, __values(files(f))];
-                        case 2:
-                            _d.sent();
-                            _d.label = 3;
-                        case 3:
-                            _b = _a.next();
-                            return [3 /*break*/, 1];
-                        case 4: return [3 /*break*/, 7];
-                        case 5:
-                            e_9_1 = _d.sent();
-                            e_9 = { error: e_9_1 };
-                            return [3 /*break*/, 7];
-                        case 6:
-                            try {
-                                if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
-                            }
-                            finally { if (e_9) throw e_9.error; }
-                            return [7 /*endfinally*/];
-                        case 7: return [2 /*return*/];
-                    }
-                });
+            if (/^\s*:stack\s*$/.test(expr)) {
+                for (var frame = arguments.callee.caller.caller; frame; frame = frame.caller) {
+                    WScript.StdOut.WriteLine("function ".concat(getFunctionName(frame), " (").concat(inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, ''), ") {...}"));
+                }
+                continue;
             }
-            Utils.recursiveFiles = recursiveFiles;
-            function recursiveFolderAndFiles(folder) {
-                var _a, _b, f, e_10_1;
-                var e_10, _c;
-                return __generator(this, function (_d) {
-                    switch (_d.label) {
-                        case 0:
-                            _d.trys.push([0, 6, 7, 8]);
-                            _a = __values(recursiveFolders(folder)), _b = _a.next();
-                            _d.label = 1;
-                        case 1:
-                            if (!!_b.done) return [3 /*break*/, 5];
-                            f = _b.value;
-                            return [4 /*yield*/, f];
-                        case 2:
-                            _d.sent();
-                            return [5 /*yield**/, __values(files(f))];
-                        case 3:
-                            _d.sent();
-                            _d.label = 4;
-                        case 4:
-                            _b = _a.next();
-                            return [3 /*break*/, 1];
-                        case 5: return [3 /*break*/, 8];
-                        case 6:
-                            e_10_1 = _d.sent();
-                            e_10 = { error: e_10_1 };
-                            return [3 /*break*/, 8];
-                        case 7:
-                            try {
-                                if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
-                            }
-                            finally { if (e_10) throw e_10.error; }
-                            return [7 /*endfinally*/];
-                        case 8: return [2 /*return*/];
-                    }
-                });
+            if (/^\s*:quit\s*$/.test(expr)) {
+                WScript.Quit(1);
             }
-            Utils.recursiveFolderAndFiles = recursiveFolderAndFiles;
-            function wildcardToRegExp(pattern) {
-                if (!pattern) {
-                    return undefined;
-                }
-                if (pattern.includes('\\')) {
-                    throw new Error("Unsupported wildcard: ".concat(pattern));
-                }
-                var depth = 0;
-                var regex = '^' +
-                    pattern.replace(/[\^$()\[\]{}+.*?,]/g, function (ch) {
-                        switch (ch) {
-                            case '*':
-                                return '.*';
-                            case '?':
-                                return '.';
-                            case '{':
-                                ++depth;
-                                return '(?:';
-                            case '}':
-                                if (depth <= 0) {
-                                    throw new Error('Unmatched `}`');
-                                }
-                                --depth;
-                                return ')';
-                            case ',':
-                                return depth > 0 ? '|' : ',';
-                            default:
-                                return '\\' + ch;
-                        }
-                    }) +
-                    '$';
-                if (depth > 0) {
-                    throw new Error('Unmatched `{`');
-                }
-                return new RegExp(regex, 'i');
-            }
-            Utils.wildcardToRegExp = wildcardToRegExp;
-            /**
-             * 指定されたパターンにマッチする全てのファイル/フォルダを順次返すイテレータを返す。
-             * @param pattern 検索するファイル/フォルダ名のパターン。`**`はそれ以下の全てのパス、`?`は名前に使用される全ての1文字、`*`は0以上の名前に使用される全ての文字にマッチする。
-             * @param basedir 検索を開始するディレクトリへのパス。省略時にはカレントディレクトリ。
-             */
-            function wildcard(pattern, basedir) {
-                basedir = fso.GetAbsolutePathName(basedir || '.');
-                var fullpath = isAbsolute(pattern) ? pattern : fso.BuildPath(basedir, pattern);
-                if (!/[*?{]/.test(fullpath)) {
-                    if (fso.FolderExists(fullpath)) {
-                        return Iterables.of(fso.GetFolder(fullpath));
-                    }
-                    if (fso.FileExists(fullpath)) {
-                        return Iterables.of(fso.GetFile(fullpath));
-                    }
-                    return Iterables.of();
-                }
-                var match = fullpath.match(/^(?:[A-Z]:|\\\\[^\\]+\\+[^\\]+)?(?:\\+[^*?{]+)*\\+/i);
-                if (!match) {
-                    throw new Error('');
-                }
-                var root = match[0];
-                if (!fso.FolderExists(root)) {
-                    throw new Error("The folder not found: ".concat(root));
-                }
-                var folder = fso.GetFolder(root);
-                var pathes = fullpath
-                    .slice(root.length)
-                    .split(/\\+/)
-                    .map(function (pathAtom, index, array) {
-                    if (pathAtom === '') {
-                        return function (f) {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, f];
-                                    case 1:
-                                        _a.sent();
-                                        return [2 /*return*/];
-                                }
-                            });
-                        };
-                    }
-                    var last = index + 1 === array.length;
-                    if (pathAtom === '**') {
-                        return last ? recursiveFolderAndFiles : recursiveFolders;
-                    }
-                    if (/[*?{]/.test(pathAtom)) {
-                        var atomPattern_1 = wildcardToRegExp(pathAtom);
-                        return function (ff) {
-                            var _a, _b, f, e_11_1, _c, _d, f, e_12_1;
-                            var e_11, _e, e_12, _f;
-                            return __generator(this, function (_g) {
-                                switch (_g.label) {
-                                    case 0:
-                                        _g.trys.push([0, 5, 6, 7]);
-                                        _a = __values(subFolders(ff)), _b = _a.next();
-                                        _g.label = 1;
-                                    case 1:
-                                        if (!!_b.done) return [3 /*break*/, 4];
-                                        f = _b.value;
-                                        if (!(atomPattern_1 && atomPattern_1.test(f.Name))) return [3 /*break*/, 3];
-                                        return [4 /*yield*/, f];
-                                    case 2:
-                                        _g.sent();
-                                        _g.label = 3;
-                                    case 3:
-                                        _b = _a.next();
-                                        return [3 /*break*/, 1];
-                                    case 4: return [3 /*break*/, 7];
-                                    case 5:
-                                        e_11_1 = _g.sent();
-                                        e_11 = { error: e_11_1 };
-                                        return [3 /*break*/, 7];
-                                    case 6:
-                                        try {
-                                            if (_b && !_b.done && (_e = _a["return"])) _e.call(_a);
-                                        }
-                                        finally { if (e_11) throw e_11.error; }
-                                        return [7 /*endfinally*/];
-                                    case 7:
-                                        if (!last) return [3 /*break*/, 15];
-                                        _g.label = 8;
-                                    case 8:
-                                        _g.trys.push([8, 13, 14, 15]);
-                                        _c = __values(files(ff)), _d = _c.next();
-                                        _g.label = 9;
-                                    case 9:
-                                        if (!!_d.done) return [3 /*break*/, 12];
-                                        f = _d.value;
-                                        if (!(atomPattern_1 && atomPattern_1.test(f.Name))) return [3 /*break*/, 11];
-                                        return [4 /*yield*/, f];
-                                    case 10:
-                                        _g.sent();
-                                        _g.label = 11;
-                                    case 11:
-                                        _d = _c.next();
-                                        return [3 /*break*/, 9];
-                                    case 12: return [3 /*break*/, 15];
-                                    case 13:
-                                        e_12_1 = _g.sent();
-                                        e_12 = { error: e_12_1 };
-                                        return [3 /*break*/, 15];
-                                    case 14:
-                                        try {
-                                            if (_d && !_d.done && (_f = _c["return"])) _f.call(_c);
-                                        }
-                                        finally { if (e_12) throw e_12.error; }
-                                        return [7 /*endfinally*/];
-                                    case 15: return [2 /*return*/];
-                                }
-                            });
-                        };
-                    }
-                    return function (ff) {
-                        var lastpath;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    lastpath = fso.BuildPath(ff.Path, pathAtom);
-                                    if (!fso.FolderExists(lastpath)) return [3 /*break*/, 2];
-                                    return [4 /*yield*/, fso.GetFolder(lastpath)];
-                                case 1:
-                                    _a.sent();
-                                    return [2 /*return*/];
-                                case 2:
-                                    if (!last) return [3 /*break*/, 4];
-                                    if (!fso.FileExists(lastpath)) return [3 /*break*/, 4];
-                                    return [4 /*yield*/, fso.GetFile(lastpath)];
-                                case 3:
-                                    _a.sent();
-                                    return [2 /*return*/];
-                                case 4: return [2 /*return*/];
-                            }
-                        });
-                    };
-                });
-                return (function traverse(ff, index) {
-                    var _a, _b, item, e_13_1;
-                    var e_13, _c;
-                    return __generator(this, function (_d) {
-                        switch (_d.label) {
-                            case 0:
-                                if (!(index + 1 === pathes.length)) return [3 /*break*/, 2];
-                                return [5 /*yield**/, __values(pathes[index](ff))];
-                            case 1:
-                                _d.sent();
-                                return [2 /*return*/];
-                            case 2:
-                                _d.trys.push([2, 7, 8, 9]);
-                                _a = __values(pathes[index](ff)), _b = _a.next();
-                                _d.label = 3;
-                            case 3:
-                                if (!!_b.done) return [3 /*break*/, 6];
-                                item = _b.value;
-                                if (!isFolder(item)) {
-                                    return [3 /*break*/, 5];
-                                }
-                                return [5 /*yield**/, __values(traverse(item, index + 1))];
-                            case 4:
-                                _d.sent();
-                                _d.label = 5;
-                            case 5:
-                                _b = _a.next();
-                                return [3 /*break*/, 3];
-                            case 6: return [3 /*break*/, 9];
-                            case 7:
-                                e_13_1 = _d.sent();
-                                e_13 = { error: e_13_1 };
-                                return [3 /*break*/, 9];
-                            case 8:
-                                try {
-                                    if (_b && !_b.done && (_c = _a["return"])) _c.call(_a);
-                                }
-                                finally { if (e_13) throw e_13.error; }
-                                return [7 /*endfinally*/];
-                            case 9: return [2 /*return*/];
-                        }
-                    });
-                })(folder, 0);
-            }
-            Utils.wildcard = wildcard;
-            function ensureDirectory(dirpath) {
-                if (!dirpath) {
-                    return fso.GetFolder('.');
-                }
-                if (fso.FolderExists(dirpath)) {
-                    return fso.GetFolder(dirpath);
-                }
-                if (fso.FileExists(dirpath)) {
-                    throw new Error("ファイルが存在しています。: ".concat(dirpath));
-                }
-                ensureDirectory(fso.GetParentFolderName(dirpath));
-                return fso.CreateFolder(dirpath);
-            }
-            Utils.ensureDirectory = ensureDirectory;
-            function resolve() {
-                var e_14, _a;
-                var paths = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    paths[_i] = arguments[_i];
-                }
-                var current = fso.GetAbsolutePathName('.');
-                try {
-                    for (var paths_1 = __values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
-                        var path = paths_1_1.value;
-                        if (isAbsolute(path)) {
-                            // 絶対パスの場合は置き換え
-                            current = path;
-                        }
-                        else {
-                            // 相対パスの場合は連結
-                            current = fso.BuildPath(current, path);
-                        }
-                    }
-                }
-                catch (e_14_1) { e_14 = { error: e_14_1 }; }
-                finally {
-                    try {
-                        if (paths_1_1 && !paths_1_1.done && (_a = paths_1["return"])) _a.call(paths_1);
-                    }
-                    finally { if (e_14) throw e_14.error; }
-                }
-                return current;
-            }
-            Utils.resolve = resolve;
-            function isAbsolute(path) {
-                return /^(?:[A-Z]:|\\\\[^\\\/"<>|*?:]+\\[^\\\/"<>|*?:]+)?\\/i.test(path);
-            }
-            Utils.isAbsolute = isAbsolute;
-        })(Utils = FileSystemObject.Utils || (FileSystemObject.Utils = {}));
-    })(FileSystemObject = Scripting.FileSystemObject || (Scripting.FileSystemObject = {}));
-})(Scripting || (Scripting = {}));
-/// <reference types="windows-installer" />
-/// <reference types="filesystemobject-util" />
-/// <reference types="iterables" />
-/// <reference types="activex-helpers" />
-var msiinfo;
-(function (msiinfo) {
-    var e_15, _a, e_16, _b;
-    var fsoU = Scripting.FileSystemObject.Utils;
-    var msiOpenDatabaseModeReadOnly = 0 /* WindowsInstaller.msiOpenDatabaseMode.msiOpenDatabaseModeReadOnly */;
-    WScript.StdOut.WriteLine("パス\t製品名\tバージョン\tProductCode\tPackageCode\tUpgradeCode\t最終更新日時");
-    try {
-        for (var _c = __values(Iterables.from(WScript.Arguments.Unnamed)), _d = _c.next(); !_d.done; _d = _c.next()) {
-            var arg = _d.value;
             try {
-                for (var _e = (e_16 = void 0, __values(Iterables.filter(fsoU.wildcard(arg), fsoU.isFile))), _f = _e.next(); !_f.done; _f = _e.next()) {
-                    var file = _f.value;
-                    var db = installer.OpenDatabase(file.Path, msiOpenDatabaseModeReadOnly);
-                    var summaryInfo = db.SummaryInformation(20 /* WindowsInstaller.SummaryPropertyId.COUNT_OF_PID */);
-                    var subject = summaryInfo.Property(3 /* WindowsInstaller.SummaryPropertyId.PID_SUBJECT */);
-                    var packageCode = summaryInfo.Property(9 /* WindowsInstaller.SummaryPropertyId.PID_REVNUMBER */);
-                    var lastSaveTime = new Date(summaryInfo.Property(13 /* WindowsInstaller.SummaryPropertyId.PID_LASTSAVE_DTM */)).toISOString();
-                    var view = db.OpenView('SELECT `Value` FROM `Property` WHERE `Property`=?');
-                    var param = installer.CreateRecord(1);
-                    ActiveXObject.set(param, 'StringData', [1], 'ProductVersion');
-                    view.Execute(param);
-                    var productVersion = view.Fetch().StringData(1);
-                    ActiveXObject.set(param, 'StringData', [1], 'ProductCode');
-                    view.Execute(param);
-                    var productCode = view.Fetch().StringData(1);
-                    ActiveXObject.set(param, 'StringData', [1], 'UpgradeCode');
-                    view.Execute(param);
-                    var upgradeCode = view.Fetch().StringData(1);
-                    WScript.StdOut.WriteLine([
-                        file.Path,
-                        subject,
-                        productVersion,
-                        productCode,
-                        packageCode,
-                        upgradeCode,
-                        lastSaveTime,
-                    ].join('\t'));
-                }
+                WScript.StdOut.WriteLine(inspect(eval(expr)));
             }
-            catch (e_16_1) { e_16 = { error: e_16_1 }; }
-            finally {
-                try {
-                    if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
-                }
-                finally { if (e_16) throw e_16.error; }
+            catch (e) {
+                WScript.StdOut.WriteLine(typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e
+                    ? "Error Code: 0x".concat(toHexadecimal(e.number, 8), ": ").concat(e.description)
+                    : String(e));
             }
         }
     }
-    catch (e_15_1) { e_15 = { error: e_15_1 }; }
-    finally {
-        try {
-            if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
+    debugContext.breakpoint = breakpoint;
+})(debugContext || (debugContext = {}));
+/// <reference types="iterables" />
+/// <reference types="debug-context" />
+/**
+ * このスクリプトの使用方法を表示する
+ */
+function usage() {
+    WScript.Echo("\nUSAGE eval.wsf \"script\" [-r {".concat(Object.keys(cachedProgid).join('|'), "|name=progid}] [-l script_file]\n"));
+    return WScript.Quit(1);
+}
+/**
+ * -rでprogidを指定しなくても使えるように
+ */
+var cachedProgid = {
+    fso: 'Scripting.FileSystemObject',
+    installer: 'WindowsInstaller.Installer'
+};
+(function () {
+    var args = [];
+    var g = Iterables.from(WScript.Arguments)[Symbol.iterator]();
+    var _loop_1 = function (ir) {
+        var arg = ir.value;
+        if (arg === '--') {
+            for (ir = g.next(); !ir.done; ir = g.next()) {
+                args.push(ir.value);
+            }
+            return out_ir_1 = ir, "break";
         }
-        finally { if (e_15) throw e_15.error; }
+        switch (arg) {
+            case '-r':
+            case '--require':
+                // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
+                var nextarg_1 = ((ir = g.next()), ir.done && usage(), ir.value);
+                var eqIndex_1 = nextarg_1.indexOf('=');
+                var _a = (function () {
+                    if (eqIndex_1 <= 0) {
+                        if (!(nextarg_1 in cachedProgid)) {
+                            return usage();
+                        }
+                        return { name: nextarg_1, progid: cachedProgid[nextarg_1] };
+                    }
+                    else {
+                        return {
+                            name: nextarg_1.substr(0, eqIndex_1),
+                            progid: nextarg_1.substr(eqIndex_1 + 1)
+                        };
+                    }
+                })(), name = _a.name, progid = _a.progid;
+                this_1[name] = WScript.CreateObject(progid);
+                return out_ir_1 = ir, "continue";
+            case '-l':
+            case '--load':
+                // 外部スクリプトを読み込めるようにする
+                var loadpath = ((ir = g.next()), ir.done && usage(), ir.value);
+                new Function(WScript.CreateObject('Scripting.FileSystemObject')
+                    .OpenTextFile(loadpath)
+                    .ReadAll()).call(this_1);
+                return out_ir_1 = ir, "continue";
+        }
+        args.push(arg);
+        out_ir_1 = ir;
+    };
+    var this_1 = this, out_ir_1;
+    for (var ir = g.next(); !ir.done; ir = g.next()) {
+        var state_1 = _loop_1(ir);
+        ir = out_ir_1;
+        if (state_1 === "break")
+            break;
     }
-})(msiinfo || (msiinfo = {}));
+    // 最初の引数はスクリプト、それ以外はスクリプトへの引数
+    var script = args.shift();
+    // スクリプトがundefined=スクリプトが指定されなかったときは使い方を表示
+    if (script === undefined) {
+        return usage();
+    }
+    // Functionを使ってスクリプトを実行
+    try {
+        var r = new Function("\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval(\"".concat(script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
+            return ch === '"' || ch === '\\'
+                ? '\\' + ch
+                : ch === '\t'
+                    ? '\\t'
+                    : ch === '\r'
+                        ? '\\r'
+                        : ch === '\n'
+                            ? '\\n'
+                            : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2);
+        }), "\")\n    ")).apply(this, args);
+        // スクリプトの返値をプロセスの終了コードとする
+        WScript.Quit(+r || 0);
+    }
+    catch (ex) {
+        WScript.StdErr.WriteLine(typeof ex === 'object' && ex
+            ? "".concat(('name' in ex && ex.name) || '').concat('number' in ex && typeof ex.number === 'number'
+                ? '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')'
+                : '').concat(('message' in ex && ex.message) || '')
+            : String(ex));
+        WScript.Quit(1);
+    }
+})();
 })();
 ]]></script>
 </job>

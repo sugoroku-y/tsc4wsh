@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <job>
+<object id="fso" progid="Scripting.FileSystemObject"/>
 <script language="JScript"><![CDATA[
+'use strict';
 this.__extends = function __extends(a, b) {
     if (a && b) {
       a.prototype = Object.create(b.prototype);
@@ -39,7 +41,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
     var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
-        return Object.prototype.toString.call(obj) === "[object Array]";
+        return Object.prototype.toString.call(obj) === '[object Array]';
     });
     (_b = Array.of) !== null && _b !== void 0 ? _b : (Array.of = function () {
         var args = [];
@@ -49,10 +51,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return args;
     });
     (_c = Array.from) !== null && _c !== void 0 ? _c : (Array.from = function from(arrayLike, mapFn, thisArg) {
-        if (!mapFn ||
-            typeof mapFn !== "function" ||
-            Object.prototype.toString.call(mapFn) !== "[object Function]") {
-            mapFn = function (e) { return e; };
+        if (!mapFn || typeof mapFn !== 'function' || Object.prototype.toString.call(mapFn) !== '[object Function]') {
+            mapFn = function (e) {
+                return e;
+            };
         }
         if (Array.isArray(arrayLike)) {
             return arrayLike.map(mapFn, thisArg);
@@ -341,7 +343,7 @@ var __read = (this && this.__read) || function (o, n) {
         return template.reduce(function (r, e, i) {
             var v = values[i - 1];
             var _a = __read(Array.isArray(v) ? v : [v, 2], 2), num = _a[0], digits = _a[1];
-            return r + (digits ? num.toString().padStart(digits, "0") : num) + e;
+            return r + (digits ? num.toString().padStart(digits, '0') : num) + e;
         });
     }
     (_a = (_c = Date.prototype).toISOString) !== null && _a !== void 0 ? _a : (_c.toISOString = function toISOString() {
@@ -369,28 +371,26 @@ var _c, _d, _e, _f;
                 return id;
             },
             valueOf: function () {
-                return description || "";
+                return description || '';
             }
         };
         return symbol;
     };
-    this.Symbol.isSymbol = function (symbol) {
-        return String(symbol) in symbols;
-    };
+    this.Symbol.isSymbol = function (symbol) { return String(symbol) in symbols; };
     var registered = {};
     this.Symbol["for"] = function (key) { var _a; return ((_a = registered[key]) !== null && _a !== void 0 ? _a : (registered[key] = Symbol(key))); };
     this.Symbol.keyFor = function (sym) { var _a; return (_a = Object.entries(registered).find(function (_a) {
         var _b = __read(_a, 2), symbol = _b[1];
         return symbol === sym;
     })) === null || _a === void 0 ? void 0 : _a[0]; };
-    this.Symbol.iterator = Symbol("iterator");
+    this.Symbol.iterator = Symbol('iterator');
     this.Symbol.hasInstance = Symbol('hasInstance');
     this.Symbol.isConcatSpreadable = Symbol('isConcatSpreadable');
     this.Symbol.match = Symbol('match');
     this.Symbol.replace = Symbol('replace');
     this.Symbol.search = Symbol('search');
     this.Symbol.species = Symbol('species');
-    this.Symbol.split = Symbol("split");
+    this.Symbol.split = Symbol('split');
     this.Symbol.toPrimitive = Symbol('toPrimitive');
     this.Symbol.toStringTag = Symbol('toStringTag');
     this.Symbol.unscopables = Symbol('unscopables');
@@ -930,7 +930,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         if (length !== undefined && (!length || length < 0)) {
             return '';
         }
-        return this.slice(start, length !== undefined ? start < 0 && start + length >= 0 ? undefined : start + length : this.length);
+        return this.slice(start, length !== undefined ? (start < 0 && start + length >= 0 ? undefined : start + length) : this.length);
     };
     (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
         var count = length - this.length;
@@ -938,9 +938,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (paddings
-            .repeat((length / paddings.length + 1) | 0)
-            .slice(0, count) + this);
+        return paddings.repeat((length / paddings.length + 1) | 0).slice(0, count) + this;
     });
     (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
@@ -948,10 +946,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             return "".concat(this);
         }
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
-        return (this +
-            paddings
-                .repeat((length / paddings.length + 1) | 0)
-                .slice(0, count));
+        return this + paddings.repeat((length / paddings.length + 1) | 0).slice(0, count);
     });
     (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
         if (!position) {
@@ -1031,6 +1026,42 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 
 (function () {
 "use strict";
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var sample;
+(function (sample) {
+    function program() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        return ''.concat.apply('', __spreadArray([], __read(args), false));
+    }
+    sample.program = program;
+})(sample || (sample = {}));
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -1057,31 +1088,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
 };
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -1509,241 +1515,10 @@ var Iterables;
         return x && x instanceof IterableEx;
     }
 })(Iterables || (Iterables = {}));
-var debugContext;
-(function (debugContext) {
-    function toHexadecimal(n, digit) {
-        var buf = '';
-        while (digit > 4) {
-            var sft = (((digit - 1) / 4) | 0) * 4;
-            buf += ((n >> (sft * 4)) & ((1 << ((digit - sft) * 4)) - 1))
-                .toString(16)
-                .padStart(digit - sft, '0');
-            digit = sft;
-            n &= (1 << (digit * 4)) - 1;
-        }
-        return buf + n.toString(16).padStart(digit, '0');
-    }
-    debugContext.toHexadecimal = toHexadecimal;
-    function quote(s, q) {
-        if (q === void 0) { q = '"'; }
-        return (q +
-            s.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
-                if (ch === q) {
-                    return '\\' + q;
-                }
-                switch (ch) {
-                    case '\r':
-                        return '\\r';
-                    case '\n':
-                        return '\\n';
-                    case '\t':
-                        return '\\t';
-                    case '\\':
-                        return '\\\\';
-                    case '\t':
-                        return '\\t';
-                }
-                return '\\x' + toHexadecimal(ch.charCodeAt(0), 2);
-            }) +
-            q);
-    }
-    function getFunctionName(f) {
-        return ((f.toString().match(/\bfunction\s+([^\s()]+)\s*\(/) || [])[1] ||
-            '[anonymous]');
-    }
-    function inspect(obj) {
-        return (function sub(o, depth, stack) {
-            var d = depth || 0;
-            if (typeof o === 'string') {
-                return quote(o);
-            }
-            if (typeof o === 'number') {
-                return o ? '' + o : Infinity / o > 0 ? '0' : '-0';
-            }
-            if (!o || o === true) {
-                return '' + o;
-            }
-            if (typeof o === 'function') {
-                return "function ".concat(getFunctionName(o), " () {...}");
-            }
-            if (Array.isArray(o)) {
-                if (o.length === 0) {
-                    return '[]';
-                }
-                if (stack.includes(o)) {
-                    return '[...]';
-                }
-                var _a = __read(o.length <= 3
-                    ? ['[', ']', '', '', ', ']
-                    : ['[\n', '  '.repeat(d) + ']', '  '.repeat(d + 1), ',\n', ''], 5), prefix = _a[0], suffix = _a[1], ePrefix_1 = _a[2], eSuffix_1 = _a[3], separator = _a[4];
-                return (prefix +
-                    o
-                        .map(function (e) { return ePrefix_1 + sub(e, d + 1, stack.concat(o)) + eSuffix_1; })
-                        .join(separator) +
-                    suffix);
-            }
-            if (o instanceof Error) {
-                return "[Error {number: 0x".concat(toHexadecimal(o.number, 8), ", description: ").concat(quote(o.description), ", message: ").concat(quote(o.message), "}]");
-            }
-            if (o instanceof RegExp) {
-                return o.toString();
-            }
-            if (o instanceof Date) {
-                return "[Date ".concat(o.toISOString(), "]");
-            }
-            var names = Object.keys(o);
-            if (names.length === 0) {
-                return '{}';
-            }
-            if (stack.includes(o)) {
-                return '{...}';
-            }
-            {
-                var _b = __read(names.length <= 3
-                    ? ['{', '}', '', '', ', ']
-                    : ['{\n', '  '.repeat(d) + '}', '  '.repeat(d + 1), ',\n', ''], 5), prefix = _b[0], suffix = _b[1], ePrefix_2 = _b[2], eSuffix_2 = _b[3], separator = _b[4];
-                return (prefix +
-                    Object.keys(o)
-                        .map(function (n) {
-                        return ePrefix_2 + /^\w+$/.test(n)
-                            ? n
-                            : quote(n) + ': ' + sub(o[n], d + 1, stack.concat(o)) + eSuffix_2;
-                    })
-                        .join(separator) +
-                    suffix);
-            }
-        })(obj, 0, []);
-    }
-    function breakpoint() {
-        while (true) {
-            WScript.StdOut.Write('> ');
-            if (WScript.StdIn.AtEndOfStream) {
-                break;
-            }
-            var expr = WScript.StdIn.ReadLine();
-            if (/^\s*:continue\s*$/.test(expr)) {
-                break;
-            }
-            if (/^\s*:stack\s*$/.test(expr)) {
-                for (var frame = arguments.callee.caller.caller; frame; frame = frame.caller) {
-                    WScript.StdOut.WriteLine("function ".concat(getFunctionName(frame), " (").concat(inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, ''), ") {...}"));
-                }
-                continue;
-            }
-            if (/^\s*:quit\s*$/.test(expr)) {
-                WScript.Quit(1);
-            }
-            try {
-                WScript.StdOut.WriteLine(inspect(eval(expr)));
-            }
-            catch (e) {
-                WScript.StdOut.WriteLine(typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e ?
-                    "Error Code: 0x".concat(toHexadecimal(e.number, 8), ": ").concat(e.description)
-                    : String(e));
-            }
-        }
-    }
-    debugContext.breakpoint = breakpoint;
-})(debugContext || (debugContext = {}));
+/// <reference types="sample" />
 /// <reference types="iterables" />
-/// <reference types="debug-context" />
-/**
- * このスクリプトの使用方法を表示する
- */
-function usage() {
-    WScript.Echo("\nUSAGE eval.wsf \"script\" [-r {".concat(Object.keys(cachedProgid).join('|'), "|name=progid}] [-l script_file]\n"));
-    return WScript.Quit(1);
-}
-/**
- * -rでprogidを指定しなくても使えるように
- */
-var cachedProgid = {
-    fso: 'Scripting.FileSystemObject',
-    installer: 'WindowsInstaller.Installer'
-};
-(function () {
-    var args = [];
-    var g = Iterables.from(WScript.Arguments)[Symbol.iterator]();
-    var _loop_1 = function (ir) {
-        var arg = ir.value;
-        if (arg === '--') {
-            for (ir = g.next(); !ir.done; ir = g.next()) {
-                args.push(ir.value);
-            }
-            return out_ir_1 = ir, "break";
-        }
-        switch (arg) {
-            case '-r':
-            case '--require':
-                // WScript.CreateObjectを一々呼び出さなくてもいいように-rで指定できるようにする
-                var nextarg_1 = ((ir = g.next()), ir.done && usage(), ir.value);
-                var eqIndex_1 = nextarg_1.indexOf('=');
-                var _a = (function () {
-                    if (eqIndex_1 <= 0) {
-                        if (!(nextarg_1 in cachedProgid)) {
-                            return usage();
-                        }
-                        return { name: nextarg_1, progid: cachedProgid[nextarg_1] };
-                    }
-                    else {
-                        return {
-                            name: nextarg_1.substr(0, eqIndex_1),
-                            progid: nextarg_1.substr(eqIndex_1 + 1)
-                        };
-                    }
-                })(), name = _a.name, progid = _a.progid;
-                this_1[name] = WScript.CreateObject(progid);
-                return out_ir_1 = ir, "continue";
-            case '-l':
-            case '--load':
-                // 外部スクリプトを読み込めるようにする
-                var loadpath = ((ir = g.next()), ir.done && usage(), ir.value);
-                new Function(WScript.CreateObject('Scripting.FileSystemObject')
-                    .OpenTextFile(loadpath)
-                    .ReadAll()).call(this_1);
-                return out_ir_1 = ir, "continue";
-        }
-        args.push(arg);
-        out_ir_1 = ir;
-    };
-    var this_1 = this, out_ir_1;
-    for (var ir = g.next(); !ir.done; ir = g.next()) {
-        var state_1 = _loop_1(ir);
-        ir = out_ir_1;
-        if (state_1 === "break")
-            break;
-    }
-    // 最初の引数はスクリプト、それ以外はスクリプトへの引数
-    var script = args.shift();
-    // スクリプトがundefined=スクリプトが指定されなかったときは使い方を表示
-    if (script === undefined) {
-        return usage();
-    }
-    // Functionを使ってスクリプトを実行
-    try {
-        var r = new Function("\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval(\"".concat(script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
-            return ch === '"' || ch === '\\'
-                ? '\\' + ch
-                : ch === '\t'
-                    ? '\\t'
-                    : ch === '\r'
-                        ? '\\r'
-                        : ch === '\n'
-                            ? '\\n'
-                            : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2);
-        }), "\")\n    ")).apply(this, args);
-        // スクリプトの返値をプロセスの終了コードとする
-        WScript.Quit(+r || 0);
-    }
-    catch (ex) {
-        WScript.StdErr.WriteLine(typeof ex === 'object' && ex
-            ? "".concat(('name' in ex && ex.name) || '').concat('number' in ex && typeof ex.number === 'number'
-                ? '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')'
-                : '').concat(('message' in ex && ex.message) || '')
-            : String(ex));
-        WScript.Quit(1);
-    }
-})();
+sample.program.apply(/// <reference types="sample" />
+sample, __spreadArray([], __read(Iterables.from(WScript.Arguments)), false));
 })();
 ]]></script>
 </job>
