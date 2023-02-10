@@ -374,7 +374,7 @@ declare namespace WindowsInstaller {
   interface IView {
     Close(): void; // Terminates query execution and releases database resources.
     Execute(params?: IRecord): void; // Uses the question mark token to represent parameters in a SQL query. The values of these parameters are passed in as the corresponding fields of a parameter record.
-    Fetch(): IRecord; // Returns a Record object containing the requested column data if more rows are available in the result set, otherwise, it returns null.
+    Fetch(): IRecord | null; // Returns a Record object containing the requested column data if more rows are available in the result set, otherwise, it returns null.
     GetError(): string; // Returns the Validation error and column name for which the error occurred.
     Modify(action: msiViewModify, record: IRecord): void; // Modifies a database row with a modified Record object obtained by the Fetch method.
     ColumnInfo(info: msiColumnInfo): IRecord;
