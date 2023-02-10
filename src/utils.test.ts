@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { indented, isDirectory, mkdirEnsure, rmdirEnsure } from "./utils";
+import { error, indented, isDirectory, mkdirEnsure, rmdirEnsure } from "./utils";
 
 describe('mkdirEnsure', () => {
   test('not exist', async () => {
@@ -61,3 +61,16 @@ describe('indented', () => {
       `).toThrow();
   });
 });
+describe('error', () => {
+  test('empty', () => {
+    expect(() => error``).toThrow(/^$/);
+  });
+  test('single', () => {
+    expect(() => error`single`).toThrow(/^single$/);
+  });
+  test('one parameter', () => {
+    expect(() => error`parameter: ${Math.floor(Math.random() * 100)}`).toThrow(
+      /^parameter: \d+$/
+    );
+  });
+})

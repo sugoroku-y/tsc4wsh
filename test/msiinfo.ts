@@ -36,13 +36,13 @@ namespace msiinfo {
       const param = installer.CreateRecord(1);
       ActiveXObject.set(param, 'StringData', [1], 'ProductVersion');
       view.Execute(param);
-      const productVersion = view.Fetch().StringData(1);
+      const productVersion = view.Fetch()?.StringData(1) ?? '-';
       ActiveXObject.set(param, 'StringData', [1], 'ProductCode');
       view.Execute(param);
-      const productCode = view.Fetch().StringData(1);
+      const productCode = view.Fetch()?.StringData(1) ?? '-';
       ActiveXObject.set(param, 'StringData', [1], 'UpgradeCode');
       view.Execute(param);
-      const upgradeCode = view.Fetch().StringData(1);
+      const upgradeCode = view.Fetch()?.StringData(1) ?? '-';
 
       WScript.StdOut.WriteLine(
         [

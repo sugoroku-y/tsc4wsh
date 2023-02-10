@@ -17,7 +17,7 @@ namespace filever {
    *
    * 具体的に取得するバージョンは以下のとおり。
    *
-   * - msiはPropetyテーブルのProductVersion
+   * - msiはPropertyテーブルのProductVersion
    * - mspはPatch情報XMLのUpdatedVersion
    * - exeやdllなどバージョンリソースのあるものはそのバージョンリソース
    * - バージョンリソースの無いものは`-`
@@ -34,7 +34,7 @@ namespace filever {
       try {
         view.Execute();
         const record = view.Fetch();
-        return record.StringData(1);
+        return record?.StringData(1) ?? '-';
       } finally {
         view.Close();
       }
@@ -327,13 +327,13 @@ namespace filever {
       // カレントディレクトリにあれば'signtool'だけでいい
       return (signtoolCache = 'signtool');
     }
-    const onscriptpath = fso.BuildPath(
+    const onScriptPath = fso.BuildPath(
       fso.GetParentFolderName(WScript.ScriptFullName),
       'signtool.exe'
     );
-    if (fso.FileExists(onscriptpath)) {
+    if (fso.FileExists(onScriptPath)) {
       // スクリプトと同じディレクトリにあればそれを使う
-      return (signtoolCache = onscriptpath);
+      return (signtoolCache = onScriptPath);
     }
     for (const path of wshShell.Environment.Item('PATH').split(/;/)) {
       if (
@@ -362,7 +362,7 @@ namespace filever {
   /**
    * タイムスタンプを表示しないファイル名のパターン
    */
-  const notimestamp = WScriptUtil.Arguments.Named(
+  const noTimestamp = WScriptUtil.Arguments.Named(
     'NoTimeStamp',
     param => (param && fsoU.wildcardToRegExp(param)) || undefined
   );
@@ -438,7 +438,7 @@ namespace filever {
         : ('' + file.Size).replace(/\d(?=(?:\d{3})+$)/g, '$&,'),
     // タイムスタンプ
     timestamp: file =>
-      (notimestamp && notimestamp.test(file.Name) && '-') ||
+      (noTimestamp && noTimestamp.test(file.Name) && '-') ||
       new Date(file.DateLastModified).toLocaleString(),
     // ファイルのバージョン。ディレクトリ、バージョンのないファイルは`-`
     version: file => (fsoU.isFolder(file) ? '-' : getFileVersion(file.Path)),
@@ -479,8 +479,8 @@ namespace filever {
         .Write(`filevar.wsf: List information such as version and name of files and directories.
 
 USAGE:
-  cscript //nologo filver.wsf /Help
-  cscript //nologo filver.wsf [/BaseDir:"base\\directory"] [/Format:"Format for output"] [/Output:"output file"] [path of files and directories...]
+  cscript //nologo filever.wsf /Help
+  cscript //nologo filever.wsf [/BaseDir:"base\\directory"] [/Format:"Format for output"] [/Output:"output file"] [path of files and directories...]
 
 /Help
       Show this help.
@@ -547,7 +547,7 @@ USAGE:
 /directoryonly
       Show information of directories only.
       This parameter is ignored if \`/fileonly\` specified.
-/notimestamp:filename-pattern
+/noTimestamp:filename-pattern
       Specify a pattern of file names that do not show timestamps.
       If omitted, show timestamps of all files.
 /signtool:signtool_path

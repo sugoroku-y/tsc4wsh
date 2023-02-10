@@ -2155,7 +2155,7 @@ var filever;
      *
      * 具体的に取得するバージョンは以下のとおり。
      *
-     * - msiはPropetyテーブルのProductVersion
+     * - msiはPropertyテーブルのProductVersion
      * - mspはPatch情報XMLのUpdatedVersion
      * - exeやdllなどバージョンリソースのあるものはそのバージョンリソース
      * - バージョンリソースの無いものは`-`
@@ -2164,13 +2164,14 @@ var filever;
      * @return \{{{string}}\} ファイルのバージョン。
      */
     function getFileVersion(filepath) {
+        var _a;
         if (/\.msi$/i.test(filepath)) {
             var db = installer.OpenDatabase(filepath, 0);
             var view = db.OpenView("SELECT Value FROM Property WHERE Property = 'ProductVersion'");
             try {
                 view.Execute();
                 var record = view.Fetch();
-                return record.StringData(1);
+                return (_a = record === null || record === void 0 ? void 0 : record.StringData(1)) !== null && _a !== void 0 ? _a : '-';
             }
             finally {
                 view.Close();
@@ -2419,10 +2420,10 @@ var filever;
             // カレントディレクトリにあれば'signtool'だけでいい
             return (signtoolCache = 'signtool');
         }
-        var onscriptpath = fso.BuildPath(fso.GetParentFolderName(WScript.ScriptFullName), 'signtool.exe');
-        if (fso.FileExists(onscriptpath)) {
+        var onScriptPath = fso.BuildPath(fso.GetParentFolderName(WScript.ScriptFullName), 'signtool.exe');
+        if (fso.FileExists(onScriptPath)) {
             // スクリプトと同じディレクトリにあればそれを使う
-            return (signtoolCache = onscriptpath);
+            return (signtoolCache = onScriptPath);
         }
         try {
             for (var _b = __values(wshShell.Environment.Item('PATH').split(/;/)), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -2455,7 +2456,7 @@ var filever;
     /**
      * タイムスタンプを表示しないファイル名のパターン
      */
-    var notimestamp = WScriptUtil.Arguments.Named('NoTimeStamp', function (param) { return (param && fsoU.wildcardToRegExp(param)) || undefined; });
+    var noTimestamp = WScriptUtil.Arguments.Named('NoTimeStamp', function (param) { return (param && fsoU.wildcardToRegExp(param)) || undefined; });
     var shellappdesktopCache;
     function ShellappDesktop() {
         if (shellappdesktopCache !== undefined) {
@@ -2520,7 +2521,7 @@ var filever;
         },
         // タイムスタンプ
         timestamp: function (file) {
-            return (notimestamp && notimestamp.test(file.Name) && '-') ||
+            return (noTimestamp && noTimestamp.test(file.Name) && '-') ||
                 new Date(file.DateLastModified).toLocaleString();
         },
         // ファイルのバージョン。ディレクトリ、バージョンのないファイルは`-`
@@ -2555,7 +2556,7 @@ var filever;
         var e_20, _a, e_21, _b;
         if (showHelp) {
             WScript.StdOut
-                .Write("filevar.wsf: List information such as version and name of files and directories.\n\nUSAGE:\n  cscript //nologo filver.wsf /Help\n  cscript //nologo filver.wsf [/BaseDir:\"base\\directory\"] [/Format:\"Format for output\"] [/Output:\"output file\"] [path of files and directories...]\n\n/Help\n      Show this help.\n      Alias: /H /?\n/BaseDir:\"base\\directory\"\n      Specify the base directory of the specified path pattern.\n      If omitted, it is assumed that the current directory is specified.\n      Alias: /Base /B\n/Format:\"Format for output\"\n      Specify the format used for output of file and directory information.\n      If omitted, it is assumed that the '$r\\t$v' is specified\n      Alias: /F\n\n      $name\n        The name of the file or the directory.\n        Alias: $n\n      $directory\n        The path of the parent directory if it is a file, or its own path if it is a directory.\n        Alias: $dir $d\n      $size\n        The three-digit delimited file size, or '-' if it is a directory.\n        Alias: $s\n      $length\n        The file size(no delimited), or '-' if it is a directory.\n        Alias: $len $l\n      $version\n        The version of the file, or '-' if it is a file without a version or it is a directory.\n        Alias: $ver $v\n      $fullpath\n        The full path of the file or the directory.\n        Alias: $full $f\n      $relative\n        The relative path of the file or the directory.\n        Alias: $rel $r\n      $reldir\n        The relative path of the parent directory if it is a file, or its own relative path if it is a directory.\n        Alias: $rd\n      $timestamp\n        The full path of the file or the directory.\n        Alias: $time $t\n      $hash\n        The hash of the file, or '-' if it is a directory.\n        Alias: $h\n      $build\n        The date to build the content.\n        Alias: $b\n      $sign\n        The signer if the file is digitally signed, the error message if the signature it is incomplete. '-' if it is a directory.\n        Alias: $g\n      $company\n        The company in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cp\n      $copyright\n        The copyright in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cr\n/Output:\"output file\"\n      The file to output into.\n      If omitted, output into standard output.\n      Alias: /Out /O\n/Append\n      Specify it with /Output, then append output to file.\n/fileonly\n      Show information of files only.\n/directoryonly\n      Show information of directories only.\n      This parameter is ignored if `/fileonly` specified.\n/notimestamp:filename-pattern\n      Specify a pattern of file names that do not show timestamps.\n      If omitted, show timestamps of all files.\n/signtool:signtool_path\n      Specify the path to 'signtool.exe'.\n      If omitted, find signtool.exe from the current directory,\n      this script directory, and Windows SDK directory\n\npath of files and directories...\n      Files and directories for listing information. Wild cards can be used.\n      Example:\n      *.dll\n        DLL files in the current directory.\n      aaa?.dll\n        Dll files with only one letter after aaa.\n      *.{exe;dll;ocx}\n        EXE, DLL, OCX files in the current directory.\n      aaa\\**\\*.{exe;dll;ocx}\n        All EXE, DLL, OCX files under aaa directory.\n");
+                .Write("filevar.wsf: List information such as version and name of files and directories.\n\nUSAGE:\n  cscript //nologo filever.wsf /Help\n  cscript //nologo filever.wsf [/BaseDir:\"base\\directory\"] [/Format:\"Format for output\"] [/Output:\"output file\"] [path of files and directories...]\n\n/Help\n      Show this help.\n      Alias: /H /?\n/BaseDir:\"base\\directory\"\n      Specify the base directory of the specified path pattern.\n      If omitted, it is assumed that the current directory is specified.\n      Alias: /Base /B\n/Format:\"Format for output\"\n      Specify the format used for output of file and directory information.\n      If omitted, it is assumed that the '$r\\t$v' is specified\n      Alias: /F\n\n      $name\n        The name of the file or the directory.\n        Alias: $n\n      $directory\n        The path of the parent directory if it is a file, or its own path if it is a directory.\n        Alias: $dir $d\n      $size\n        The three-digit delimited file size, or '-' if it is a directory.\n        Alias: $s\n      $length\n        The file size(no delimited), or '-' if it is a directory.\n        Alias: $len $l\n      $version\n        The version of the file, or '-' if it is a file without a version or it is a directory.\n        Alias: $ver $v\n      $fullpath\n        The full path of the file or the directory.\n        Alias: $full $f\n      $relative\n        The relative path of the file or the directory.\n        Alias: $rel $r\n      $reldir\n        The relative path of the parent directory if it is a file, or its own relative path if it is a directory.\n        Alias: $rd\n      $timestamp\n        The full path of the file or the directory.\n        Alias: $time $t\n      $hash\n        The hash of the file, or '-' if it is a directory.\n        Alias: $h\n      $build\n        The date to build the content.\n        Alias: $b\n      $sign\n        The signer if the file is digitally signed, the error message if the signature it is incomplete. '-' if it is a directory.\n        Alias: $g\n      $company\n        The company in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cp\n      $copyright\n        The copyright in the file version resource, or '-' if it is a directory, or with out the version resource.\n        Alias: $cr\n/Output:\"output file\"\n      The file to output into.\n      If omitted, output into standard output.\n      Alias: /Out /O\n/Append\n      Specify it with /Output, then append output to file.\n/fileonly\n      Show information of files only.\n/directoryonly\n      Show information of directories only.\n      This parameter is ignored if `/fileonly` specified.\n/noTimestamp:filename-pattern\n      Specify a pattern of file names that do not show timestamps.\n      If omitted, show timestamps of all files.\n/signtool:signtool_path\n      Specify the path to 'signtool.exe'.\n      If omitted, find signtool.exe from the current directory,\n      this script directory, and Windows SDK directory\n\npath of files and directories...\n      Files and directories for listing information. Wild cards can be used.\n      Example:\n      *.dll\n        DLL files in the current directory.\n      aaa?.dll\n        Dll files with only one letter after aaa.\n      *.{exe;dll;ocx}\n        EXE, DLL, OCX files in the current directory.\n      aaa\\**\\*.{exe;dll;ocx}\n        All EXE, DLL, OCX files under aaa directory.\n");
             return;
         }
         var args = __spreadArray([], __read(Iterables.from(WScript.Arguments.Unnamed)), false);
