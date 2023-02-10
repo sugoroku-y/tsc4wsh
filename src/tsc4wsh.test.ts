@@ -19,8 +19,8 @@ describe('tsc4wsh', () => {
     ${'test-error'}
   `('transpile $filename', async ({filename}: {filename: string}) => {
     const tsfile = `test/${filename}.ts`;
-    const wsffile = `test/${filename}.xml`;
-    const expectwsffile = `test/expect/${filename}.xml`;
+    const wsffile = `test/${filename}.wsf`;
+    const expectwsffile = `test/expect/${filename}.wsf`;
     const expectoutfile = `test/expect/${filename}.out`;
     const expecterrfile = `test/expect/${filename}.err`;
     const existExpect = await isFile(expectwsffile);
@@ -69,7 +69,7 @@ describe('tsc4wsh', () => {
     const mockOut = jest.spyOn(process.stdout, 'write');
     const mockErr = jest.spyOn(process.stderr, 'write');
     try {
-      const output = 'test/temp/test2.xml';
+      const output = 'test/temp/test2.wsf';
       // test/temp/test2が存在していれば削除
       await unlinkEnsure(output);
       expect(await tsc4wsh(['test/test.ts'], { output })).toBe(true);
@@ -82,7 +82,7 @@ describe('tsc4wsh', () => {
     const mockOut = jest.spyOn(process.stdout, 'write');
     const mockErr = jest.spyOn(process.stderr, 'write');
     try {
-      const output = 'test/temp/test3.xml';
+      const output = 'test/temp/test3.wsf';
       expect(await tsc4wsh(['test/test.ts'], { output })).toBe(true);
       // 同じ内容を同じファイルに出力
       expect(await tsc4wsh(['test/test.ts'], { output })).toBe(true);

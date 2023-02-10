@@ -62,7 +62,6 @@ typings/
 
 /lib/
 /test/*.wsf
-/test/*.xml
 /*.tgz
 /polyfill/index.js
 test/signtool.exe

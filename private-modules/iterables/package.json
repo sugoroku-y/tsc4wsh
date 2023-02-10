@@ -3,7 +3,7 @@
   "types": "index",
   "main": "",
   "scripts": {
-    "pretest": "node ../../lib/main.js test/test-all.ts -o test/test-all.xml",
-    "test": "cscript //nologo test/test-all.xml"
+    "pretest": "node ../../lib/main.js test/test-all.ts -o test/test-all.wsf",
+    "test": "cscript //nologo test/test-all.wsf"
   }
 }

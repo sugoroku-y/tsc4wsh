@@ -11,8 +11,8 @@
   },
   "scripts": {
     "test": "jest",
-    "pretest:wsh": "node lib/main.js test/wshtest.ts polyfill/**/*.test.ts private-modules/**/*.test.ts test/**/*.test.ts -o test/wshtest.xml",
-    "test:wsh": "cscript //nologo test/wshtest.xml",
+    "pretest:wsh": "node lib/main.js test/wshtest.ts polyfill/**/*.test.ts private-modules/**/*.test.ts test/**/*.test.ts -o test/wshtest.wsf",
+    "test:wsh": "cscript //nologo test/wshtest.wsf",
     "pretest": "npm run build:polyfill",
     "build:polyfill": "tsc --build polyfill/ts/tsconfig.json",
     "build:src": "tsc --build src/tsconfig.json",
