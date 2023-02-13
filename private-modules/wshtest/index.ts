@@ -224,6 +224,7 @@ namespace test {
     test(caption, testproc);
   }
 }
+const it = test;
 function expect(v: number): TestResult<number>;
 function expect(v: string): TestResult<string>;
 function expect(v: boolean): TestResult<boolean>;
