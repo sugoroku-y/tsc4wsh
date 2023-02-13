@@ -352,6 +352,30 @@ export function transpile(fileNames: string[]) {
   const objectMap = generateObjectMap(program);
   const emitResult = program.emit(undefined, (_, data) => {
     script += data;
+  }, undefined, undefined, {
+    before: [(context: ts.TransformationContext) => {
+      return (source: ts.SourceFile) => {
+        const visitor = (node: ts.Node): ts.Node => {
+          node = ts.visitEachChild(node, visitor, context);
+          // ES2015以降は配列リテラルの最後のコンマは無視されるがES5以前では最後にundefinedが追加されてしまうので取り除く
+          if (
+            ts.isArrayLiteralExpression(node) &&
+            node.elements.hasTrailingComma
+          ) {
+            const elements = context.factory.createNodeArray(
+              node.elements,
+              false
+            );
+            return context.factory.createArrayLiteralExpression(
+              elements,
+              node.getText(source).includes('\n')
+            );
+          }
+          return node;
+        };
+        return ts.visitEachChild(source, visitor, context);
+      }
+    }],
   });
 
   const allDiagnostics = ts
