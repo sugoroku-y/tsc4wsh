@@ -35,6 +35,13 @@ describe('rmdirEnsure', () => {
     await rmdirEnsure(target);
     expect(await isDirectory(target)).toBe(false);
   });
+  test('includes directory', async () => {
+    const target = 'test/temp/includes-dir';
+    await mkdirEnsure(path.join(target, 'test'));
+    expect(await isDirectory(target)).toBe(true);
+    await rmdirEnsure(target);
+    expect(await isDirectory(target)).toBe(false);
+  });
 });
 
 describe('indented', () => {
