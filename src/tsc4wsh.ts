@@ -159,6 +159,9 @@ async function makeWsfDom(
           a.prototype.constructor = a;
         }
     };
+    function Symbol(description) {
+      return Symbol.implement(description);
+    }
     ${await polyfill}
     ${transpiled}
     `;

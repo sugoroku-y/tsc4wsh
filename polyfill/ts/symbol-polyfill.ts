@@ -5,7 +5,7 @@ interface SymbolConstructor {
 (function (this: any) {
   const symbols: {[id: string]: true} = {};
   // Symbolの実装
-  this.Symbol = function Symbol(description: string): symbol {
+  this.Symbol.implement = function Symbol_implement(description: string): symbol {
     // 実際のプロパティ名として扱われる文字列
     const id = `Symbol@@${description}@@${new Date().getTime()}@@${Math.random()}`;
     symbols[id] = true;
