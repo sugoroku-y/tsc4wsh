@@ -60,13 +60,13 @@ function appendScriptElement(
   const doc = jobElement.ownerDocument!;
   const content = script
     .replace(/^\ufeff/, '') // remove BOM
-    .replace(/\r\n/g, '\n') // CRLF -> LF
+    .replaceAll('\r\n', '\n') // CRLF -> LF
     .replace(/^(?!\n)/, '\n') // insert LF to BOS
     .replace(/(?<!\n)$/, '\n'); // append LF to EOS
   // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
   if (runtimes.length) {
     // `` WshRuntime`～` `` をXMLとしてパーズする
-    const runtime = `<WshRuntime>${runtimes.join('')}</WshRuntime>`;
+    const runtime = `<WshRuntime>${runtimes.join('').replaceAll('\r\n', '\n')}</WshRuntime>`;
     const runtimeDoc = (() => {
       try {
         return parser.parseFromString(runtime);
@@ -124,14 +124,14 @@ ${post}
   for (const content of vbscripts) {
     const scriptElement = doc.createElement('script');
     scriptElement.setAttribute('language', 'VBScript');
-    scriptElement.appendChild(doc.createCDATASection(content));
+    scriptElement.appendChild(doc.createCDATASection(content.replaceAll('\r\n', '\n')));
     jobElement.appendChild(scriptElement);
     jobElement.appendChild(doc.createTextNode('\n'));
   }
   // scriptはCDATAセクションで追加する
   const scriptElement = doc.createElement('script');
   scriptElement.setAttribute('language', 'JScript');
-  scriptElement.appendChild(doc.createCDATASection(content));
+  scriptElement.appendChild(doc.createCDATASection(content.replaceAll('\r\n', '\n')));
   jobElement.appendChild(scriptElement);
   jobElement.appendChild(doc.createTextNode('\n'));
   return scriptElement;
