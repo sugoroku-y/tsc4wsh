@@ -371,6 +371,16 @@ export function transpile(fileNames: string[]) {
               node.getText(source).includes('\n')
             );
           }
+          // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
+          if (
+            ts.isPropertyAccessExpression(node) &&
+            node.getText(source) === 'Symbol.for'
+          ) {
+            return context.factory.createElementAccessExpression(
+              node.expression,
+              context.factory.createStringLiteral('for', true)
+            );
+          }
           return node;
         };
         return ts.visitEachChild(source, visitor, context);
@@ -408,9 +418,7 @@ export function transpile(fileNames: string[]) {
     pkgscripts +
     // 'use strict';が有効になるようにfunctionで囲む
     '(function () {\n' +
-    // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
     script
-      .replace(/\bSymbol\s*\.\s*for\b/g, `Symbol['for']`)
       // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
       .replace(/\]\]>/g, ']]\\x3e')
       // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
