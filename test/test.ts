@@ -62,5 +62,6 @@ namespace test1 {
       );
     }
   }
+  WScript.Echo(String(Symbol.for('iterator')));
   WScriptUtil.validateParameters();
 }
