@@ -1,6 +1,6 @@
 {
   "name": "tsc4wsh",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "main": "./lib/main.js",
   "engines": {
     "node": ">=10.17.0"
