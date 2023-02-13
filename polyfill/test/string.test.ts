@@ -143,3 +143,266 @@ describe('String.prototype.endsWith', () => {
     expect('abcdefghij'.endsWith('@ab', 2)).toBe(false);
   });
 });
+
+// 以下はChatGPTにて作成
+
+// [Q] String.prototype.splitのテストケースを作成してください。
+// String.prototype.splitの仕様については
+// https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/split
+// を参考にすべての仕様を網羅するようにしてください。
+
+// [A] JavaScript の String.prototype.split() メソッドは、
+// 文字列を特定のセパレーターに基づいて分割することができます。
+// このようなテストケースを書くと次のようになります。
+
+describe('String.prototype.split', () => {
+  it('should split the string into an array of substrings', () => {
+    const str = 'hello world';
+    const result = str.split(' ');
+    expect(result).toEqual(['hello', 'world']);
+  });
+
+  it('should work with special characters as separators', () => {
+    const str = 'hello,world';
+    const result = str.split(',');
+    expect(result).toEqual(['hello', 'world']);
+  });
+
+  it('should work with regular expressions as separators', () => {
+    const str = 'hello world';
+    const result = str.split(/\s+/);
+    expect(result).toEqual(['hello', 'world']);
+  });
+
+  it('should limit the number of substrings returned', () => {
+    const str = 'hello world';
+    const result = str.split(' ', 1);
+    expect(result).toEqual(['hello']);
+  });
+
+  it('should return an array with the original string if the separator is not found', () => {
+    const str = 'hello world';
+    const result = str.split('-');
+    expect(result).toEqual([str]);
+  });
+
+  it('should return an empty array for an empty string', () => {
+    const str = '';
+    const result = str.split('');
+    expect(result).toEqual([]);
+  });
+});
+
+// このようなテストケースを書くことで、 String.prototype.split() メソッドの
+// 挙動を正確に確認することができます。
+
+// [Q] 正規表現のキャプチャ、先読み、後読みを使ったパターンを追加してください
+
+// [A] これまでに作成したテストケースに、正規表現のキャプチャ、先読み、後読みを
+// 使ったパターンを追加すると次のようになります。
+
+describe('String.prototype.split', () => {
+  // ...前回と同じなので省略
+
+  it('should work with capturing groups in the separator', () => {
+    const str = 'hello world';
+    const result = str.split(/(\s+)/);
+    expect(result).toEqual(['hello', ' ', 'world']);
+  });
+
+  // 注: 以下、後読み先読みのテストケースだが、後読み先読みの仕様を間違えている
+  // it('should work with positive lookahead in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/\s(?=w)/);
+  //   expect(result).toEqual(['hello ', 'world']);
+  // });
+
+  // it('should work with positive lookbehind in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/(?<=h)\s/);
+  //   expect(result).toEqual(['hello', 'world']);
+  // });
+
+  // it('should work with negative lookahead in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/\s(?!w)/);
+  //   expect(result).toEqual(['hello', ' world']);
+  // });
+
+  // it('should work with negative lookbehind in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/(?<!h)\s/);
+  //   expect(result).toEqual(['hello', 'world']);
+  // });
+
+  // やり直しを指示するも後読みと先読みを逆に考えているように見える
+
+  // [Q] splitのテストケースで正規表現に後読み先読みを含む場合のテストケースを間違えている。
+  // もう一度書き直してください。
+
+  // [A] 申し訳あります。正規表現に後読み先読みを含む場合のテストケースを正しく記述すると
+  // 以下のようになります：
+
+  //   test("正規表現に後読みを含む場合、正しい文字列が返されること", () => {
+  //     const regex = /\w+(?=\s)/;
+  //     const str = "hello world";
+  //     const expected = ["hello"];
+
+  //     const result = str.split(regex);
+
+  //     expect(result).toEqual(expected);
+  //   });
+
+  //   test("正規表現に先読みを含む場合、正しい文字列が返されること", () => {
+  //     const regex = /(?<=\s)\w+/;
+  //     const str = "hello world";
+  //     const expected = ["world"];
+
+  //     const result = str.split(regex);
+
+  //     expect(result).toEqual(expected);
+  //   });
+
+  // 諦めて最初のテストケースを基に手動で書く
+
+  it('should work with positive lookahead in the separator', () => {
+    const str = 'hello world';
+    const result = str.split(/(?=w)/);
+    expect(result).toEqual(['hello ', 'world']);
+  });
+
+  it('should work with positive lookbehind in the separator', () => {
+    const str = 'hello world';
+    const result = str.split(/(?<=o)/);
+    expect(result).toEqual(['hello', ' wo', 'rld']);
+  });
+
+  it('should work with negative lookahead in the separator', () => {
+    const str = 'hello world';
+    const result = str.split(/(l)(?!o)/);
+    expect(result).toEqual(['he', 'l', 'lo wor', 'l', 'd']);
+  });
+
+  it('should work with negative lookbehind in the separator', () => {
+    const str = 'hello world';
+    const result = str.split(/(?<!l)(o)/);
+    expect(result).toEqual(['hello w', 'o', 'rld']);
+  });
+});
+
+// [Q] String.prototype.matchAll のテストケースを作成してください。 
+// String.prototype.matchAll の仕様は
+// https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll
+// を参考にすべての仕様を網羅するようにしてください。
+
+// [A] 以下が、String.prototype.matchAll のテストケースです：
+
+describe('String.prototype.matchAll', () => {
+  test('正規表現にマッチする場合、正規表現にマッチするすべての部分文字列が含まれたイテレータを返すこと', () => {
+    const regex = /\w+/g;
+    const str = 'hello world';
+    const expected = [
+      {index: 0, input: 'hello world', 0: 'hello', groups: undefined},
+      {index: 6, input: 'hello world', 0: 'world', groups: undefined},
+    ];
+
+    // let result = Array.from(str.matchAll(regex));
+    // 注: そのままではテストに失敗するのでちょっと修正
+    let result = Array.from(str.matchAll(regex), match => ({...match}));
+    // expect(result).toEqual(expected);
+    // 注: TypeScriptという言語指定をしておらずコンパイルエラーになるため
+    // 手動で修正
+    expect(result as typeof expected).toEqual(expected);
+  });
+
+  test('正規表現にマッチしない場合、空のイテレータを返すこと', () => {
+    const regex = /\d+/g;
+    const str = 'hello world';
+
+    let result = Array.from(str.matchAll(regex));
+    expect(result).toEqual([]);
+  });
+
+  test('正規表現にキャプチャが含まれている場合、キャプチャグループとともに正規表現にマッチするすべての部分文字列が含まれたイテレータを返すこと', () => {
+    const regex = /(\w+)\s(\w+)/g;
+    const str = 'hello world';
+    const expected = [
+      {
+        index: 0,
+        input: 'hello world',
+        0: 'hello world',
+        1: 'hello',
+        2: 'world',
+        // groups: { "0": "hello", "1": "world" },
+        // groupsは(?<名前>パターン)でキャプチャしたときだけ設定されるのでここでは使用されない。
+        // 手動でコメントアウト
+      },
+    ];
+
+    // let result = Array.from(str.matchAll(regex));
+    // 注: そのままではテストに失敗するのでちょっと修正
+    let result = Array.from(str.matchAll(regex), match => ({...match}));
+    // expect(result).toEqual(expected);
+    // TypeScriptという言語指定をしておらずコンパイルエラーになるため
+    // 手動で修正
+    expect(result as unknown as typeof expected).toEqual(expected);
+  });
+
+  // test("正規表現に先読み、後読みが含まれている場合、正規表現にマッチするすべての部分文字列が含まれたイテレータを返すこと", () => {
+  //   const regex = /\b\w+\b/g;
+  //   const str = "hello world";
+  //   const expected = [
+  //     { index: 0, input: "hello world", 0: "hello", groups: undefined },
+  //     { index: 6, input: "hello world", 0: "world", groups: undefined },
+  //   ];
+
+  //   let result = Array.from(str.matchAll(regex));
+  //   expect(result).toEqual(expected);
+  // });
+  // 注: 先読み、後読み関係ないし、テスト内容は1番目のものと全く同じ。
+  // 手動でコメントアウト
+
+  // [Q] 正規表現にgフラグがない場合のテストケースを追加してください。
+  // 注: gフラグがない場合のテストケースがなかったので追加指示
+
+  // !The server experienced an error while processing your request. Sorry about that! You can retry your request, or contact us through our help center at help.openai.com if the error persists.
+  // 注: なぜかここでエラーが発生。リトライ
+
+  // [A] 次が、正規表現にgフラグがない場合のテストケースです：
+
+  // test("正規表現にgフラグがない場合、正規表現にマッチする最初の部分文字列のみが含まれた配列を返すこと", () => {
+  //   const regex = /\w+/;
+  //   const str = "hello world";
+  //   const expected = ["hello"];
+
+  //   let result = Array.from(str.matchAll(regex));
+  //   expect(result).toEqual(expected);
+  // });
+  // 注: gフラグがない場合の使用を完全に誤解している
+  // 手動でコメントアウト
+
+  // [Q] 違います。仕様には「RegExp オブジェクトには /g フラグが必須であり、ない場合は TypeError が発生します。」とあります。
+  // 注: 誤解を指摘
+
+  // [A] その通りです。私の誤りで申し訳ありません。指定された仕様に従ってテストケースを作成することはできません。
+  // 注: 諦められてしまったので、例外が発生する場合のテストケース記述方法を説明することに
+
+  // [Q] 例外が発生する場合のテストケースは以下のように記述します。
+
+  // ```js
+  // expect(() => targetMethod()).toThrow();
+  // ```
+
+  // この例では`targetMethod()`を実行すると例外が発生する場合にテストケースは成功したと見なされます。
+
+  // [A] 理解しました。以下が正規表現にgフラグがない場合に発生するTypeErrorのテストケースです：
+
+  test('正規表現にgフラグがない場合、TypeErrorが発生すること', () => {
+    const regex = /\w+/;
+    const str = 'hello world';
+
+    expect(() => {
+      str.matchAll(regex);
+    }).toThrow();
+  });
+});
