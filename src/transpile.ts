@@ -2,6 +2,45 @@ import * as path from 'path';
 import ts from 'typescript';
 import { error } from './utils';
 
+const RESERVED = [
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'debugger',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'false',
+  'finally',
+  'for',
+  'function',
+  'if',
+  'import',
+  'in',
+  'instanceof',
+  'new',
+  'null',
+  'return',
+  'super',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'typeof',
+  'var',
+  'void',
+  'while',
+  'with',
+  'enum',
+];
 function findFileInUpper(source: string, filename: string): string | undefined {
   let dirpath = source;
   while (true) {
@@ -375,11 +414,11 @@ export function transpile(fileNames: string[]) {
           // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
           if (
             ts.isPropertyAccessExpression(node) &&
-            node.getText(source) === 'Symbol.for'
+            RESERVED.includes(node.name.getText(source))
           ) {
             return context.factory.createElementAccessExpression(
               node.expression,
-              context.factory.createStringLiteral('for', true)
+              context.factory.createStringLiteral(node.name.getText(source), true)
             );
           }
           // 正規表現の未サポート仕様のチェック
