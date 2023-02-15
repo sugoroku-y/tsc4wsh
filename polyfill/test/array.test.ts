@@ -33,3 +33,68 @@ describe('Array.isArray()', () => {
     expect(Array.isArray({})).toBe(false);
   });
 });
+describe('Array.of', () => {
+  test('1,2,3', () => {
+    expect(Array.of(1, 2, 3)).toEqual([1, 2, 3]);
+  });
+});
+describe('Array.from', () => {
+  test('generator empty', () => {
+    expect(Array.from(function*(){}())).toEqual([]);
+  });
+  test('generator single', () => {
+    expect(Array.from(function*(){
+      yield 1;
+    }())).toEqual([1]);
+  });
+  test('generator double', () => {
+    expect(Array.from(function*(){
+      yield 1;
+      yield 2;
+    }())).toEqual([1, 2]);
+  });
+  test('generator triple', () => {
+    expect(Array.from(function*(){
+      yield 1;
+      yield 2;
+      yield 3;
+    }())).toEqual([1, 2, 3]);
+  });
+  test('generator map', () => {
+    expect(Array.from(function*(){
+      yield 1;
+      yield 2;
+      yield 3;
+    }(), i => 'abcd'.charAt(i))).toEqual(['b', 'c', 'd']);
+  });
+  test('array empty', () => {
+    expect(Array.from([])).toEqual([]);
+  });
+  test('array single', () => {
+    expect(Array.from([1])).toEqual([1]);
+  });
+  test('array double', () => {
+    expect(Array.from([1, 2])).toEqual([1, 2]);
+  });
+  test('array triple', () => {
+    expect(Array.from([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+  test('array map', () => {
+    expect(Array.from([1, 2, 3], i => 'abcd'.charAt(i))).toEqual(['b', 'c', 'd']);
+  });
+  test('array like empty', () => {
+    expect(Array.from({length: 0})).toEqual([]);
+  });
+  test('array like single', () => {
+    expect(Array.from({length: 1, 0: 1})).toEqual([1]);
+  });
+  test('array like double', () => {
+    expect(Array.from({length: 2, 0: 1, 1: 2})).toEqual([1, 2]);
+  });
+  test('array like triple', () => {
+    expect(Array.from({length: 3, 0: 1, 1: 2, 2: 3})).toEqual([1, 2, 3]);
+  });
+  test('array like map', () => {
+    expect(Array.from({length: 3, 0: 1, 1: 2, 2: 3}, i => 'abcd'.charAt(i))).toEqual(['b', 'c', 'd']);
+  });
+});
