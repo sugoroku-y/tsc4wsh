@@ -1,5 +1,6 @@
 import * as path from 'path';
 import ts from 'typescript';
+import { error } from './utils';
 
 function findFileInUpper(source: string, filename: string): string | undefined {
   let dirpath = source;
@@ -380,6 +381,44 @@ export function transpile(fileNames: string[]) {
               node.expression,
               context.factory.createStringLiteral('for', true)
             );
+          }
+          // 正規表現の未サポート仕様のチェック
+          if (ts.isRegularExpressionLiteral(node)) {
+            const literal = node.getText();
+            // パターン部分とフラグ部分に分割
+            const [, pattern, flags] =
+              /^\/(.*?)\/(\w*)$/.exec(literal) ??
+              error`正規表現はこのパターンにマッチするはず`;
+            // 名前付きキャプチャ、もしくは後読みのパターンがないかチェック
+            const [, pre, named, lookbehind] =
+              /^([^\\]*?(?:\\.[^\\]*?)*?)\(\?<(?:(\w+>)|([=!]))/.exec(
+                pattern
+              ) ?? [];
+            // エラー発生箇所表示用
+            const {line, character} = source.getLineAndCharacterOfPosition(
+              node.getStart()
+            );
+            if (named) {
+              throw new Error(
+                `JScriptでは名前付きキャプチャはサポートされていません。: ${literal}\n${
+                  source.fileName
+                }:${line + 1}:${character + 1 + pre.length + 1}`
+              );
+            }
+            if (lookbehind) {
+              throw new Error(
+                `JScriptでは後読みはサポートされていません。: ${literal}\n${
+                  source.fileName
+                }:${line + 1}:${character + 1 + pre.length + 1}`
+              );
+            }
+            if (/[^gim]/.test(flags)) {
+              throw new Error(
+                `JScriptではサポートされていない正規表現のフラグです。: ${literal}\n${
+                  source.fileName
+                }:${line + 1}:${character + 1 + pattern.length + 2}`
+              );
+            }
           }
           return node;
         };
