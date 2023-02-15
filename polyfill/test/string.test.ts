@@ -271,11 +271,12 @@ describe('String.prototype.split', () => {
     expect(result).toEqual(['hello ', 'world']);
   });
 
-  it('should work with positive lookbehind in the separator', () => {
-    const str = 'hello world';
-    const result = str.split(/(?<=o)/);
-    expect(result).toEqual(['hello', ' wo', 'rld']);
-  });
+  // 注: 指示しておいてなんだけど後読みはJScriptではサポートしていないのでコメントアウト
+  // it('should work with positive lookbehind in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/(?<=o)/);
+  //   expect(result).toEqual(['hello', ' wo', 'rld']);
+  // });
 
   it('should work with negative lookahead in the separator', () => {
     const str = 'hello world';
@@ -283,11 +284,12 @@ describe('String.prototype.split', () => {
     expect(result).toEqual(['he', 'l', 'lo wor', 'l', 'd']);
   });
 
-  it('should work with negative lookbehind in the separator', () => {
-    const str = 'hello world';
-    const result = str.split(/(?<!l)(o)/);
-    expect(result).toEqual(['hello w', 'o', 'rld']);
-  });
+  // 注: 指示しておいてなんだけど後読みはJScriptではサポートしていないのでコメントアウト
+  // it('should work with negative lookbehind in the separator', () => {
+  //   const str = 'hello world';
+  //   const result = str.split(/(?<!l)(o)/);
+  //   expect(result).toEqual(['hello w', 'o', 'rld']);
+  // });
 });
 
 // [Q] String.prototype.matchAll のテストケースを作成してください。 
@@ -301,18 +303,18 @@ describe('String.prototype.matchAll', () => {
   test('正規表現にマッチする場合、正規表現にマッチするすべての部分文字列が含まれたイテレータを返すこと', () => {
     const regex = /\w+/g;
     const str = 'hello world';
+    // 注: RegExpMatchArrayはそのままではtoEqualで成功しないのでexpect.objectContainingでラップする。
+    // またJScriptでは名前付きキャプチャは未サポートでgroupsもないのでコメントアウト
     const expected = [
-      {index: 0, input: 'hello world', 0: 'hello', groups: undefined},
-      {index: 6, input: 'hello world', 0: 'world', groups: undefined},
+      expect.objectContaining({index: 0, input: 'hello world', 0: 'hello', /* groups: undefined */}),
+      expect.objectContaining({index: 6, input: 'hello world', 0: 'world', /* groups: undefined */}),
     ];
 
-    // let result = Array.from(str.matchAll(regex));
-    // 注: そのままではテストに失敗するのでちょっと修正
-    let result = Array.from(str.matchAll(regex), match => ({...match}));
+    let result = Array.from(str.matchAll(regex));
     // expect(result).toEqual(expected);
     // 注: TypeScriptという言語指定をしておらずコンパイルエラーになるため
     // 手動で修正
-    expect(result as typeof expected).toEqual(expected);
+    expect(result as unknown as typeof expected).toEqual(expected);
   });
 
   test('正規表現にマッチしない場合、空のイテレータを返すこと', () => {
@@ -326,22 +328,22 @@ describe('String.prototype.matchAll', () => {
   test('正規表現にキャプチャが含まれている場合、キャプチャグループとともに正規表現にマッチするすべての部分文字列が含まれたイテレータを返すこと', () => {
     const regex = /(\w+)\s(\w+)/g;
     const str = 'hello world';
+    // 注: RegExpMatchArrayはそのままではtoEqualで成功しない。
     const expected = [
-      {
+      expect.objectContaining({
         index: 0,
         input: 'hello world',
         0: 'hello world',
         1: 'hello',
         2: 'world',
         // groups: { "0": "hello", "1": "world" },
-        // groupsは(?<名前>パターン)でキャプチャしたときだけ設定されるのでここでは使用されない。
+        // 注: groupsは(?<名前>パターン)でキャプチャしたときだけ設定されるのでここではundefinedのはず。
+        // そもそもJScriptでは名前付きキャプチャはサポートしていないのでgroupsはない
         // 手動でコメントアウト
-      },
+      }),
     ];
 
-    // let result = Array.from(str.matchAll(regex));
-    // 注: そのままではテストに失敗するのでちょっと修正
-    let result = Array.from(str.matchAll(regex), match => ({...match}));
+    let result = Array.from(str.matchAll(regex));
     // expect(result).toEqual(expected);
     // TypeScriptという言語指定をしておらずコンパイルエラーになるため
     // 手動で修正
