@@ -50,7 +50,101 @@ function sortedEntries(o: object): [string, unknown][] {
   return Object.entries(o).sort(([a], [b]) => (a === b ? 0 : a < b ? -1 : 1));
 }
 
+abstract class ExpectThing {
+  abstract equalTo(actual: unknown): boolean;
+}
+
+class ExpectNot extends ExpectThing {
+  constructor(private readonly base: ExpectThing) {
+    super();
+  }
+  equalTo(actual: unknown): boolean {
+    return !this.base.equalTo(actual);
+  }
+}
+
+class ExpectAnything extends ExpectThing {
+  equalTo(actual: unknown): boolean {
+      return actual !== null && actual !== undefined;
+  }
+}
+
+class ExpectAny extends ExpectThing {
+  constructor(private readonly anyConstructor: abstract new () => unknown) {
+    super();
+    switch (this.anyConstructor) {
+      case String:
+        this.equalTo = actual => typeof actual === 'string';
+        break;
+      case Number:
+        this.equalTo = actual => typeof actual === 'number';
+        break;
+      case Boolean:
+        this.equalTo = actual => typeof actual === 'boolean';
+        break;
+      case Function:
+        this.equalTo = actual => typeof actual === 'function';
+        break;
+      default:
+        this.equalTo = actual => actual instanceof anyConstructor;
+        break;
+    }
+  }
+  readonly equalTo: (actual: unknown) => boolean;
+}
+
+
+class ExpectArrayContaining<T> extends ExpectThing {
+  constructor(private readonly containing: readonly T[]) {
+    super();
+  }
+  equalTo(actual: unknown): boolean {
+    return Array.isArray(actual) && this.containing.every(element => actual.some(a => equal(a, element)));
+  }
+}
+
+class ExpectCloseTo extends ExpectThing {
+  constructor(private readonly number: number, private readonly numDigits: number) {
+    super();
+  }
+  equalTo(actual: unknown): boolean {
+    return typeof actual === 'number' && Math.abs(this.number - actual) < 10 ** -this.numDigits / 2;
+  }
+}
+
+class ExpectObjectContaining extends ExpectThing {
+  constructor(private readonly containing: Record<string, unknown>) {
+    super();
+  }
+  equalTo(actual: unknown): boolean {
+    return typeof actual === 'object' && actual !== null && Object.entries(this.containing).every(
+      ([name, value]) => name in actual && equal((actual as Record<string, unknown>)[name], value),
+    );
+  }
+}
+
+
+class ExpectStringContaining extends ExpectThing {
+  constructor(private readonly containing: string) {
+    super();
+  }
+  equalTo(actual: unknown): boolean {
+    return typeof actual === 'string' && actual.includes(this.containing);
+  }
+}
+
+class ExpectStringMatching extends ExpectThing {
+  constructor(private readonly matching: string | RegExp) {
+    super();
+    this.equalTo = matching instanceof RegExp ? actual => typeof actual === 'string' && matching.test(actual) : actual => typeof actual === 'string' && actual.includes(matching);
+  }
+  readonly equalTo: (actual: unknown) => boolean;
+}
+
 function equal(actual: unknown, expected: unknown): boolean {
+  if (expected instanceof ExpectThing) {
+    return expected.equalTo(actual);
+  }
   // Primitive型と関数は単純な比較
   if (isPrimitive(expected) || typeof expected === 'function') {
     return expected === actual;
@@ -233,6 +327,43 @@ function expect(v: () => unknown): TestResult<() => unknown>;
 function expect<T>(v: T): TestResult<T>;
 function expect<T>(v: T): TestResult<T> {
   return new TestResult<T>(v);
+}
+namespace expect {
+  export function anything(): any {
+    return new ExpectAnything();
+  }
+  export function any<T>(anyConstructor: abstract new () => T): T {
+    return new ExpectAny(anyConstructor) as unknown as T;
+  }
+  export function stringMatching(matching: string | RegExp): string {
+    return new ExpectNot(new ExpectStringMatching(matching)) as unknown as string;
+  }
+  export function stringContaining(containing: string): string {
+    return new ExpectNot(new ExpectStringContaining(containing)) as unknown as string;
+  }
+  export function arrayContaining<T>(containing: T[]): T[] {
+    return new ExpectArrayContaining(containing) as unknown as T[];
+  }
+  export function closeTo(number: number, numDigits: number = 2): number {
+    return new ExpectCloseTo(number, numDigits) as unknown as number;
+  }
+  export function objectContaining(object: Record<string, unknown>): Record<string, unknown> {
+    return new ExpectObjectContaining(object) as unknown as Record<string, unknown>
+  }
+  export const not = {
+    stringMatching(matching: string | RegExp): unknown {
+      return new ExpectNot(new ExpectStringMatching(matching));
+    },
+    stringContaining(containing: string): unknown {
+      return new ExpectNot(new ExpectStringContaining(containing));
+    },
+    arrayContaining<T>(notContaining: T[]): unknown {
+      return new ExpectNot(new ExpectArrayContaining(notContaining));
+    },
+    objectContaining(object: Record<string, unknown>): unknown {
+      return new ExpectNot(new ExpectObjectContaining(object));
+    },
+  };
 }
 
 // テストの実行
