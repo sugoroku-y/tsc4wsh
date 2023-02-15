@@ -97,15 +97,16 @@
     result.push(str.slice(index));
     return result;
   };
-  String.prototype.matchAll ??= function* matchAll(this: string, _pattern: RegExp): Generator<RegExpExecArray, void> {
+  String.prototype.matchAll ??= function matchAll(this: string, _pattern: RegExp): Generator<RegExpMatchArray, void> {
     if (!_pattern.global) {
       throw new Error(`matchAll with a non-global RegExp`);
     }
     const flags = `g${_pattern.ignoreCase ? 'i' : ''}${_pattern.multiline ? 'm' : ''}`;
-    const pattern = new RegExp(_pattern.source, flags);
-    let match;
-    while (!!(match = pattern.exec(this))) {
-      yield match;
-    }
+    return function*(this: string, pattern: RegExp) {
+      let match;
+      while (!!(match = pattern.exec(this))) {
+        yield match;
+      }
+    }.call(this, new RegExp(_pattern.source, flags));
   };
 })();

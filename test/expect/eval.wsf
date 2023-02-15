@@ -1004,25 +1004,24 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return result;
     };
     (_h = (_r = String.prototype).matchAll) !== null && _h !== void 0 ? _h : (_r.matchAll = function matchAll(_pattern) {
-        var flags, pattern, match;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (!_pattern.global) {
-                        throw new Error("matchAll with a non-global RegExp");
-                    }
-                    flags = "g".concat(_pattern.ignoreCase ? 'i' : '').concat(_pattern.multiline ? 'm' : '');
-                    pattern = new RegExp(_pattern.source, flags);
-                    _a.label = 1;
-                case 1:
-                    if (!!!(match = pattern.exec(this))) return [3, 3];
-                    return [4, match];
-                case 2:
-                    _a.sent();
-                    return [3, 1];
-                case 3: return [2];
-            }
-        });
+        if (!_pattern.global) {
+            throw new Error("matchAll with a non-global RegExp");
+        }
+        var flags = "g".concat(_pattern.ignoreCase ? 'i' : '').concat(_pattern.multiline ? 'm' : '');
+        return function (pattern) {
+            var match;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!!!(match = pattern.exec(this))) return [3, 2];
+                        return [4, match];
+                    case 1:
+                        _a.sent();
+                        return [3, 0];
+                    case 2: return [2];
+                }
+            });
+        }.call(this, new RegExp(_pattern.source, flags));
     });
 })();
 
