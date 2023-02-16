@@ -1025,8 +1025,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
+
 (function () {
-"use strict";
+'use strict';
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -1557,7 +1558,7 @@ var debugContext;
                 return '' + o;
             }
             if (typeof o === 'function') {
-                return "function ".concat(getFunctionName(o), " () {...}");
+                return 'function '.concat(getFunctionName(o), ' () {...}');
             }
             if (Array.isArray(o)) {
                 if (o.length === 0) {
@@ -1570,13 +1571,13 @@ var debugContext;
                 return prefix + o.map(function (e) { return ePrefix_1 + sub(e, d + 1, stack.concat(o)) + eSuffix_1; }).join(separator) + suffix;
             }
             if (o instanceof Error) {
-                return "[Error {number: 0x".concat(toHexadecimal(o.number, 8), ", description: ").concat(quote(o.description), ", message: ").concat(quote(o.message), "}]");
+                return '[Error {number: 0x'.concat(toHexadecimal(o.number, 8), ', description: ').concat(quote(o.description), ', message: ').concat(quote(o.message), '}]');
             }
             if (o instanceof RegExp) {
                 return o.toString();
             }
             if (o instanceof Date) {
-                return "[Date ".concat(o.toISOString(), "]");
+                return '[Date '.concat(o.toISOString(), ']');
             }
             var names = Object.keys(o);
             if (names.length === 0) {
@@ -1607,7 +1608,7 @@ var debugContext;
             }
             if (/^\s*:stack\s*$/.test(expr)) {
                 for (var frame = arguments.callee.caller.caller; frame; frame = frame.caller) {
-                    WScript.StdOut.WriteLine("function ".concat(getFunctionName(frame), " (").concat(inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, ''), ") {...}"));
+                    WScript.StdOut.WriteLine('function '.concat(getFunctionName(frame), ' (').concat(inspect(Array.from(frame.arguments)).replace(/^\[|\]$/g, ''), ') {...}'));
                 }
                 continue;
             }
@@ -1619,7 +1620,7 @@ var debugContext;
             }
             catch (e) {
                 WScript.StdOut.WriteLine(typeof e === 'object' && e && 'number' in e && typeof e.number === 'number' && 'description' in e
-                    ? "Error Code: 0x".concat(toHexadecimal(e.number, 8), ": ").concat(e.description)
+                    ? 'Error Code: 0x'.concat(toHexadecimal(e.number, 8), ': ').concat(e.description)
                     : String(e));
             }
         }
@@ -1632,7 +1633,7 @@ var debugContext;
  * このスクリプトの使用方法を表示する
  */
 function usage() {
-    WScript.Echo("\nUSAGE eval.wsf \"script\" [-r {".concat(Object.keys(cachedProgid).join('|'), "|name=progid}] [-l script_file]\n"));
+    WScript.Echo('\nUSAGE eval.wsf "script" [-r {'.concat(Object.keys(cachedProgid).join('|'), '|name=progid}] [-l script_file]\n'));
     return WScript.Quit(1);
 }
 /**
@@ -1651,7 +1652,7 @@ var cachedProgid = {
             for (ir = g.next(); !ir.done; ir = g.next()) {
                 args.push(ir.value);
             }
-            return out_ir_1 = ir, "break";
+            return out_ir_1 = ir, 'break';
         }
         switch (arg) {
             case '-r':
@@ -1674,7 +1675,7 @@ var cachedProgid = {
                     }
                 })(), name = _a.name, progid = _a.progid;
                 this_1[name] = WScript.CreateObject(progid);
-                return out_ir_1 = ir, "continue";
+                return out_ir_1 = ir, 'continue';
             case '-l':
             case '--load':
                 // 外部スクリプトを読み込めるようにする
@@ -1682,7 +1683,7 @@ var cachedProgid = {
                 new Function(WScript.CreateObject('Scripting.FileSystemObject')
                     .OpenTextFile(loadpath)
                     .ReadAll()).call(this_1);
-                return out_ir_1 = ir, "continue";
+                return out_ir_1 = ir, 'continue';
         }
         args.push(arg);
         out_ir_1 = ir;
@@ -1691,7 +1692,7 @@ var cachedProgid = {
     for (var ir = g.next(); !ir.done; ir = g.next()) {
         var state_1 = _loop_1(ir);
         ir = out_ir_1;
-        if (state_1 === "break")
+        if (state_1 === 'break')
             break;
     }
     // 最初の引数はスクリプト、それ以外はスクリプトへの引数
@@ -1702,29 +1703,28 @@ var cachedProgid = {
     }
     // Functionを使ってスクリプトを実行
     try {
-        var r = new Function("\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval(\"".concat(script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
+        var r = new Function('\n      function breakpoint() {\n        this.debugContext.breakpoint();\n      }\n      return eval("'.concat(script.replace(/["\\\x00-\x1f\x7f]/g, function (ch) {
             return ch === '"' || ch === '\\'
                 ? '\\' + ch
                 : ch === '\t'
-                    ? '\\t'
-                    : ch === '\r'
-                        ? '\\r'
-                        : ch === '\n'
-                            ? '\\n'
-                            : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2);
-        }), "\")\n    ")).apply(this, args);
+                    ? '\\t' : ch === '\r'
+                    ? '\\r' : ch === '\n'
+                    ? '\\n' : '\\' + debugContext.toHexadecimal(ch.charCodeAt(0), 2);
+        }), '")\n    ')).apply(this, args);
         // スクリプトの返値をプロセスの終了コードとする
         WScript.Quit(+r || 0);
     }
     catch (ex) {
         WScript.StdErr.WriteLine(typeof ex === 'object' && ex
-            ? "".concat(('name' in ex && ex.name) || '').concat('number' in ex && typeof ex.number === 'number'
+            ? ''.concat(('name' in ex && ex.name) || '').concat('number' in ex && typeof ex.number === 'number'
                 ? '(0x' + debugContext.toHexadecimal(ex.number, 8) + ')'
                 : '').concat(('message' in ex && ex.message) || '')
             : String(ex));
         WScript.Quit(1);
     }
 })();
+
+
 })();
 ]]></script>
 </job>

@@ -1027,8 +1027,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
+
 (function () {
-"use strict";
+'use strict';
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -1559,7 +1560,7 @@ while (true) {
         // 起動できていないショートカットを実行
         for (var lnkpaths_1 = (e_10 = void 0, __values(lnkpaths)), lnkpaths_1_1 = lnkpaths_1.next(); !lnkpaths_1_1.done; lnkpaths_1_1 = lnkpaths_1.next()) {
             var lnkpath = lnkpaths_1_1.value;
-            wshshell.Run("\"".concat(lnkpath, "\""));
+            wshshell.Run('"'.concat(lnkpath, '"'));
         }
     }
     catch (e_10_1) { e_10 = { error: e_10_1 }; }
@@ -1572,6 +1573,8 @@ while (true) {
     // 五秒待つ
     WScript.Sleep(5000);
 }
+
+
 })();
 ]]></script>
 </job>

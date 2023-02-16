@@ -1,6 +1,6 @@
 import * as path from 'path';
 import ts from 'typescript';
-import { error } from './utils';
+import { error, indented } from './utils';
 
 const RESERVED = [
   'break',
@@ -464,6 +464,24 @@ export function transpile(fileNames: string[]) {
         return ts.visitEachChild(source, visitor, context);
       }
     }],
+    after: [(context: ts.TransformationContext) => {
+      return (source: ts.SourceFile) => {
+        const visitor = (node: ts.Node): ts.Node => {
+          node = ts.visitEachChild(node, visitor, context);
+          if (ts.isStringLiteral(node)) {
+            const singleQuote = 'singleQuote' in node && !!node.singleQuote;
+            if (!singleQuote && !node.text.includes("'")) {
+              // `"`を使うようになっていて`'`が含まれていないものは`'`を使うように変更
+              node = context.factory.createStringLiteral(node.text, true);
+            }
+            // 非ASCII文字のエスケープを抑制する
+            ts.setEmitFlags(node, ts.EmitFlags.NoAsciiEscaping);
+          }
+          return node;
+        };
+        return ts.visitEachChild(source, visitor, context);
+      };
+    }],
   });
 
   const allDiagnostics = ts
@@ -491,26 +509,23 @@ export function transpile(fileNames: string[]) {
     throw new Error(errorMessages.join('\n'));
   }
 
-  script =
-    // 参照しているライブラリの実装スクリプト
-    pkgscripts +
-    // 'use strict';が有効になるようにfunctionで囲む
-    '(function () {\n' +
-    script
+  script = indented`
+    ${
+      // 参照しているライブラリの実装スクリプト
+      pkgscripts
+    }
+    (function () {
+    ${
+      // ↑'use strict';が有効になるようにfunctionで囲む
       // ]]>はCDATAセクションの終端なので]]\x3eに置換。コード上にある`]]>`はトランスパイルされると`]] >`になるので考えなくていい。
-      .replace(/\]\]>/g, ']]\\x3e')
-      // テンプレートリテラル内の日本語がエスケープされてしまうのでデコード
-      .replace(/(?:\\u(?:(?!00[01][0-9a-f]|007f)[0-9a-f]{4}))+/gi, hexEncoded =>
-        String.fromCharCode(
-          ...hexEncoded
-            .split('\\u')
-            .splice(1)
-            .map(hex => parseInt(hex, 16))
-        )
-      ) +
-    // @onendが付けられた関数をスクリプトの最後で呼び出す
-    onend.map(funcname => funcname + '();\n').join('') +
-    '})();';
+      script.replace(/\]\]>/g, ']]\\x3e')
+    }
+    ${
+      // @onendが付けられた関数をスクリプトの最後で呼び出す
+      onend.map(funcname => funcname + '();\n').join('')
+    }
+    })();
+    `;
 
   return {script, objectMap, runtimes, vbscripts};
 }

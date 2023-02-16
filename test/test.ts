@@ -62,6 +62,7 @@ namespace test1 {
       );
     }
   }
-  WScript.Echo(String(Symbol.for('iterator')));
+  WScript.Echo(`あいうえお天地玄黄${String(Symbol.for('iterator'))}abc ]]>`);
+  // ]]>
   WScriptUtil.validateParameters();
 }

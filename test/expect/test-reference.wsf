@@ -1026,8 +1026,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
+
 (function () {
-"use strict";
+'use strict';
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -1521,6 +1522,8 @@ var Iterables;
 /// <reference types="iterables" />
 sample.program.apply(/// <reference types="sample" />
 sample, __spreadArray([], __read(Iterables.from(WScript.Arguments)), false));
+
+
 })();
 ]]></script>
 </job>

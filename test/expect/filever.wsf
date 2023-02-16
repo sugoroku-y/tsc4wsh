@@ -1029,8 +1029,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     });
 })();
 
+
 (function () {
-"use strict";
+'use strict';
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -1587,7 +1588,7 @@ var WScriptUtil;
                 var required = node.getAttribute('required') === 'true';
                 if (!WScript.Arguments.Named.Exists(name)) {
                     if (required) {
-                        WScript.Echo("".concat(name, " は必須パラメータです。"));
+                        WScript.Echo(''.concat(name, ' は必須パラメータです。'));
                         hasError = true;
                     }
                     continue;
@@ -1596,14 +1597,14 @@ var WScriptUtil;
                 switch (node.getAttribute('type')) {
                     case 'string':
                         if (typeof value !== 'string') {
-                            WScript.Echo("".concat(name, " には文字列を指定(/").concat(name, ":文字列)してください。"));
+                            WScript.Echo(''.concat(name, ' には文字列を指定(/').concat(name, ':文字列)してください。'));
                             hasError = true;
                             continue;
                         }
                         break;
                     case 'boolean':
                         if (typeof value !== 'boolean') {
-                            WScript.Echo("".concat(name, " にはオン(/").concat(name, "+)、もしくはオフ(/").concat(name, "-)を指定してください。"));
+                            WScript.Echo(''.concat(name, ' にはオン(/').concat(name, '+)、もしくはオフ(/').concat(name, '-)を指定してください。'));
                             hasError = true;
                             continue;
                         }
@@ -1611,7 +1612,7 @@ var WScriptUtil;
                     default:
                         // case 'simple':
                         if (typeof value !== 'undefined') {
-                            WScript.Echo("".concat(name, " にはパラメータだけ(/").concat(name, ")を指定してください。"));
+                            WScript.Echo(''.concat(name, ' にはパラメータだけ(/').concat(name, ')を指定してください。'));
                             hasError = true;
                             continue;
                         }
@@ -1631,11 +1632,11 @@ var WScriptUtil;
             var isMany = unnamedElement.getAttribute('many') === 'true';
             var required = (function (value) { return (!value ? 0 : value === 'true' ? 1 : value === 'false' ? 0 : +value); })(unnamedElement.getAttribute('required'));
             if (WScript.Arguments.Unnamed.length < required) {
-                WScript.Echo("パラメータが不足しています(必要数: ".concat(required, "})。"));
+                WScript.Echo('パラメータが不足しています(必要数: '.concat(required, '})。'));
                 hasError = true;
             }
             else if (WScript.Arguments.Unnamed.length > required && !isMany) {
-                WScript.Echo(required > 0 ? "パラメータが多過ぎます(必要数: ".concat(required, "})。") : "パラメータは不要です。");
+                WScript.Echo(required > 0 ? 'パラメータが多過ぎます(必要数: '.concat(required, '})。') : 'パラメータは不要です。');
                 hasError = true;
             }
         }
@@ -1695,17 +1696,17 @@ var Scripting;
             function splitPath(path) {
                 return __spreadArray([], __read(path.matchAll(/^((?:[A-Z]:|\\{2}[^\\]+\\[^\\]+)?\\)\\*|([^\\]+\\)\\*|([^\\]+)$|[\s\S]/gi)), false).map(function (_a) {
                     var $1 = _a[1], $2 = _a[2], $3 = _a[3], index = _a.index;
-                    return $1 || $2 || $3 || error("不正なパス: ".concat(path, ":").concat(index));
+                    return $1 || $2 || $3 || error('不正なパス: '.concat(path, ':').concat(index));
                 });
             }
             Utils.splitPath = splitPath;
             function absolutePath(path) {
-                return "".concat(fso.GetAbsolutePathName(path)).concat(/\\$/.test(path) ? '\\' : '');
+                return ''.concat(fso.GetAbsolutePathName(path)).concat(/\\$/.test(path) ? '\\' : '');
             }
             function relativePath(path, base) {
                 var absolute = absolutePath(path);
                 var pathSplitted = splitPath(absolute);
-                var aa = absolutePath("".concat(base || '.', "\\"));
+                var aa = absolutePath(''.concat(base || '.', '\\'));
                 var baseSplitted = splitPath(aa);
                 var limit = Math.min(pathSplitted.length, baseSplitted.length);
                 var matchedLength = 0;
@@ -1879,7 +1880,7 @@ var Scripting;
                     return undefined;
                 }
                 if (pattern.includes('\\')) {
-                    throw new Error("Unsupported wildcard: ".concat(pattern));
+                    throw new Error('Unsupported wildcard: '.concat(pattern));
                 }
                 var depth = 0;
                 var regex = '^' +
@@ -1903,8 +1904,7 @@ var Scripting;
                             default:
                                 return '\\' + ch;
                         }
-                    }) +
-                    '$';
+                    }) + '$';
                 if (depth > 0) {
                     throw new Error('Unmatched `{`');
                 }
@@ -1934,7 +1934,7 @@ var Scripting;
                 }
                 var root = match[0];
                 if (!fso.FolderExists(root)) {
-                    throw new Error("The folder not found: ".concat(root));
+                    throw new Error('The folder not found: '.concat(root));
                 }
                 var folder = fso.GetFolder(root);
                 var pathes = fullpath
@@ -2100,7 +2100,7 @@ var Scripting;
                     return fso.GetFolder(dirpath);
                 }
                 if (fso.FileExists(dirpath)) {
-                    throw new Error("ファイルが存在しています。: ".concat(dirpath));
+                    throw new Error('ファイルが存在しています。: '.concat(dirpath));
                 }
                 ensureDirectory(fso.GetParentFolderName(dirpath));
                 return fso.CreateFolder(dirpath);
@@ -2185,7 +2185,7 @@ var filever;
             doc.async = false;
             doc.setProperty('SelectionNamespaces', "xmlns:patch='http://www.microsoft.com/msi/patch_applicability.xsd'");
             if (!doc.loadXML(xml)) {
-                throw new Error("".concat(filepath, ":\n    errorCode: ").concat(doc.parseError.errorCode, "\n    reason: ").concat(doc.parseError.reason, "\n    line: ").concat(doc.parseError.line, "\n    linepos: ").concat(doc.parseError.linepos, "\n    filepos: ").concat(doc.parseError.filepos, "\n    srcText: ").concat(doc.parseError.srcText, "\n    url: ").concat(doc.parseError.url));
+                throw new Error(''.concat(filepath, ':\n    errorCode: ').concat(doc.parseError.errorCode, '\n    reason: ').concat(doc.parseError.reason, '\n    line: ').concat(doc.parseError.line, '\n    linepos: ').concat(doc.parseError.linepos, '\n    filepos: ').concat(doc.parseError.filepos, '\n    srcText: ').concat(doc.parseError.srcText, '\n    url: ').concat(doc.parseError.url));
             }
             return doc.selectSingleNode('/patch:MsiPatch/patch:TargetProduct/patch:UpdatedVersion').text;
         }
@@ -2217,7 +2217,7 @@ var filever;
     /** 電子署名済みであれば署名者を返す。 */
     function checkSignature(file) {
         // 署名チェックツールの実行
-        var process = wshShell.Exec("\"".concat(signtool(), "\" verify /pa /v \"").concat(file.Path, "\""));
+        var process = wshShell.Exec('"'.concat(signtool(), '" verify /pa /v "').concat(file.Path, '"'));
         // 標準出力および標準エラー出力から署名情報を取得
         var signer = '';
         var inSigningCertificateChain = false;
@@ -2247,8 +2247,7 @@ var filever;
                 continue;
             }
             // 拡張子の形式になっていないので無視
-            if (line ===
-                'SignTool Error: This file format cannot be verified because it is not') {
+            if (line === 'SignTool Error: This file format cannot be verified because it is not') {
                 signer = '署名対象外';
                 break;
             }
@@ -2259,7 +2258,7 @@ var filever;
             }
             // 署名エラー
             if (line.startsWith('SignTool Error: ')) {
-                signer = "!!!!署名エラー(".concat(line.substr(16), ")!!!!");
+                signer = '!!!!署名エラー('.concat(line.substr(16), ')!!!!');
                 break;
             }
             // 署名済み
@@ -2274,7 +2273,7 @@ var filever;
         }
         // 時刻署名しているかどうかもチェック
         if (!timestamped) {
-            signer = "!!!!時刻署名なし!!!!(".concat(signer, ")");
+            signer = '!!!!時刻署名なし!!!!('.concat(signer, ')');
         }
         return signer;
     }
@@ -2296,7 +2295,7 @@ var filever;
                 if (!match) {
                     return;
                 }
-                return new Date("".concat(match[1], "/").concat(match[2], "/").concat(match[3], " ").concat(match[4])).toLocaleString();
+                return new Date(''.concat(match[1], '/').concat(match[2], '/').concat(match[3], ' ').concat(match[4])).toLocaleString();
             }
             finally {
                 view.Close();
@@ -2452,7 +2451,7 @@ var filever;
         }
         catch (ex) {
             // レジストリからも取得に失敗したら例外
-            throw new Error("signtoolが見つかりません。: ".concat(ex));
+            throw new Error('signtoolが見つかりません。: '.concat(ex));
         }
     }
     /**
@@ -2494,8 +2493,7 @@ var filever;
         },
         // バージョンリソースの著作権欄
         copyright: function (file) {
-            return (fsoU.isFile(file) && GetExtendedProperty(file, 'System.Copyright')) ||
-                '-';
+            return (fsoU.isFile(file) && GetExtendedProperty(file, 'System.Copyright')) || '-';
         },
         // ファイルの存在するディレクトリ(ディレクトリの場合はそのディレクトリ自身)のフルパス。
         directory: function (file) { return (fsoU.isFolder(file) ? file : file.ParentFolder).Path; },
@@ -2518,8 +2516,7 @@ var filever;
         // ファイルサイズ(3桁区切り)、ディレクトリの場合は`-`
         size: function (file) {
             return fsoU.isFolder(file)
-                ? '-'
-                : ('' + file.Size).replace(/\d(?=(?:\d{3})+$)/g, '$&,');
+                ? '-' : ('' + file.Size).replace(/\d(?=(?:\d{3})+$)/g, '$&,');
         },
         // タイムスタンプ
         timestamp: function (file) {
@@ -2571,7 +2568,7 @@ var filever;
                 var arg = args_1_1.value;
                 var _loop_1 = function (file) {
                     if (ignored(file)) {
-                        return "continue";
+                        return 'continue';
                     }
                     // 各ファイルの情報をフォーマットに従って出力
                     output.WriteLine(format.replace(/\$(?:\{(\w+)\}|(\w+))|\\(?:x([0-9A-Fa-f]{2})|(.))/g, function (whole, name1, name2, hex, ch) {
@@ -2622,6 +2619,8 @@ var filever;
     filever.main = main;
 })(filever || (filever = {}));
 filever.main();
+
+
 })();
 ]]></script>
 </job>
