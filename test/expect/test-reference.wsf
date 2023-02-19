@@ -915,27 +915,26 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             };
 })();
 (function () {
-    var _a, _b, _c, _d, _e, _f;
-    this.Number.EPSILON = Number.EPSILON || 2.2204460492503130808472633361816e-16;
-    this.Number.MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
-    this.Number.MIN_SAFE_INTEGER = Number.MIN_SAFE_INTEGER || -9007199254740991;
-    (_a = Number.isFinite) !== null && _a !== void 0 ? _a : (Number.isFinite = (function (o) {
-        return typeof o === 'number' &&
-            o !== Infinity &&
-            o !== -Infinity &&
-            !isNaN(o);
-    }));
-    (_b = Number.isInteger) !== null && _b !== void 0 ? _b : (Number.isInteger = (function (o) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _k, _l, _m;
+    (_a = (_k = this.Number).EPSILON) !== null && _a !== void 0 ? _a : (_k.EPSILON = Math.pow(2, -52));
+    (_b = (_l = this.Number).MAX_SAFE_INTEGER) !== null && _b !== void 0 ? _b : (_l.MAX_SAFE_INTEGER = Math.pow(2, 53) - 1);
+    (_c = (_m = this.Number).MIN_SAFE_INTEGER) !== null && _c !== void 0 ? _c : (_m.MIN_SAFE_INTEGER = -Number.MAX_SAFE_INTEGER);
+    (_d = Number.isFinite) !== null && _d !== void 0 ? _d : (Number.isFinite = isFinite);
+    (_e = Number.isInteger) !== null && _e !== void 0 ? _e : (Number.isInteger = isInteger);
+    (_f = Number.isNaN) !== null && _f !== void 0 ? _f : (Number.isNaN = function (o) { return typeof o === 'number' && isNaN(o); });
+    (_g = Number.isSafeInteger) !== null && _g !== void 0 ? _g : (Number.isSafeInteger = isSafeInteger);
+    (_h = Number.parseFloat) !== null && _h !== void 0 ? _h : (Number.parseFloat = parseFloat);
+    (_j = Number.parseInt) !== null && _j !== void 0 ? _j : (Number.parseInt = parseInt);
+    function isFinite(o) {
+        return typeof o === 'number' && o !== Infinity && o !== -Infinity && !isNaN(o);
+    }
+    function isInteger(o) {
         return typeof o === 'number' && Math.ceil(o) === o;
-    }));
-    (_c = Number.isNaN) !== null && _c !== void 0 ? _c : (Number.isNaN = function (o) { return typeof o === 'number' && isNaN(o); });
-    (_d = Number.isSafeInteger) !== null && _d !== void 0 ? _d : (Number.isSafeInteger = (function (o) {
-        return Number.isInteger(o) &&
-            o <= Number.MAX_SAFE_INTEGER &&
-            o >= Number.MIN_SAFE_INTEGER;
-    }));
-    (_e = Number.parseFloat) !== null && _e !== void 0 ? _e : (Number.parseFloat = parseFloat);
-    (_f = Number.parseInt) !== null && _f !== void 0 ? _f : (Number.parseInt = parseInt);
+    }
+    function isSafeInteger(o) {
+        return isInteger(o) && o <= Number.MAX_SAFE_INTEGER && o >= Number.MIN_SAFE_INTEGER;
+    }
 })();
 (function () {
     var _a, _b, _c, _d, _e, _f, _g, _h;
