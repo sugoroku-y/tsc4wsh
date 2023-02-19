@@ -1,9 +1,15 @@
 /* globals Node Document Element */
 import * as fs from 'fs';
 import * as path from 'path';
-import {DOMParser, DOMImplementation, XMLSerializer} from '@xmldom/xmldom';
+import {DOMImplementation, XMLSerializer} from '@xmldom/xmldom';
 import {transpile} from './transpile';
-import {getErrorCode, indented, isDirectory, mkdirEnsure} from './utils';
+import {
+  AssertionError,
+  indented,
+  isDirectory,
+  isErrorCodeTo,
+  mkdirEnsure,
+} from './utils';
 
 /**
  * job要素にobject要素を追加する
@@ -32,106 +38,68 @@ function appendObjectElements(
 }
 
 /**
- * job要素にscript要素を追加する。
+ * job要素にruntime要素を追加する。
  *
- * ついでにruntime要素も追加する。
  * @param jobElement script要素を追加するjob要素
- * @param script script要素の中身にするスクリプト
  * @param runtimes runtime要素の中身
+ */
+function appendRuntimeElement(jobElement: Element, runtimeDocs: Document[]) {
+  const doc = jobElement.ownerDocument!;
+  // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
+  if (!runtimeDocs.length) {
+    return;
+  }
+  const runtimeElement = doc.createElement('runtime');
+  jobElement.appendChild(runtimeElement);
+  jobElement.appendChild(doc.createTextNode('\n'));
+  // WshRuntimeテンプレートリテラルの中身をruntime要素に追加
+  for (const runtimeDoc of runtimeDocs) {
+    const element = runtimeDoc.documentElement;
+    for (let child = element.firstChild; child; child = child.nextSibling) {
+      runtimeElement.appendChild(doc.importNode(child, true));
+    }
+  }
+}
+
+/**
+ * job要素にVBScript用script要素を追加する。
+ *
+ * @param jobElement script要素を追加するjob要素
  * @param vbscripts script要素の中身にするVBScript
  */
-function appendScriptElement(
-  jobElement: Element,
-  script: string,
-  runtimes: string[],
-  vbscripts: string[]
-) {
-  const locator = {
-    columnNumber: 0,
-    lineNumber: 0,
-    systemId: '',
-  };
-  const parser = new DOMParser({
-    errorHandler: (level, message) => {
-      throw new Error(message);
-    },
-    locator,
-  });
+function appendVBScriptElements(jobElement: Element, vbscripts: string[]) {
+  const doc = jobElement.ownerDocument!;
+  // VBScript用script要素を追加
+  for (const content of vbscripts) {
+    const scriptElement = doc.createElement('script');
+    scriptElement.setAttribute('language', 'VBScript');
+    scriptElement.appendChild(
+      doc.createCDATASection(content.replaceAll('\r\n', '\n'))
+    );
+    jobElement.appendChild(scriptElement);
+    jobElement.appendChild(doc.createTextNode('\n'));
+  }
+}
+
+/**
+ * job要素にscript要素を追加する。
+ *
+ * @param jobElement script要素を追加するjob要素
+ * @param script script要素の中身にするスクリプト
+ */
+function appendScriptElement(jobElement: Element, script: string) {
   const doc = jobElement.ownerDocument!;
   const content = script
     .replace(/^\ufeff/, '') // remove BOM
     .replaceAll('\r\n', '\n') // CRLF -> LF
     .replace(/^(?!\n)/, '\n') // insert LF to BOS
     .replace(/(?<!\n)$/, '\n'); // append LF to EOS
-  // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
-  if (runtimes.length) {
-    // `` WshRuntime`～` `` をXMLとしてパーズする
-    const runtime = `<WshRuntime>${runtimes.join('').replaceAll('\r\n', '\n')}</WshRuntime>`;
-    const runtimeDoc = (() => {
-      try {
-        return parser.parseFromString(runtime);
-      } catch (ex) {
-        // runtime要素のparseに失敗したらエラー箇所を表示
-        const lines = runtime.split(/\r?\n/);
-        // エラー箇所より前(最大)3行
-        const pre = lines
-          .slice(Math.max(locator.lineNumber - 4, 0), locator.lineNumber)
-          .map(s => '| ' + s)
-          .join('\n');
-        // エラー箇所より後(最大)3行
-        const post = lines
-          .slice(
-            locator.lineNumber,
-            Math.min(locator.lineNumber + 3, lines.length)
-          )
-          .map(s => '| ' + s)
-          .join('\n');
-        throw new Error(
-          `${pre}
-${' '.repeat(2 + locator.columnNumber - 1)}^${getExceptionMessage(ex)
-            .replace(/\[xmldom (\w+)\]/g, '[$1]')
-            .replace(/^@#\[line:\d+,col:\d+\]$/gm, '')
-            .replace(/\s+/g, ' ')
-            .split(/:\s*Error:\s*/)
-            .join('\n' + ' '.repeat(2 + locator.columnNumber))}
-${post}
-`
-        );
-      }
-    })();
-    const runtimeElement = (() => {
-      // 既にあればそのまま使用
-      const elements = jobElement.getElementsByTagName('runtime');
-      /* istanbul ignore next */
-      if (elements.length) {
-        return elements[0];
-      }
-      // 無ければ作成
-      const element = doc.createElement('runtime');
-      jobElement.appendChild(element);
-      jobElement.appendChild(doc.createTextNode('\n'));
-      return element;
-    })();
-    for (
-      let child: Node | null = runtimeDoc.documentElement!.firstChild;
-      child;
-      child = child.nextSibling
-    ) {
-      runtimeElement.appendChild(doc.importNode(child, true));
-    }
-  }
-  // VBScript用script要素を追加
-  for (const content of vbscripts) {
-    const scriptElement = doc.createElement('script');
-    scriptElement.setAttribute('language', 'VBScript');
-    scriptElement.appendChild(doc.createCDATASection(content.replaceAll('\r\n', '\n')));
-    jobElement.appendChild(scriptElement);
-    jobElement.appendChild(doc.createTextNode('\n'));
-  }
   // scriptはCDATAセクションで追加する
   const scriptElement = doc.createElement('script');
   scriptElement.setAttribute('language', 'JScript');
-  scriptElement.appendChild(doc.createCDATASection(content.replaceAll('\r\n', '\n')));
+  scriptElement.appendChild(
+    doc.createCDATASection(content.replaceAll('\r\n', '\n'))
+  );
   jobElement.appendChild(scriptElement);
   jobElement.appendChild(doc.createTextNode('\n'));
   return scriptElement;
@@ -148,7 +116,7 @@ const polyfill = fs.promises.readFile(
 async function makeWsfDom(
   transpiled: string,
   progids: {[id: string]: string},
-  runtimes: string[],
+  runtimes: Document[],
   vbscripts: string[]
 ) {
   const script = indented`
@@ -171,8 +139,12 @@ async function makeWsfDom(
   jobElement.appendChild(doc.createTextNode('\n'));
   // object要素の追加
   appendObjectElements(jobElement, progids);
-  // script要素の追加(あればruntime要素も)
-  appendScriptElement(jobElement, script, runtimes, vbscripts);
+  // runtime要素の追加(必要なら)
+  appendRuntimeElement(jobElement, runtimes);
+  // VBScript用script要素の追加(必要なら)
+  appendVBScriptElements(jobElement, vbscripts);
+  // script要素の追加
+  appendScriptElement(jobElement, script);
   return doc;
 }
 
@@ -210,7 +182,7 @@ async function writeWsf(
         options.output;
   const existent = await fs.promises.readFile(outputPath, 'utf8').catch(
     // istanbul ignore next 存在してなかった場合には空のファイルと同じ扱い
-    ex => getErrorCode(ex) === 'ENOENT' ? '' : Promise.reject(ex)
+    ex => (isErrorCodeTo(ex, 'ENOENT') ? '' : Promise.reject(ex))
   );
   if (existent === content) {
     // 既存のファイルと内容が同じならタイムスタンプが変わらないように出力しない
@@ -264,6 +236,14 @@ export async function tsc4wsh(
       await writeWsf(filepaths[0], doc, options);
       return true;
     } catch (ex) {
+      // istanbul ignore next ここが真にはならないように実装しないといけない
+      if (ex instanceof AssertionError) {
+        process.stderr.write(indented`
+          Assertion Failure: ${ex.message}
+          ${ex.stack}
+          `);
+        return false;
+      }
       // エラーメッセージはすべて例外として受け取る
       const message = getExceptionMessage(ex)
         // LF/CRLFで始まっていなければLFを先頭に挿入

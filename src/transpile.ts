@@ -1,6 +1,7 @@
+import {DOMParser} from '@xmldom/xmldom';
 import * as path from 'path';
 import ts from 'typescript';
-import { error, indented } from './utils';
+import {assert, indented} from './utils';
 
 const RESERVED = [
   'break',
@@ -41,6 +42,7 @@ const RESERVED = [
   'with',
   'enum',
 ];
+
 function findFileInUpper(source: string, filename: string): string | undefined {
   let dirpath = source;
   while (true) {
@@ -157,17 +159,24 @@ function generateActiveXObjectNameMap(program: ts.Program) {
       }
       // プロパティの名前と型を取得
       for (const member of statement.members) {
-        /* istanbul ignore next memberがActiveXObjectNameMapのプロパティでないことはないはず */
-        if (!ts.isPropertySignature(member)) {
-          continue;
-        }
-        /* istanbul ignore next ActiveXObjectNameMapのプロパティのタイプが指定されていないことはないはず */
-        if (!member.type) {
-          continue;
-        }
-        const name = member.name
-          .getText(file)
-          .replace(/^(['"`'])(.*)\1$/, '$2');
+        assert(
+          ts.isPropertySignature(member),
+          'memberがActiveXObjectNameMapのプロパティでないことはないはず'
+        );
+        assert(
+          member.type,
+          'ActiveXObjectNameMapのプロパティのタイプが指定されていないことはないはず'
+        );
+        assert(
+          ts.isStringLiteral(member.name),
+          'プロパティの名前は文字列のはず'
+        );
+        const name = member.name.text;
+        assert(
+          ts.isTypeReferenceNode(member.type) ||
+            ts.isTypeLiteralNode(member.type),
+          'プロパティの型が指定されているはず'
+        );
         const type = member.type.getText(file);
         // 重複していた場合TypeScriptがエラーを出すのでここではチェックしない
         map[type] = name;
@@ -270,7 +279,7 @@ export function transpile(fileNames: string[]) {
   // 参照しているライブラリが実装を含んでいた場合、実装スクリプトを追加する
   let pkgscripts = '';
   // WshRuntimeという名前のテンプレートリテラルがあればruntime要素の中身としてWSFに書き込む
-  const runtimes: string[] = [];
+  const runtimes: Document[] = [];
   // VBScriptという名前のテンプレートリテラルがあればVBScriptとしてWSFに書き込む
   const vbscripts: string[] = [];
   // @onendが付いた関数は最後に呼び出す
@@ -279,24 +288,6 @@ export function transpile(fileNames: string[]) {
     // ソースの一番外側のスコープにあるステートメントからWshRuntime/VBScriptテンプレートリテラルを探す
     for (let i = 0; i < source.statements.length; ++i) {
       const statement = source.statements[i];
-      if (
-        ts.isExpressionStatement(statement) &&
-        ts.isTaggedTemplateExpression(statement.expression) &&
-        ts.isIdentifier(statement.expression.tag) &&
-        ['WshRuntime', 'VBScript'].includes(statement.expression.tag.text) &&
-        ts.isNoSubstitutionTemplateLiteral(statement.expression.template) &&
-        statement.expression.template.rawText
-      ) {
-        if (statement.expression.tag.text === 'WshRuntime') {
-          runtimes.push(statement.expression.template.rawText);
-        } else {
-          vbscripts.push(statement.expression.template.rawText);
-        }
-        // 見つけたら強引にステートメントを削除
-        (source.statements as unknown as unknown[]).splice(i, 1);
-        --i;
-        continue;
-      }
       // ソースの一番外側のスコープで宣言されている引数を持たない名前付き関数
       if (
         ts.isFunctionDeclaration(statement) &&
@@ -390,103 +381,225 @@ export function transpile(fileNames: string[]) {
 
   let script = '';
   const objectMap = generateObjectMap(program);
-  const emitResult = program.emit(undefined, (_, data) => {
-    script += data;
-  }, undefined, undefined, {
-    before: [(context: ts.TransformationContext) => {
-      return (source: ts.SourceFile) => {
-        const visitor = (node: ts.Node): ts.Node => {
-          node = ts.visitEachChild(node, visitor, context);
-          // ES2015以降は配列リテラルの最後のコンマは無視されるがES5以前では最後にundefinedが追加されてしまうので取り除く
-          if (
-            ts.isArrayLiteralExpression(node) &&
-            node.elements.hasTrailingComma
-          ) {
-            const elements = context.factory.createNodeArray(
-              node.elements,
-              false
-            );
-            return context.factory.createArrayLiteralExpression(
-              elements,
-              node.getText(source).includes('\n')
-            );
-          }
-          // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
-          if (
-            ts.isPropertyAccessExpression(node) &&
-            RESERVED.includes(node.name.getText(source))
-          ) {
-            return context.factory.createElementAccessExpression(
-              node.expression,
-              context.factory.createStringLiteral(node.name.getText(source), true)
-            );
-          }
-          // 正規表現の未サポート仕様のチェック
-          if (ts.isRegularExpressionLiteral(node)) {
-            const literal = node.getText();
-            // パターン部分とフラグ部分に分割
-            const [, pattern, flags] =
-              /^\/(.*?)\/(\w*)$/.exec(literal) ??
-              error`正規表現はこのパターンにマッチするはず`;
-            // 名前付きキャプチャ、もしくは後読みのパターンがないかチェック
-            const [, pre, named, lookbehind] =
-              /^([^\\]*?(?:\\.[^\\]*?)*?)\(\?<(?:(\w+>)|([=!]))/.exec(
-                pattern
-              ) ?? [];
-            // エラー発生箇所表示用
-            const {line, character} = source.getLineAndCharacterOfPosition(
-              node.getStart()
-            );
-            if (named) {
-              throw new Error(
-                `JScriptでは名前付きキャプチャはサポートされていません。: ${literal}\n${
-                  source.fileName
-                }:${line + 1}:${character + 1 + pre.length + 1}`
-              );
-            }
-            if (lookbehind) {
-              throw new Error(
-                `JScriptでは後読みはサポートされていません。: ${literal}\n${
-                  source.fileName
-                }:${line + 1}:${character + 1 + pre.length + 1}`
-              );
-            }
-            if (/[^gim]/.test(flags)) {
-              throw new Error(
-                `JScriptではサポートされていない正規表現のフラグです。: ${literal}\n${
-                  source.fileName
-                }:${line + 1}:${character + 1 + pattern.length + 2}`
-              );
-            }
-          }
-          return node;
-        };
-        return ts.visitEachChild(source, visitor, context);
-      }
-    }],
-    after: [(context: ts.TransformationContext) => {
-      return (source: ts.SourceFile) => {
-        const visitor = (node: ts.Node): ts.Node => {
-          node = ts.visitEachChild(node, visitor, context);
-          if (ts.isStringLiteral(node)) {
-            const singleQuote = 'singleQuote' in node && !!node.singleQuote;
-            if (!singleQuote && !node.text.includes("'")) {
-              // `"`を使うようになっていて`'`が含まれていないものは`'`を使うように変更
-              node = context.factory.createStringLiteral(node.text, true);
-            }
-            // 非ASCII文字のエスケープを抑制する
-            ts.setEmitFlags(node, ts.EmitFlags.NoAsciiEscaping);
-          }
-          return node;
-        };
-        return ts.visitEachChild(source, visitor, context);
-      };
-    }],
-  });
+  const diagnostics: ts.Diagnostic[] = [];
+  const emitResult = program.emit(
+    undefined,
+    (_, data) => {
+      script += data;
+    },
+    undefined,
+    undefined,
+    {
+      before: [
+        (context: ts.TransformationContext) => {
+          return (source: ts.SourceFile) => {
+            const visitor = (node: ts.Node): ts.Node | undefined => {
+              node = ts.visitEachChild(node, visitor, context);
+              BLOCK: {
+                // ES2015以降は配列リテラルの最後のコンマは無視されるがES5以前では最後にundefinedが追加されてしまうので取り除く
+                if (
+                  ts.isArrayLiteralExpression(node) &&
+                  node.elements.hasTrailingComma
+                ) {
+                  const elements = context.factory.createNodeArray(
+                    node.elements,
+                    false
+                  );
+                  return context.factory.createArrayLiteralExpression(
+                    elements,
+                    node.getText(source).includes('\n')
+                  );
+                }
+                // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
+                if (
+                  ts.isPropertyAccessExpression(node) &&
+                  RESERVED.includes(node.name.getText(source))
+                ) {
+                  return context.factory.createElementAccessExpression(
+                    node.expression,
+                    context.factory.createStringLiteral(
+                      node.name.getText(source),
+                      true
+                    )
+                  );
+                }
+                // 正規表現の未サポート仕様のチェック
+                if (ts.isRegularExpressionLiteral(node)) {
+                  const literal = node.getText();
+                  // 名前付きキャプチャ、もしくは後読みのパターンがないかチェック
+                  let match;
+                  if (
+                    (match =
+                      /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<\w+>.*?[()]))/.exec(
+                        literal
+                      ))
+                  ) {
+                    addDiagnostic(
+                      diagnostics,
+                      node,
+                      `JScriptでは名前付きキャプチャはサポートされていません。: ${match[1]}`,
+                      match[0].length
+                    );
+                  }
+                  if (
+                    (match =
+                      /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<[=!].*?[()]))/.exec(
+                        literal
+                      ))
+                  ) {
+                    addDiagnostic(
+                      diagnostics,
+                      node,
+                      `JScriptでは後読みはサポートされていません。: ${match[1]}`,
+                      match[0].length
+                    );
+                  }
+                  if ((match = /(?<=\/)\w*?(?=([dsuy])\w*$)/.exec(literal))) {
+                    addDiagnostic(
+                      diagnostics,
+                      node,
+                      `JScriptではサポートされていない正規表現のフラグです。: ${match[1]}`,
+                      match.index + match[0].length
+                    );
+                  }
+                }
+                if (
+                  ts.isExpressionStatement(node) &&
+                  ts.isTaggedTemplateExpression(node.expression) &&
+                  ts.isIdentifier(node.expression.tag)
+                ) {
+                  // タグ付きテンプレートリテラルだけのステートメント
+                  const tagname = node.expression.tag.text;
+                  switch (tagname) {
+                    case 'WshRuntime':
+                    case 'VBScript':
+                      break;
+                    // その他のタグ付きテンプレートリテラルはそのまま
+                    default:
+                      break BLOCK;
+                  }
+                  // istanbul ignore next 式の挿入はTypeScriptでエラーになるのでcoverageは気にしない
+                  if (
+                    !ts.isNoSubstitutionTemplateLiteral(
+                      node.expression.template
+                    )
+                  ) {
+                    addDiagnostic(
+                      diagnostics,
+                      node,
+                      `${node.expression.tag.text}には式の挿入ができません。`
+                    );
+                    break BLOCK;
+                  }
+                  if (!node.expression.template.rawText) {
+                    addDiagnostic(
+                      diagnostics,
+                      node,
+                      `${node.expression.tag.text}の中身が空です。`
+                    );
+                    break BLOCK;
+                  }
+                  if (tagname === 'WshRuntime') {
+                    const locator = {
+                      columnNumber: 0,
+                      lineNumber: 0,
+                      systemId: '',
+                    };
+                    const parser = new DOMParser({
+                      errorHandler: (level, message) => {
+                        throw new Error(message);
+                      },
+                      locator,
+                    });
+                    // `` WshRuntime`～` `` をXMLとしてパーズする
+                    const runtime = `<WshRuntime>${node.expression.template.rawText.replaceAll(
+                      '\r\n',
+                      '\n'
+                    )}</WshRuntime>`;
+                    try {
+                      runtimes.push(parser.parseFromString(runtime));
+                    } catch (ex) {
+                      // runtime要素のparseに失敗したらエラー箇所を表示
+                      const lines = runtime.split(/\r?\n/);
+                      // エラー箇所より前(最大)3行
+                      const pre = lines
+                        .slice(
+                          Math.max(locator.lineNumber - 4, 0),
+                          locator.lineNumber
+                        )
+                        .map(s => '| ' + s)
+                        .join('\n');
+                      // エラー箇所より後(最大)3行
+                      const post = lines
+                        .slice(
+                          locator.lineNumber,
+                          Math.min(locator.lineNumber + 3, lines.length)
+                        )
+                        .map(s => '| ' + s)
+                        .join('\n');
+                      addDiagnostic(
+                        diagnostics,
+                        node,
+                        indented`
+                    WshRuntimeの記述に誤りがあります。
+                    ${pre}
+                    ${' '.repeat(2 + locator.columnNumber - 1)}^${String(
+                          // istanbul ignore next
+                          typeof ex === 'object' && ex && 'message' in ex
+                            ? ex.message
+                            : ex
+                        )
+                          .replace(/\[xmldom (\w+)\]/g, '[$1]')
+                          .replace(/^@#\[line:\d+,col:\d+\]$/gm, '')
+                          .replace(/\s+/g, ' ')
+                          .split(/:\s*Error:\s*/)
+                          .join('\n' + ' '.repeat(2 + locator.columnNumber))}
+                    ${post}
+                    `
+                      );
+                      break BLOCK;
+                    }
+                    //ステートメントは削除
+                    return undefined;
+                  } else {
+                    vbscripts.push(node.expression.template.rawText);
+                    //ステートメントは削除
+                    return undefined;
+                  }
+                }
+              }
+              return node;
+            };
+            return ts.visitEachChild(source, visitor, context);
+          };
+        },
+      ],
+      after: [
+        (context: ts.TransformationContext) => {
+          return (source: ts.SourceFile) => {
+            const visitor = (node: ts.Node): ts.Node => {
+              node = ts.visitEachChild(node, visitor, context);
+              if (ts.isStringLiteral(node)) {
+                const singleQuote = 'singleQuote' in node && !!node.singleQuote;
+                if (!singleQuote && !node.text.includes("'")) {
+                  // `"`を使うようになっていて`'`が含まれていないものは`'`を使うように変更
+                  node = context.factory.createStringLiteral(node.text, true);
+                }
+                // 非ASCII文字のエスケープを抑制する
+                ts.setEmitFlags(node, ts.EmitFlags.NoAsciiEscaping);
+              }
+              return node;
+            };
+            return ts.visitEachChild(source, visitor, context);
+          };
+        },
+      ],
+    }
+  );
 
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)
-    .concat(emitResult.diagnostics);
+    .concat(emitResult.diagnostics, diagnostics);
   /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
   if (allDiagnostics.length) {
     /* istanbul ignore next */
@@ -528,4 +641,20 @@ export function transpile(fileNames: string[]) {
     `;
 
   return {script, objectMap, runtimes, vbscripts};
+}
+
+function addDiagnostic(
+  diagnostics: ts.Diagnostic[],
+  node: ts.Node,
+  message: string,
+  offset: number = 0
+): void {
+  diagnostics.push({
+    category: ts.DiagnosticCategory.Error,
+    code: 0,
+    file: node.getSourceFile(),
+    messageText: message,
+    start: node.getStart() + offset,
+    length: undefined,
+  });
 }

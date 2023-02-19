@@ -1,4 +1,8 @@
     エラー: test/test-error.ts
+    test/test-error.ts (4,8): JScriptでは名前付きキャプチャはサポートされていません。: (?<test>abc)
+    test/test-error.ts (4,2): JScriptでは後読みはサポートされていません。: (?<!v)
+    test/test-error.ts (4,21): JScriptではサポートされていない正規表現のフラグです。: s
+    test/test-error.ts (6,1): WshRuntimeの記述に誤りがあります。
     | <description>
     |   tsc4wshのデバッグ用スクリプト
     | </description>
@@ -8,3 +12,4 @@
     | <named name="base" type="string" required="true" helpstring="相対パスやワイルドカードの基準となるディレクトリ" />
     | <unnamed name="filename" many="true" required="true" helpstring="処理するファイル。ワイルドカード指定可。"/>
     | <example>
+    test/test-error.ts (21,1): VBScriptの中身が空です。

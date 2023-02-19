@@ -65,4 +65,10 @@ namespace test1 {
   WScript.Echo(`あいうえお天地玄黄${String(Symbol.for('iterator'))}abc ]]>`);
   // ]]>
   WScriptUtil.validateParameters();
+  const test = {
+    default: 'aaa',
+    for: 'bbb',
+    delete: 'ccc',
+  };
+  WScript.Echo(`${test.default}, ${test.for}, ${test.delete}`);
 }

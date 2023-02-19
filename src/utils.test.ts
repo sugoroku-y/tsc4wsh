@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { error, indented, isDirectory, mkdirEnsure, rmdirEnsure } from "./utils";
 
+jest.setTimeout(0x7fffffff);
+
 describe('mkdirEnsure', () => {
   test('not exist', async () => {
     // test/temp/tempが存在していれば削除

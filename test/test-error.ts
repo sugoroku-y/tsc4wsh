@@ -1,6 +1,8 @@
 /// <reference types="wscript-util" />
 /// <reference types="filesystemobject-util" />
 
+/(?<!v)(?<test>abc)/s;
+
 WshRuntime`
 <description>
   tsc4wshのデバッグ用スクリプト
@@ -16,6 +18,8 @@ WshRuntime`
     \\dokokano\nantoka\Master\Release\Updater以下にある拡張子がtblのファイルすべてを処理します。
 </example>
 `;
+VBScript``;
+
 
 namespace testError {
   const fsoU = Scripting.FileSystemObject.Utils;
@@ -42,4 +46,17 @@ namespace testError {
       );
     }
   }
+}
+
+function tagged(tag: string): (...args: [TemplateStringsArray, ...unknown[]]) => string {
+  return (...args) => {
+    return tag + args[0].reduce((r, e, i) => `${r}${args[i]}${e}`);
+  };
+}
+
+tagged('test')`あいうえお${WScript.ScriptFullName}abcde`;
+basic`あいうえお${WScript.ScriptFullName}abcde`;
+
+function basic(...args: [TemplateStringsArray, ...unknown[]]): string {
+  return args[0].reduce((r, e, i) => `${r}${args[i]}${e}`);
 }
