@@ -37,8 +37,28 @@ for (const e = new Enumerator(WScript.Arguments.Unnamed); !e.atEnd(); e.moveNext
 
 > npx tsc4wsh main.ts -o example.wsf
 
-### ライブラリ
+### ライブラリ・型定義ファイル
 
+`private-modules`以下に私がスクリプト作成に利用している、ライブラリ・型定義を置いています。
+
+ライブラリ
+
+- debug-context
+- filesystemobject-util
+- iterables
+- registry
+- wscript-util
+- wshtest
+- xmlwriter
+
+型定義
+
+- dom3
+- useragent
+- windows-installer
+- wsh
+- xmlstream
+- virtualbox(未完成)
 
 ### エディター向け設定ファイル
 
@@ -133,16 +153,97 @@ JScriptではどうしてもできないことがVBScriptならできる、と�
 
 ### `declare const`で宣言された変数
 
-`Scripting.FileSystemObject`のようなprogidを指定して
+```ts
+declare const fso: Scripting.FileSystemObject;
+```
+
+のような記述があると、出力するWSFファイルに
+
+```xml
+<object id="fso" progid="Scripting.FileSystemObject"/>
+```
+
+という行が追加されます。つまりグローバルな定数として`fso`という`progid`が`Scripting.FileSystemObject`なオブジェクトが追加されます。
+
+このとき指定する型は`ActiveXObjectNameMap`という`interface`に指定されたプロパティであることに注意してください。
+
+`Scripting.FileSystemObject`は型名と`progid`が一致していますが、progidが`WScript.Shell`である型は`IWshRuntimeLibrary.WshShell`です。
+
+`progid`に対応する型がわからない場合は
+
+```ts
+declare const wshShell: ActiveXObjectNameMap['WScript.Shell'];
+```
+
+のように一度書いてみて、`wshShell`にマウスカーソルを合わせて型情報が見るという手も使えます。
 
 ### 配列リテラルの最後のカンマ
 
+ES5以降のJavaScriptでは配列リテラルの最後に`,`があっても無視されますが、
+JScriptでは配列リテラルの最後に`,`があると配列の要素に`undefined`が追加されてしまいます。
+
+```ts
+const arr = [
+  1,
+  2,
+  3,
+];
+// -> transpileすると
+// var arr = [
+//   1,
+//   2,
+//   3,
+// ];
+// と変換されるが、これは
+// var arr = [1, 2, 3, undefined];
+// と同じになる
+```
+
+そこでJScriptへの変換時に最後のカンマを出力しないようにしました。
+
+```ts
+const arr = [
+  1,
+  2,
+  3,
+];
+// -> transpileすると
+// var arr = [
+//   1,
+//   2,
+//   3
+// ];
+// と変換される。
+
 ### `default`、`for`などの予約語の名前のプロパティアクセス
+
+ES5以降では`Symbol.for`などプロパティ名であれば予約語も使えるようになりましたが、JScriptではプロパティ名でも予約語を使うとエラーになります。
+
+そこで`Symbol.for`のようなプロパティアクセスは`Symbol['for']`のようにインデックスでのアクセスに置き換えます。
 
 ### JScriptで未サポートな正規表現のチェック
 
+JScriptでは後読みや名前付きキャプチャをサポートしていません。
+
+また`g`、`i`、`m`以外のフラグも未サポートです。
+
+そこでこれらを使用していたらエラーになるようにしています。
+
 ### テンプレートリテラル内の非ASCII文字のエスケープ
+
+テンプレートリテラル内に日本語文字のような非ASCII文字を記述していると、トランスパイル後には'\u3042\u3044\u3046'のようにエスケープされた状態になっています。
+
+これはTypeScriptの標準的な動作なのですが、生成されたスクリプトが読みづらくなるのでエスケープしないように修正しています。
 
 ### `@onend`が付けられた関数
 
+以下のようにトップレベルに記述した関数のコメントに`@onend`をつけると、プログラムの最後で自動的に呼び出されるようにしています。
 
+```ts
+// @onend
+function onendfunction() {
+  // ...
+}
+```
+
+複数のソースファイルで設定を行って、最後にまとめて実行、のようなことをしたいとき、具体的にはそれぞれのソースでテストケースを記述しておいて最後にまとめてテストケースを実行、のようなことがしたいときに便利です。
