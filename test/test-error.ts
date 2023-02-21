@@ -1,5 +1,6 @@
 /// <reference types="wscript-util" />
 /// <reference types="filesystemobject-util" />
+/// <reference types="windows-installer" />
 
 /(?<!v)(?<test>abc)/s;
 
@@ -23,18 +24,22 @@ VBScript``;
 
 namespace testError {
   const fsoU = Scripting.FileSystemObject.Utils;
-  declare const fso: Scripting.FileSystemObject;
+  declare const fso: WindowsInstaller.Installer;
+  declare const fso2: Scripting.FileSystemObject;
+  // @ts-expect-error
+  declare const noType;
+  declare const unknownConst: unknown;
+  declare const {Client}: WindowsInstaller.Installer;
+  if (noType && typeof unknownConst === 'string' && typeof Client == 'number') {
+    WScript.Echo(`${noType} ${unknownConst} ${Client}`);
+  }
 
   const output: {
     WriteLine: (s: string) => void;
   } = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], outputPath => {
     if (outputPath) {
-      return fso.OpenTextFile(
-        outputPath,
-        Scripting.IOMode.ForWriting,
-        true,
-        Scripting.Tristate.TristateFalse
-      );
+      fso.OpenDatabase(outputPath, WindowsInstaller.msiOpenDatabaseMode.msiOpenDatabaseModeReadOnly);
+      return fso2.OpenTextFile(outputPath);
     }
     return WScript.StdOut;
   });

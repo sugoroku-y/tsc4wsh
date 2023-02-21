@@ -39,13 +39,13 @@ function onendfunc2() {
 
 namespace test1 {
   const fsoU = Scripting.FileSystemObject.Utils;
-  declare const fso: Scripting.FileSystemObject;
+  declare const fso2: Scripting.FileSystemObject;
 
   const output: {
     WriteLine: (s: string) => void;
   } = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], outputPath => {
     if (outputPath) {
-      return fso.OpenTextFile(
+      return fso2.OpenTextFile(
         outputPath,
         Scripting.IOMode.ForWriting,
         true,

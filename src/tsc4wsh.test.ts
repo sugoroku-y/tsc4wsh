@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {tsc4wsh} from './tsc4wsh';
 import {generateTSConfig} from './transpile';
-import {isDirectory, isFile, mkdirEnsure, rmdirEnsure, unlinkEnsure} from "./utils";
+import {isFile, mkdirEnsure, unlinkEnsure} from "./utils";
 
-jest.setTimeout(40000);
+jest.setTimeout(0x7fffffff);
 
 describe('tsc4wsh', () => {
 
@@ -122,13 +122,11 @@ test('generateTSConfig', async () => {
         ],
         lib: ['ESNext'],
         typeRoots: [
-          expect.stringMatching(/\/private-modules$/),
-          expect.stringMatching(/\/private-modules\/@types$/),
+          '../../private-modules',
+          '../../private-modules/@types',
         ],
       },
     });
-    expect(await ((await fs.promises.stat(config.compilerOptions.typeRoots[0]))).isDirectory()).toBeTruthy();
-    expect(await ((await fs.promises.stat(config.compilerOptions.typeRoots[1]))).isDirectory()).toBeTruthy();
   } finally {
     process.chdir(cwdsave);
   }

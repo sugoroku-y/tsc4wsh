@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <job>
 <object id="fso" progid="Scripting.FileSystemObject"/>
+<object id="fso2" progid="Scripting.FileSystemObject"/>
 <runtime>
 <description>
   tsc4wshのデバッグ用スクリプト
@@ -2201,7 +2202,7 @@ var test1;
     var fsoU = Scripting.FileSystemObject.Utils;
     var output = WScriptUtil.Arguments.Named(['Output', 'Out', 'O'], function (outputPath) {
         if (outputPath) {
-            return fso.OpenTextFile(outputPath, 2 /* Scripting.IOMode.ForWriting */, true, 0 /* Scripting.Tristate.TristateFalse */);
+            return fso2.OpenTextFile(outputPath, 2 /* Scripting.IOMode.ForWriting */, true, 0 /* Scripting.Tristate.TristateFalse */);
         }
         return WScript.StdOut;
     });

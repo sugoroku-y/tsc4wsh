@@ -1,0 +1,2 @@
+    test/test.ts (42,3): 違う名前で同じ型が宣言されています。: fso2: Scripting.FileSystemObject
+        private-modules/filesystemobject-util/index.ts (4,3): fso: Scripting.FileSystemObject

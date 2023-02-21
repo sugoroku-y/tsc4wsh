@@ -1,8 +1,10 @@
 import {DOMParser} from '@xmldom/xmldom';
 import * as path from 'path';
+import * as fs from 'fs';
 import ts from 'typescript';
 import {assert, indented} from './utils';
 
+/** JScriptの予約語 */
 const RESERVED = [
   'break',
   'case',
@@ -118,8 +120,9 @@ function adjustConfig(config: {[key: string]: any}) {
 export function generateTSConfig() {
   const config = {compilerOptions: adjustConfig({})};
   // private-modulesをtypeRootsに指定
-  const p = process.cwd();
-  const p1 = path.join(__dirname, '../private-modules');
+  // ネットワークドライブのパスがUNCパスに変換されていることがあるので常にUNCパスに変換して相対パス解決する
+  const p = fs.realpathSync.native(process.cwd());
+  const p1 = path.join(fs.realpathSync.native(__dirname), '../private-modules');
   const p2 = path.join(p1, '@types');
   config.compilerOptions.typeRoots = [
     path.relative(p, p1).replace(/\\/g, '/'),
@@ -140,7 +143,21 @@ function diagnosticToText(diag: ts.Diagnostic): string {
     diag.start!
   );
   const message = ts.flattenDiagnosticMessageText(diag.messageText, '\n');
-  return `${diag.file.fileName} (${line + 1},${character + 1}): ${message}`;
+  const sourcePath = (sourcePath => {
+    // ネットワークドライブがUNCパスに変換されていることがあるのでどちらもUNCパスに変換してから相対パス解決する。
+    if (!path.isAbsolute(sourcePath)) {
+      return sourcePath;
+    }
+    const relativePath = path.relative(
+      fs.realpathSync.native(process.cwd()),
+      sourcePath
+    );
+    // path.relativeの結果も絶対パスならもとのままにする
+    return path.isAbsolute(relativePath)
+      ? sourcePath
+      : relativePath.replaceAll('\\', '/');
+  })(diag.file.fileName);
+  return `${sourcePath} (${line + 1},${character + 1}): ${message}`;
 }
 /**
  * ActiveXObjectNameMapインターフェイスの宣言からprogidと型のマッピングを生成
@@ -185,64 +202,30 @@ function generateActiveXObjectNameMap(program: ts.Program) {
   }
   return map;
 }
-/**
- * idとprogidのマッピングを生成
- */
-function generateObjectMap(program: ts.Program) {
-  const activeXmap = generateActiveXObjectNameMap(program);
-  const objectMap: {[id: string]: string} = {};
-  // ソースからdeclare const fso: Scripting.FileSystemObject;のような宣言を探す
-  function searchVariableDeclaration(
-    block: ts.SourceFile | ts.ModuleBlock,
-    file: ts.SourceFile
-  ) {
-    for (const statement of block.statements) {
-      if (ts.isVariableStatement(statement)) {
-        for (const decl of statement.declarationList.declarations) {
-          // ActiveXObjectNameMapのプロパティで使われている型が指定されている変数を探す
-          if (!decl.type) {
-            continue;
-          }
-          const type = decl.type.getText(file);
-          if (!(type in activeXmap)) {
-            continue;
-          }
-          // 変数名
-          const name = decl.name.getText(file);
-          if (name in objectMap) {
-            // 同じ変数名で違う型を宣言していたらエラー
-            /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
-            if (objectMap[name] !== activeXmap[type]) {
-              throw new Error(
-                `同じIDで違う型が宣言されています。: ${objectMap[name]}: {objectMap[name]}、${type}$`
-              );
-            }
-            // 同じ型なら問題なし
-            continue;
-          }
-          objectMap[name] = activeXmap[type];
-        }
-        continue;
-      }
-      if (ts.isModuleDeclaration(statement)) {
-        // ModuleDeclarationのときはModuleDeclaration以外になるまでbodyをたぐる
-        let s = statement;
-        while (s.body && ts.isModuleDeclaration(s.body)) {
-          s = s.body;
-        }
-        // ModuleBlockを見つけたら再帰
-        /* istanbul ignore next どういうときにModuleBlockができるのかよく分かっていないのでテスト省略 */
-        if (s.body && ts.isModuleBlock(s.body)) {
-          searchVariableDeclaration(s.body, file);
-        }
-      }
-    }
-  }
-  for (const file of program.getSourceFiles()) {
-    searchVariableDeclaration(file, file);
-  }
-  return objectMap;
-}
+
+type ExtendedContext = ts.TransformationContext & Readonly<{
+  /** ActiveXObjectNameMapで定義されたprogidと型名のマッピング */
+  activeXmap: Readonly<Record<string, string>>;
+  /** declare constで宣言された変数と型の情報のマッピング */
+  objectMap: Record<string, {
+    /** 変数を宣言しているソースファイル */
+    source: ts.SourceFile;
+    /** 変数を宣言している位置 */
+    start: number;
+    /** 変数の型名 */
+    type: string;
+    /** 型に対応するprogid */
+    progid: string;
+  }>;
+  /** エラー情報 */
+  diagnostics: ts.Diagnostic[];
+  /** 最後に実行する関数の名前 */
+  onend: string[];
+  /** VBScriptの内容 */
+  vbscripts: string[];
+  /** WshRuntimeの内容 */
+  runtimes: ChildNode[];
+}>;
 
 export function transpile(fileNames: string[]) {
   // node_modules以下のソースファイルが取り込まれないので定義ファイル以外は出力用と見なされるように小細工
@@ -265,7 +248,6 @@ export function transpile(fileNames: string[]) {
     ts.convertCompilerOptionsFromJson(adjustedConfig, tsbasedir);
   /* istanbul ignore next */
   if (coError && coError.length) {
-    /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
     throw new Error(coError.join('\n'));
   }
   // private-modulesがtypeRootsにない場合でもコンパイルできるように追加
@@ -277,111 +259,68 @@ export function transpile(fileNames: string[]) {
   const program = ts.createProgram(fileNames, compilerOptions);
 
   // 参照しているライブラリが実装を含んでいた場合、実装スクリプトを追加する
-  let pkgscripts = '';
+  let pkgscripts = ''.concat(
+    ...(function* () {
+      for (const source of program.getSourceFiles()) {
+        // transpile対象のソースは除外
+        if (fileNames.includes(source.fileName)) {
+          continue;
+        }
+        // ソースが含まれているパッケージのpackage.jsonを検索
+        const [pkgpath, pkg] = loadPackageJson(source.fileName);
+        // istanbul ignore next 見つからないことはないはずだが念の為
+        if (!pkgpath || !pkg) {
+          continue;
+        }
+        // typesやmainが無いものは無視
+        if (!pkg.types || !pkg.main) {
+          continue;
+        }
+        // typesプロパティをpackage.jsonからの相対パスとして検索、`.d.ts`が末尾になければ追加
+        // istanbul ignore next
+        const typesPath = path
+          .join(
+            path.dirname(pkgpath),
+            pkg.types.replace(/(?<!\.d\.ts)$/, '.d.ts')
+          )
+          // Windows環境向けにパス区切り文字を置換
+          .replace(/\\/g, '/');
+        // istanbul ignore next ソースファイルと一致しなければ無視
+        if (typesPath !== source.fileName) {
+          continue;
+        }
+        // 実装スクリプトを追加
+        const mainPath = path.join(path.dirname(pkgpath), pkg.main);
+
+        const mainSource = ts.sys.readFile(mainPath, 'utf8');
+        // istanbul ignore next
+        if (!mainSource) {
+          continue;
+        }
+        // 改行の補正(CRLFをLFに、先頭や末尾になければLF追加)
+        yield mainSource.replace(/^\r\n|^(?!\n)|\r\n|(?<!\n)$/g, '\n');
+      }
+    })()
+  );
+
   // WshRuntimeという名前のテンプレートリテラルがあればruntime要素の中身としてWSFに書き込む
-  const runtimes: Document[] = [];
+  const runtimes: ChildNode[] = [];
   // VBScriptという名前のテンプレートリテラルがあればVBScriptとしてWSFに書き込む
   const vbscripts: string[] = [];
   // @onendが付いた関数は最後に呼び出す
   const onend: string[] = [];
-  for (const source of program.getSourceFiles()) {
-    // ソースの一番外側のスコープにあるステートメントからWshRuntime/VBScriptテンプレートリテラルを探す
-    for (let i = 0; i < source.statements.length; ++i) {
-      const statement = source.statements[i];
-      // ソースの一番外側のスコープで宣言されている引数を持たない名前付き関数
-      if (
-        ts.isFunctionDeclaration(statement) &&
-        statement.name &&
-        statement.parameters.length === 0
-      ) {
-        // 関数の前のコメントから@～を抽出
-        const tags: {[name: string]: string} = {};
-        // functionの前のコメント部分を抽出
-        const re =
-          /\/\/[ \t]*([^\r\n]*?)[ \t]*\r?\n|\/\**\s*(.*?)\s*\*\/|\s+|(.)/gs;
-        re.lastIndex = statement.pos;
-        let matched;
-        while ((matched = re.exec(source.text))) {
-          const [, lineComment, blockComment, notFound] = matched;
-          if (notFound) {
-            // コメント以外が見つかったので終了
-            break;
-          }
-          if (lineComment !== undefined) {
-            // 一行コメント
-            const [, tagname, parameters] =
-              /^@(\w+)(?:\((.*)\))?$/.exec(lineComment) ?? [];
-            if (tagname) {
-              tags[tagname] = parameters;
-            }
-            continue;
-          }
-          if (blockComment !== undefined) {
-            // ブロックコメント
-            for (const line of blockComment
-              // 1行ごとに分割
-              .split(/\r?\n/)
-              // 行頭の*と空白、行末の空白を除去
-              .map(line => line.replace(/^\s*\*\s*|\s+$/g, ''))) {
-              const [, tagname, parameters] =
-                /^@(\w+)(?:\((.*)\))?$/.exec(line) ?? [];
-              if (tagname) {
-                tags[tagname] = parameters;
-              }
-            }
-            continue;
-          }
-        }
-        // @onendがあったらその関数をスクリプトの最後に呼び出し
-        if ('onend' in tags) {
-          onend.push(statement.name.text);
-        }
-      }
+  const activeXmap = generateActiveXObjectNameMap(program);
+  const objectMap: Record<string,
+    {
+      source: ts.SourceFile;
+      start: number;
+      type: string;
+      progid: string;
     }
-    if (fileNames.includes(source.fileName)) {
-      continue;
-    }
-    const [pkgpath, pkg] = loadPackageJson(source.fileName);
-    // istanbul ignore next
-    if (!pkgpath || !pkg) {
-      continue;
-    }
-    if (!pkg.types || !pkg.main) {
-      continue;
-    }
-    // typesプロパティをpackage.jsonからの相対パスとして検索、`.d.ts`が末尾になければ追加
-    // istanbul ignore next
-    const typesPath = path
-      .join(
-        path.dirname(pkgpath),
-        (pkg.types as string).endsWith('.d.ts')
-          ? pkg.types
-          : pkg.types + '.d.ts'
-      )
-      .replace(/\\/g, '/');
-    // ソースファイルと一致しなければ無視
-    // istanbul ignore next
-    if (typesPath !== source.fileName) {
-      continue;
-    }
-    // 実装スクリプトを追加
-    const mainPath = path.join(path.dirname(pkgpath), pkg.main);
-
-    // istanbul ignore next
-    const pkgscript = ts.sys
-      .readFile(mainPath, 'utf8')
-      ?.replace(/\r\n/g, '\n')
-      .replace(/^(?!\n)/, '\n')
-      .replace(/[^\n]$/, '$&\n');
-    // istanbul ignore next
-    if (pkgscript !== undefined) {
-      pkgscripts += pkgscript;
-    }
-  }
-
-  let script = '';
-  const objectMap = generateObjectMap(program);
+  > = {};
+  // エラー情報
   const diagnostics: ts.Diagnostic[] = [];
+  let script = '';
   const emitResult = program.emit(
     undefined,
     (_, data) => {
@@ -391,235 +330,75 @@ export function transpile(fileNames: string[]) {
     undefined,
     {
       before: [
-        (context: ts.TransformationContext) => {
+        (_context: ts.TransformationContext) => {
+          const context: ExtendedContext = {
+            ..._context,
+            activeXmap,
+            objectMap,
+            diagnostics,
+            onend,
+            vbscripts,
+            runtimes,
+          };
           return (source: ts.SourceFile) => {
-            const visitor = (node: ts.Node): ts.Node | undefined => {
-              node = ts.visitEachChild(node, visitor, context);
-              BLOCK: {
-                // ES2015以降は配列リテラルの最後のコンマは無視されるがES5以前では最後にundefinedが追加されてしまうので取り除く
-                if (
-                  ts.isArrayLiteralExpression(node) &&
-                  node.elements.hasTrailingComma
-                ) {
-                  const elements = context.factory.createNodeArray(
-                    node.elements,
-                    false
-                  );
-                  return context.factory.createArrayLiteralExpression(
-                    elements,
-                    node.getText(source).includes('\n')
-                  );
-                }
-                // Symbol.forはforが予約語のためエラーになるのでSymbol['for']に置き換える
-                if (
-                  ts.isPropertyAccessExpression(node) &&
-                  RESERVED.includes(node.name.getText(source))
-                ) {
-                  return context.factory.createElementAccessExpression(
-                    node.expression,
-                    context.factory.createStringLiteral(
-                      node.name.getText(source),
-                      true
-                    )
-                  );
-                }
-                // 正規表現の未サポート仕様のチェック
-                if (ts.isRegularExpressionLiteral(node)) {
-                  const literal = node.getText();
-                  // 名前付きキャプチャ、もしくは後読みのパターンがないかチェック
-                  let match;
-                  if (
-                    (match =
-                      /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<\w+>.*?[()]))/.exec(
-                        literal
-                      ))
-                  ) {
-                    addDiagnostic(
-                      diagnostics,
-                      node,
-                      `JScriptでは名前付きキャプチャはサポートされていません。: ${match[1]}`,
-                      match[0].length
-                    );
-                  }
-                  if (
-                    (match =
-                      /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<[=!].*?[()]))/.exec(
-                        literal
-                      ))
-                  ) {
-                    addDiagnostic(
-                      diagnostics,
-                      node,
-                      `JScriptでは後読みはサポートされていません。: ${match[1]}`,
-                      match[0].length
-                    );
-                  }
-                  if ((match = /(?<=\/)\w*?(?=([dsuy])\w*$)/.exec(literal))) {
-                    addDiagnostic(
-                      diagnostics,
-                      node,
-                      `JScriptではサポートされていない正規表現のフラグです。: ${match[1]}`,
-                      match.index + match[0].length
-                    );
-                  }
-                }
-                if (
-                  ts.isExpressionStatement(node) &&
-                  ts.isTaggedTemplateExpression(node.expression) &&
-                  ts.isIdentifier(node.expression.tag)
-                ) {
-                  // タグ付きテンプレートリテラルだけのステートメント
-                  const tagname = node.expression.tag.text;
-                  switch (tagname) {
-                    case 'WshRuntime':
-                    case 'VBScript':
-                      break;
-                    // その他のタグ付きテンプレートリテラルはそのまま
-                    default:
-                      break BLOCK;
-                  }
-                  // istanbul ignore next 式の挿入はTypeScriptでエラーになるのでcoverageは気にしない
-                  if (
-                    !ts.isNoSubstitutionTemplateLiteral(
-                      node.expression.template
-                    )
-                  ) {
-                    addDiagnostic(
-                      diagnostics,
-                      node,
-                      `${node.expression.tag.text}には式の挿入ができません。`
-                    );
-                    break BLOCK;
-                  }
-                  if (!node.expression.template.rawText) {
-                    addDiagnostic(
-                      diagnostics,
-                      node,
-                      `${node.expression.tag.text}の中身が空です。`
-                    );
-                    break BLOCK;
-                  }
-                  if (tagname === 'WshRuntime') {
-                    const locator = {
-                      columnNumber: 0,
-                      lineNumber: 0,
-                      systemId: '',
-                    };
-                    const parser = new DOMParser({
-                      errorHandler: (level, message) => {
-                        throw new Error(message);
-                      },
-                      locator,
-                    });
-                    // `` WshRuntime`～` `` をXMLとしてパーズする
-                    const runtime = `<WshRuntime>${node.expression.template.rawText.replaceAll(
-                      '\r\n',
-                      '\n'
-                    )}</WshRuntime>`;
-                    try {
-                      runtimes.push(parser.parseFromString(runtime));
-                    } catch (ex) {
-                      // runtime要素のparseに失敗したらエラー箇所を表示
-                      const lines = runtime.split(/\r?\n/);
-                      // エラー箇所より前(最大)3行
-                      const pre = lines
-                        .slice(
-                          Math.max(locator.lineNumber - 4, 0),
-                          locator.lineNumber
-                        )
-                        .map(s => '| ' + s)
-                        .join('\n');
-                      // エラー箇所より後(最大)3行
-                      const post = lines
-                        .slice(
-                          locator.lineNumber,
-                          Math.min(locator.lineNumber + 3, lines.length)
-                        )
-                        .map(s => '| ' + s)
-                        .join('\n');
-                      addDiagnostic(
-                        diagnostics,
-                        node,
-                        indented`
-                    WshRuntimeの記述に誤りがあります。
-                    ${pre}
-                    ${' '.repeat(2 + locator.columnNumber - 1)}^${String(
-                          // istanbul ignore next
-                          typeof ex === 'object' && ex && 'message' in ex
-                            ? ex.message
-                            : ex
-                        )
-                          .replace(/\[xmldom (\w+)\]/g, '[$1]')
-                          .replace(/^@#\[line:\d+,col:\d+\]$/gm, '')
-                          .replace(/\s+/g, ' ')
-                          .split(/:\s*Error:\s*/)
-                          .join('\n' + ' '.repeat(2 + locator.columnNumber))}
-                    ${post}
-                    `
-                      );
-                      break BLOCK;
-                    }
-                    //ステートメントは削除
-                    return undefined;
-                  } else {
-                    vbscripts.push(node.expression.template.rawText);
-                    //ステートメントは削除
-                    return undefined;
-                  }
-                }
-              }
-              return node;
-            };
-            return ts.visitEachChild(source, visitor, context);
+            return ts.visitEachChild(
+              source,
+              function visitor(_node: ts.Node): ts.Node | undefined {
+                const node = ts.visitEachChild(_node, visitor, context);
+                return (
+                  processDeclareConstActiveX(node, context) ??
+                  processTaggedGlobalFunction(node, context) ??
+                  processArrayLiteralExpression(node, context) ??
+                  processKeywordPropertyAccess(node, context) ??
+                  checkRegularExpressionForJScript(node, context) ??
+                  processPseudoTaggedTemplateLiteral(node, context) ?? {node}
+                ).node;
+              },
+              context
+            );
           };
         },
       ],
       after: [
         (context: ts.TransformationContext) => {
           return (source: ts.SourceFile) => {
-            const visitor = (node: ts.Node): ts.Node => {
-              node = ts.visitEachChild(node, visitor, context);
-              if (ts.isStringLiteral(node)) {
-                const singleQuote = 'singleQuote' in node && !!node.singleQuote;
-                if (!singleQuote && !node.text.includes("'")) {
-                  // `"`を使うようになっていて`'`が含まれていないものは`'`を使うように変更
-                  node = context.factory.createStringLiteral(node.text, true);
-                }
-                // 非ASCII文字のエスケープを抑制する
-                ts.setEmitFlags(node, ts.EmitFlags.NoAsciiEscaping);
-              }
-              return node;
-            };
-            return ts.visitEachChild(source, visitor, context);
+            return ts.visitEachChild(
+              source,
+              function visitor(_node: ts.Node): ts.Node {
+                const node = ts.visitEachChild(_node, visitor, context);
+                return (processStringLiteral(node, context) ?? {node}).node;
+              },
+              context
+            );
           };
         },
       ],
     }
   );
 
+  // プログラム上のエラー、出力時のエラー、tsc4wsh固有のエラーをすべて並べる
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)
     .concat(emitResult.diagnostics, diagnostics);
-  /* istanbul ignore next エラーの発生条件が分からないのでテスト省略 */
   if (allDiagnostics.length) {
-    /* istanbul ignore next */
-    const errorMessages: string[] = [];
-    /* istanbul ignore next */
-    for (const diagnostic of allDiagnostics) {
-      /* istanbul ignore next */
-      errorMessages.push(diagnosticToText(diagnostic));
-      /* istanbul ignore next */
-      if (!diagnostic.relatedInformation) {
-        /* istanbul ignore next */
-        continue;
-      }
-      for (const info of diagnostic.relatedInformation) {
-        /* istanbul ignore next */
-        errorMessages.push(diagnosticToText(info).replace(/^(?=.)/gm, '    '));
-      }
+    // すべてのエラーメッセージを配列化
+    const errorMessages = allDiagnostics.flatMap(diagnostic => [
+      diagnosticToText(diagnostic),
+      ...(diagnostic.relatedInformation?.map(info =>
+        diagnosticToText(info).replace(/^(?=.)/gm, '    ')
+      ) ?? []),
+    ]);
+    if (
+      allDiagnostics.some(diag => diag.category === ts.DiagnosticCategory.Error)
+    ) {
+      // エラーがあれば例外を投げる
+      throw new Error(errorMessages.join('\n'));
+    } else {
+      // エラー以外のものだけであれば出力するだけで続行
+      process.stderr.write(
+        errorMessages.map(message => `    ${message}\n`).join('')
+      );
     }
-    /* istanbul ignore next */
-    throw new Error(errorMessages.join('\n'));
   }
 
   script = indented`
@@ -635,7 +414,7 @@ export function transpile(fileNames: string[]) {
     }
     ${
       // @onendが付けられた関数をスクリプトの最後で呼び出す
-      onend.map(funcname => funcname + '();\n').join('')
+      onend.map(funcname => `${funcname}();\n`).join('')
     }
     })();
     `;
@@ -643,18 +422,379 @@ export function transpile(fileNames: string[]) {
   return {script, objectMap, runtimes, vbscripts};
 }
 
+function processDeclareConstActiveX(
+  node: ts.Node,
+  {activeXmap, objectMap, diagnostics}: ExtendedContext
+): {node?: ts.Node} | undefined {
+  if (
+    !ts.isVariableStatement(node) ||
+    !ts
+      .getModifiers(node)
+      ?.some(mod => mod.kind === ts.SyntaxKind.DeclareKeyword) ||
+    (node.declarationList.flags & ts.NodeFlags.Const) === 0
+  ) {
+    // declare const でなければスキップ
+    return undefined;
+  }
+  for (const decl of node.declarationList.declarations) {
+    // ActiveXObjectNameMapのプロパティで使われている型が指定されている変数を探す
+    if (!decl.type) {
+      continue;
+    }
+    const type = decl.type.getText();
+    if (!(type in activeXmap)) {
+      continue;
+    }
+    const progid = activeXmap[type];
+    if (!ts.isIdentifier(decl.name)) {
+      continue;
+    }
+    // 変数名
+    const name = decl.name.text;
+    if (name in objectMap) {
+      // すでに同名の変数が宣言されていた場合
+      if (objectMap[name].progid !== progid) {
+        // 違う型だったらエラー
+        addDiagnostic(
+          diagnostics,
+          node,
+          `同じ名前で違う型が宣言されています。: ${name}: ${type}`,
+          {
+            relatedInformation: [
+              {
+                category: ts.DiagnosticCategory.Error,
+                code: 0,
+                file: objectMap[name].source,
+                start: objectMap[name].start,
+                length: undefined,
+                messageText: `${name}: ${objectMap[name].type}`,
+              },
+            ],
+          }
+        );
+      }
+      // 同じ型なら問題なし
+      continue;
+    }
+    const found = Object.entries(objectMap).find(
+      ([, {progid: existsProgid}]) => progid === existsProgid
+    );
+    if (found) {
+      // 別の名前で同じ型を宣言していたら警告
+      assert(
+        name !== found[0],
+        '同じ名前で同じ型であれば1つ前のチェックでスキップしているはず'
+      );
+      addDiagnostic(
+        diagnostics,
+        node,
+        `違う名前で同じ型が宣言されています。: ${name}: ${type}`,
+        {
+          category: ts.DiagnosticCategory.Warning,
+          relatedInformation: [
+            {
+              category: ts.DiagnosticCategory.Error,
+              code: 0,
+              file: found[1].source,
+              start: found[1].start,
+              length: undefined,
+              messageText: `${found[0]}: ${found[1].type}`,
+            },
+          ],
+        }
+      );
+    }
+    objectMap[name] = {
+      progid: activeXmap[type],
+      source: node.getSourceFile(),
+      start: node.getStart(),
+      type,
+    };
+  }
+  return {node};
+}
+
+function processTaggedGlobalFunction(
+  node: ts.Node,
+  {onend}: ExtendedContext
+): {node?: ts.Node} | undefined {
+  // ソースの一番外側のスコープで宣言されている引数を持たない名前付き関数
+  if (
+    node.parent !== node.getSourceFile() ||
+    !ts.isFunctionDeclaration(node) ||
+    !node.name ||
+    node.parameters.length !== 0
+  ) {
+    return undefined;
+  }
+  // 関数の前のコメントから@～を抽出
+  const tags: {[name: string]: string} = {};
+  // 関数の前に書かれているコメント
+  const comments = node.getSourceFile().text.slice(node.pos, node.getStart());
+  for (const line of (function* () {
+    for (const [, lineComment, blockComment, unknownText] of comments.matchAll(
+      /\/\/[ \t]*([^\r\n]*?)[ \t]*\r?\n|\/\**\s*(.*?)\s*\*\/|\s+|(?<=.)/gs
+    )) {
+      assert(!unknownText, 'コメントと空白以外は現れないはず');
+      if (lineComment !== undefined) {
+        // 一行コメント
+        yield lineComment;
+      } else if (blockComment !== undefined) {
+        // ブロックコメント
+        for (const line of blockComment
+          // 1行ごとに分割
+          .split(/\r?\n/)
+          // 行頭の*と空白、行末の空白を除去
+          .map(line => line.replace(/^\s*\*\s*|\s+$/g, ''))) {
+          yield line;
+        }
+      }
+    }
+  })()) {
+    const [, tagname, parameters] = /^@(\w+)(?:\((.*)\))?$/.exec(line) ?? [];
+    if (tagname) {
+      tags[tagname] = parameters;
+    }
+  }
+  // @onendがあったらその関数をスクリプトの最後に呼び出し
+  if ('onend' in tags) {
+    onend.push(node.name.text);
+  }
+  return {node};
+}
+
+function processArrayLiteralExpression(
+  node: ts.Node,
+  context: ExtendedContext
+): {node?: ts.Node} | undefined {
+  // ES5以降は配列リテラルの最後のコンマは無視されるがJScriptでは最後にundefinedが追加されてしまうので取り除く
+  if (!ts.isArrayLiteralExpression(node) || !node.elements.hasTrailingComma) {
+    return undefined;
+  }
+  const elements = context.factory.createNodeArray(node.elements, false);
+  return {
+    node: context.factory.createArrayLiteralExpression(
+      elements,
+      'multiLine' in node && !!node.multiLine
+    ),
+  };
+}
+
+function processKeywordPropertyAccess(
+  node: ts.Node,
+  context: ExtendedContext
+): {node?: ts.Node} | undefined {
+  // JScriptではSymbol.forのようにプロパティ名が予約語のときエラーになるのでSymbol['for']のように置き換える
+  if (
+    !ts.isPropertyAccessExpression(node) ||
+    !ts.isIdentifier(node.name) ||
+    !RESERVED.includes(node.name.text)
+  ) {
+    return undefined;
+  }
+  return {
+    node: context.factory.createElementAccessExpression(
+      node.expression,
+      context.factory.createStringLiteral(node.name.text, true)
+    ),
+  };
+}
+
+function checkRegularExpressionForJScript(
+  node: ts.Node,
+  {diagnostics}: ExtendedContext
+): {node?: ts.Node} | undefined {
+  // 正規表現の未サポート仕様のチェック
+  if (!ts.isRegularExpressionLiteral(node)) {
+    return undefined;
+  }
+  const literal = node.getText();
+  // 名前付きキャプチャ、もしくは後読みのパターンがないかチェック
+  let match;
+  if (
+    (match = /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<\w+>.*?[()]))/.exec(literal))
+  ) {
+    addDiagnostic(
+      diagnostics,
+      node,
+      `JScriptでは名前付きキャプチャはサポートされていません。: ${match[1]}`,
+      {offset: match[0].length}
+    );
+  }
+  if (
+    (match = /^\/[^\\]*?(?:\\.[^\\]*?)*?(?=(\(\?<[=!].*?[()]))/.exec(literal))
+  ) {
+    addDiagnostic(
+      diagnostics,
+      node,
+      `JScriptでは後読みはサポートされていません。: ${match[1]}`,
+      {offset: match[0].length}
+    );
+  }
+  if ((match = /(?<=\/)\w*?(?=([dsuy])\w*$)/.exec(literal))) {
+    addDiagnostic(
+      diagnostics,
+      node,
+      `JScriptではサポートされていない正規表現のフラグです。: ${match[1]}`,
+      {offset: match.index + match[0].length}
+    );
+  }
+  return {node};
+}
+
+function processPseudoTaggedTemplateLiteral(
+  node: ts.Node,
+  {vbscripts, runtimes, diagnostics}: ExtendedContext
+): {node?: ts.Node} | undefined {
+  if (
+    !ts.isExpressionStatement(node) ||
+    !ts.isTaggedTemplateExpression(node.expression) ||
+    !ts.isIdentifier(node.expression.tag)
+  ) {
+    return undefined;
+  }
+  // タグ付きテンプレートリテラルだけのステートメント
+  const tagname = node.expression.tag.text;
+  switch (tagname) {
+    case 'WshRuntime':
+    case 'VBScript':
+      break;
+    // その他のタグ付きテンプレートリテラルはそのまま
+    default:
+      return undefined;
+  }
+  // istanbul ignore next 式の挿入はTypeScriptでエラーになるのでcoverageは気にしない
+  if (!ts.isNoSubstitutionTemplateLiteral(node.expression.template)) {
+    addDiagnostic(diagnostics, node, `${tagname}には式の挿入ができません。`);
+    return {};
+  }
+  if (!node.expression.template.rawText) {
+    addDiagnostic(diagnostics, node, `${tagname}の中身が空です。`);
+    return {};
+  }
+  if (tagname === 'VBScript') {
+    vbscripts.push(node.expression.template.rawText);
+    //ステートメントは削除
+    return {};
+  }
+  const locator = {
+    columnNumber: 0,
+    lineNumber: 0,
+    systemId: '',
+  };
+  const parser = new DOMParser({
+    errorHandler: (_, message) => {
+      throw new Error(message);
+    },
+    locator,
+  });
+  // `` WshRuntime`～` `` をXMLとしてパーズする
+  const runtime = `<WshRuntime>${node.expression.template.rawText.replaceAll(
+    '\r\n',
+    '\n'
+  )}</WshRuntime>`;
+  try {
+    const document = parser.parseFromString(runtime);
+    for (
+      let child = document.documentElement.firstChild;
+      child;
+      child = child.nextSibling
+    ) {
+      runtimes.push(child);
+    }
+  } catch (ex) {
+    // runtime要素のparseに失敗したらエラー箇所を表示
+    const lines = runtime.split(/\r?\n/);
+    // エラー箇所より前(最大)3行
+    const pre = lines
+      .slice(Math.max(locator.lineNumber - 4, 0), locator.lineNumber)
+      .map(s => '| ' + s)
+      .join('\n');
+    // エラー箇所より後(最大)3行
+    const post = lines
+      .slice(locator.lineNumber, Math.min(locator.lineNumber + 3, lines.length))
+      .map(s => '| ' + s)
+      .join('\n');
+    addDiagnostic(
+      diagnostics,
+      node,
+      indented`
+      WshRuntimeの記述に誤りがあります。
+      ${pre}
+      ${' '.repeat(2 + locator.columnNumber - 1)}^${String(
+        // istanbul ignore next
+        typeof ex === 'object' && ex && 'message' in ex ? ex.message : ex
+      )
+        .replace(/\[xmldom (\w+)\]/g, '[$1]')
+        .replace(/^@#\[line:\d+,col:\d+\]$/gm, '')
+        .replace(/\s+/g, ' ')
+        .split(/:\s*Error:\s*/)
+        .join('\n' + ' '.repeat(2 + locator.columnNumber))}
+      ${post}
+      `
+    );
+  }
+  //ステートメントは削除
+  return {};
+}
+
+function processStringLiteral(
+  node: ts.Node,
+  context: ts.TransformationContext
+): {node: ts.Node} | undefined {
+  if (!ts.isStringLiteral(node)) {
+    return undefined;
+  }
+  const singleQuote = 'singleQuote' in node && !!node.singleQuote;
+  if (!singleQuote && !node.text.includes("'")) {
+    // `"`を使うようになっていて`'`が含まれていないものは`'`を使うように変更
+    node = context.factory.createStringLiteral(node.text, true);
+  }
+  // 非ASCII文字のエスケープを抑制する
+  ts.setEmitFlags(node, ts.EmitFlags.NoAsciiEscaping);
+  return {node};
+}
+
+/**
+ * エラー情報を追加する。
+ *
+ * @param {ts.Diagnostic[]} diagnostics エラー情報の追加先
+ * @param {ts.Node} node エラーが発生したノード
+ * @param {string} message エラーメッセージ
+ * @param {{
+ *     offset?: number;
+ *     category?: ts.DiagnosticCategory;
+ *     relatedInformation?: ts.DiagnosticRelatedInformation[];
+ *     length?: number;
+ *     code?: number;
+ *   }} [options]
+ */
 function addDiagnostic(
   diagnostics: ts.Diagnostic[],
   node: ts.Node,
   message: string,
-  offset: number = 0
+  options?: {
+    /** エラー発生箇所がノードの開始位置からずれている場合の補正値。省略時は0 */
+    offset?: number;
+    /** エラーの種類。省略時はError */
+    category?: ts.DiagnosticCategory;
+    /** 関係する情報。省略時はなし */
+    relatedInformation?: ts.DiagnosticRelatedInformation[];
+    /** エラー情報に指定するプロパティ。省略時はundefined */
+    length?: number;
+    /** エラー情報に指定するプロパティ。省略時は0 */
+    code?: number;
+  }
 ): void {
   diagnostics.push({
-    category: ts.DiagnosticCategory.Error,
-    code: 0,
+    category: options?.category ?? ts.DiagnosticCategory.Error,
+    code:
+      // istanbul ignore next
+      options?.code ?? 0,
     file: node.getSourceFile(),
     messageText: message,
-    start: node.getStart() + offset,
-    length: undefined,
+    start: node.getStart() + (options?.offset ?? 0),
+    length: options?.length,
+    relatedInformation: options?.relatedInformation,
   });
 }

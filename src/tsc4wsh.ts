@@ -18,17 +18,12 @@ import {
  */
 function appendObjectElements(
   jobElement: Element,
-  progids: {[id: string]: string}
+  progids: Record<string, {progid: string}>
 ) {
   const doc = jobElement.ownerDocument!;
   // ソース中にdeclare const fso: Scripting.FileSystemObjectのような記述を見つけたら
   // <object id="fso" progid="Scripting.FileSystemObject">を追加する
-  for (const id in progids) {
-    /* istanbul ignore next */ // eslint-disable-next-line no-prototype-builtins
-    if (!progids.hasOwnProperty(id)) {
-      continue;
-    }
-    const progid = progids[id];
+  for (const [id, {progid}] of Object.entries(progids)) {
     const objectElement = doc.createElement('object');
     objectElement.setAttribute('id', id);
     objectElement.setAttribute('progid', progid);
@@ -43,21 +38,18 @@ function appendObjectElements(
  * @param jobElement script要素を追加するjob要素
  * @param runtimes runtime要素の中身
  */
-function appendRuntimeElement(jobElement: Element, runtimeDocs: Document[]) {
+function appendRuntimeElement(jobElement: Element, runtimes: ChildNode[]) {
   const doc = jobElement.ownerDocument!;
   // WshRuntimeテンプレートリテラルがあったらruntime要素を追加
-  if (!runtimeDocs.length) {
+  if (!runtimes.length) {
     return;
   }
   const runtimeElement = doc.createElement('runtime');
   jobElement.appendChild(runtimeElement);
   jobElement.appendChild(doc.createTextNode('\n'));
   // WshRuntimeテンプレートリテラルの中身をruntime要素に追加
-  for (const runtimeDoc of runtimeDocs) {
-    const element = runtimeDoc.documentElement;
-    for (let child = element.firstChild; child; child = child.nextSibling) {
-      runtimeElement.appendChild(doc.importNode(child, true));
-    }
+  for (const child of runtimes) {
+    runtimeElement.appendChild(doc.importNode(child, true));
   }
 }
 
@@ -115,8 +107,10 @@ const polyfill = fs.promises.readFile(
 
 async function makeWsfDom(
   transpiled: string,
-  progids: {[id: string]: string},
-  runtimes: Document[],
+  progids: {[id: string]: {
+    progid: string;
+  }},
+  runtimes: ChildNode[],
   vbscripts: string[]
 ) {
   const script = indented`

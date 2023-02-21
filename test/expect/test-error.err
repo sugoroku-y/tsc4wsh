@@ -1,8 +1,8 @@
     エラー: test/test-error.ts
-    test/test-error.ts (4,8): JScriptでは名前付きキャプチャはサポートされていません。: (?<test>abc)
-    test/test-error.ts (4,2): JScriptでは後読みはサポートされていません。: (?<!v)
-    test/test-error.ts (4,21): JScriptではサポートされていない正規表現のフラグです。: s
-    test/test-error.ts (6,1): WshRuntimeの記述に誤りがあります。
+    test/test-error.ts (5,8): JScriptでは名前付きキャプチャはサポートされていません。: (?<test>abc)
+    test/test-error.ts (5,2): JScriptでは後読みはサポートされていません。: (?<!v)
+    test/test-error.ts (5,21): JScriptではサポートされていない正規表現のフラグです。: s
+    test/test-error.ts (7,1): WshRuntimeの記述に誤りがあります。
     | <description>
     |   tsc4wshのデバッグ用スクリプト
     | </description>
@@ -12,4 +12,8 @@
     | <named name="base" type="string" required="true" helpstring="相対パスやワイルドカードの基準となるディレクトリ" />
     | <unnamed name="filename" many="true" required="true" helpstring="処理するファイル。ワイルドカード指定可。"/>
     | <example>
-    test/test-error.ts (21,1): VBScriptの中身が空です。
+    test/test-error.ts (22,1): VBScriptの中身が空です。
+    test/test-error.ts (27,3): 同じ名前で違う型が宣言されています。: fso: WindowsInstaller.Installer
+        private-modules/filesystemobject-util/index.ts (4,3): fso: Scripting.FileSystemObject
+    test/test-error.ts (28,3): 違う名前で同じ型が宣言されています。: fso2: Scripting.FileSystemObject
+        private-modules/filesystemobject-util/index.ts (4,3): fso: Scripting.FileSystemObject
