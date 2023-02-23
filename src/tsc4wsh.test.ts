@@ -33,6 +33,7 @@ describe('tsc4wsh', () => {
       stdoutText += args[0];
       return true;
     });
+    const callack = jest.fn();
     const mockErr = jest.spyOn(process.stderr, 'write').mockImplementation((...args) => {
       stderrText += args[0];
       return true;

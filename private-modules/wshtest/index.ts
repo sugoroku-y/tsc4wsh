@@ -181,6 +181,22 @@ class TestResult<T> {
       throw new TestFailed(`expected: ${toString(expected)}, but actual: ${toString(this.actual)}`);
     }
   }
+  public toBeUndefined(): void {
+    this.toBe(undefined as T);
+  }
+  public toBeDefined(): void {
+    this.not.toBeUndefined();
+  }
+  public toBeFalsy(): void {
+    if (this.actual) {
+      throw new TestFailed(`expected falsy, but actual: ${toString(this.actual)}`);
+    }
+  }
+  public toBeTruthy(): void {
+    if (!this.actual) {
+      throw new TestFailed(`expected truthy, but actual: ${toString(this.actual)}`);
+    }
+  }
   public toEqual(expected: T): void {
     if (typeof this.actual === 'function') {
       throw new IllegalTest('Unsupported value type: function');
@@ -240,6 +256,18 @@ class TestResult<T> {
         throw ex;
       }
     },
+    toBeUndefined: (): void => {
+      this.not.toBe(undefined as T);
+    },
+    toBeDefined: (): void => {
+      this.toBeUndefined();
+    },
+    toBeFalsy: (): void => {
+      this.toBeTruthy();
+    },
+    toBeTruthy: (): void => {
+      this.toBeFalsy();
+    },
     toEqual: (unexpected: T): void => {
       try {
         this.toEqual(unexpected);
@@ -286,31 +314,66 @@ class TestResult<T> {
       }
     },
   };
-}
-
-type TestCase = {description?: string; caption: string; testproc: () => unknown; result?: boolean};
-const suite: TestCase[] = [];
-
-let currentDescription: string | undefined;
-
-function describe(caption: string, tests: () => unknown): void {
-  const save = currentDescription;
-  currentDescription = caption;
-  try {
-    tests();
-  } finally {
-    currentDescription = save;
+  toHaveBeenCalledTimes(times: number): void {
+    if (typeof this.actual !== 'function' ||
+      !('mock' in this.actual) ||
+      typeof this.actual.mock !== 'object' || !this.actual.mock ||
+      !('calls' in this.actual.mock) ||
+      !Array.isArray(this.actual.mock.calls)) {
+      throw new IllegalTest(`not mock`);
+    }
+    if (this.actual.mock.calls.length !== times) {
+      throw new TestFailed(`expected the mock to be called ${times} times, but was called ${this.actual.mock.calls.length} times `)
+    }
   }
 }
 
+type TestCase = {
+  caption: string;
+  testproc: () => unknown;
+  result?: boolean;
+  stack: DescribeContext[];
+};
+const suite: TestCase[] = [];
+
+interface DescribeContext {
+  beforeAll?: Array<() => unknown>;
+  beforeEach?: Array<() => unknown>;
+  afterAll?: Array<() => unknown>;
+  afterEach?: Array<() => unknown>;
+  caption: string;
+}
+const stack: DescribeContext[] = [{caption: ''}];
+
+function describe(caption: string, tests: () => unknown): void {
+  stack.push({caption});
+  try {
+    tests();
+  } finally {
+    stack.pop();
+  }
+}
+
+function beforeAll(before: () => unknown) {
+  (stack[stack.length - 1].beforeAll ??= []).push(before);
+}
+function beforeEach(before: () => unknown) {
+  (stack[stack.length - 1].beforeEach ??= []).push(before);
+}
+function afterAll(before: () => unknown) {
+  (stack[stack.length - 1].afterAll ??= []).push(before);
+}
+function afterEach(before: () => unknown) {
+  (stack[stack.length - 1].afterEach ??= []).push(before);
+}
+
 function test(caption: string, testproc: () => void): void {
-  const description = currentDescription;
   const testcase = {
-    description,
-    caption,
+    caption: [...stack.slice(1).map(({caption}) => caption), caption].join(' '),
     testproc,
+    stack: stack.slice(),
   };
-  testcase.toString = description ? () => `${description} ${caption}` : () => caption;
+  testcase.toString = function () {return this.caption;};
   suite.push(testcase);
 }
 namespace test {
@@ -383,6 +446,23 @@ function wshtestRun() {
   const executeSuite = filter ? suite.filter(testcase => filter.test(String(testcase))) : suite;
   for (const testcase of executeSuite) {
     try {
+      for (const entry of testcase.stack) {
+        for (const proc of entry.beforeAll ?? []) {
+          if ('executed' in proc) {
+            continue;
+          }
+          try {
+            proc();
+          } finally {
+            (proc as {executed?: never}).executed = undefined;
+          }
+        }
+      }
+      for (const entry of testcase.stack) {
+        for (const proc of entry.beforeEach ?? []) {
+          proc();
+        }
+      }
       testcase.testproc.call(null);
       testcase.result = true;
     } catch (ex) {
@@ -402,6 +482,24 @@ function wshtestRun() {
           ex
         }`,
       );
+    } finally {
+      for (const entry of testcase.stack) {
+        for (const proc of entry.afterEach ?? []) {
+          proc();
+        }
+      }
+      for (const entry of testcase.stack) {
+        for (const proc of entry.afterAll ?? []) {
+          if ('executed' in proc) {
+            continue;
+          }
+          try {
+            proc();
+          } finally {
+            (proc as {executed?: never}).executed = undefined;
+          }
+        }
+      }
     }
   }
   const executed = suite.filter(({result}) => result !== undefined);
@@ -411,4 +509,60 @@ function wshtestRun() {
       (((succeeded.length / executed.length) * 1000 + 0.5) | 0) / 10
     }%`,
   );
+}
+
+interface MockResultReturn<T> {
+  type: 'return';
+  value: T;
+}
+interface MockResultIncomplete {
+    type: 'incomplete';
+    value?: never;
+}
+interface MockResultThrow {
+    type: 'throw';
+    value: any;
+}
+
+type MockResult<T> = MockResultReturn<T> | MockResultThrow | MockResultIncomplete;
+
+interface MockContext<T, Y extends any[]> {
+  calls: Y[];
+  instances: T[];
+  invocationCallOrder: number[];
+  results: Array<MockResult<T>>;
+}
+
+interface MockInstance<T, Y extends any[]> {
+  mock: MockContext<T, Y>;
+}
+interface Mock<T = any, Y extends any[] = any> extends Function, MockInstance<T, Y> {
+  new (...args: Y): T;
+  (...args: Y): T;
+}
+
+const jest = {
+  fn<T = any, Y extends any[] = any>(implementation?: (...args: Y) => T): Mock<T, Y> {
+    const mock: MockContext<T, Y> = {
+      calls: [],
+      instances: [],
+      invocationCallOrder: [],
+      results: [],
+    };
+    const callback = function (...args: Y): T {
+      const index = mock.calls.length;
+      mock.calls.push(args);
+      mock.results[index] = {type: 'incomplete', value: undefined};
+      try {
+        const value = implementation?.(...args) as T;
+        mock.results[index] = {type: 'return', value};
+        return value;
+      } catch (value) {
+        mock.results[index] = {type: 'throw', value};
+        throw value;
+      }
+    };
+    callback.mock = mock;
+    return callback as Mock<T, Y>;
+  }
 }
