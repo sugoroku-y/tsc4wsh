@@ -180,6 +180,9 @@
     _end?: number,
   ): T[] {
     const target = adjustIndex(_target, this.length) ?? 0;
+    if (target >= this.length) {
+      return this;
+    }
     const start = adjustIndex(_start, this.length) ?? 0;
     if (target === start) {
       return this;
@@ -276,4 +279,41 @@
       yield i;
     }
   };
+  Array.prototype.values ??= function* values<T>(this: T[]): Generator<T, void> {
+    for (let i = 0; i < this.length; ++i) {
+      yield this[i];
+    }
+  };
+
+  Array.prototype.at ??= function at<T>(this: T[], index: number): T | undefined {
+    return this[(index < 0 ? this.length : 0) + index];
+  };
+
+  Array.prototype.flat ??= function flat<T>(this: T[], depth?: number) {
+    return [...function* flatten<T>(array: T[], depth: number): Generator<any, void> {
+      for (const item of array) {
+        if (depth > 0 && Array.isArray(item)) {
+          yield* flatten(item, depth - 1);
+        } else {
+          yield item;
+        }
+      }
+    }(this, depth ?? 1)];
+  } as typeof Array.prototype.flat;
+
+  Array.prototype.flatMap ??= function flatMap<T, R, THIS = unknown>(this: T[], callback: (this: THIS, e: T, i: number, a: T[]) => R | readonly R[], thisArg: THIS): R[] {
+    const array = this;
+    return [...function* flatten(): Generator<any, void> {
+      for (const [index, value] of array.entries()) {
+        const result = callback.call(thisArg, value, index, array)
+        if (Array.isArray(result)) {
+          for (const item of result) {
+            yield item;
+          }
+        } else {
+          yield result;
+        }
+      }
+    }()];
+  } as typeof Array.prototype.flatMap;
 })();

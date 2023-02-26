@@ -109,4 +109,7 @@
       }
     }.call(this, new RegExp(_pattern.source, flags));
   };
+  String.prototype.at ??= function at(this: string, index: number): string | undefined {
+    return this.charAt((index < 0 ? this.length : 0) + index) || undefined;
+  };
 })();

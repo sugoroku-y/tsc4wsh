@@ -408,3 +408,23 @@ describe('String.prototype.matchAll', () => {
     }).toThrow();
   });
 });
+
+describe('String.prototype.at', () => {
+  test('positive index', () => {
+    const str = 'abcde';
+    expect(str.at(2)).toBe('c');
+    expect(str.at(4)).toBe('e');
+  });
+
+  test('negative index', () => {
+    const str = 'abcde';
+    expect(str.at(-1)).toBe('e');
+    expect(str.at(-3)).toBe('c');
+  });
+
+  test('out of range index', () => {
+    const str = 'abcde';
+    expect(str.at(5)).toBeUndefined();
+    expect(str.at(-6)).toBeUndefined();
+  });
+});

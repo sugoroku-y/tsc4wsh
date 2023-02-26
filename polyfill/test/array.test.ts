@@ -226,7 +226,7 @@ describe('Array methods', () => {
     test('works with negative indices', () => {
       const arr = [1, 2, 3, 4, 5];
       const result = arr.copyWithin(-2, -4, -2);
-      expect(result).toEqual([1, 2, 4, 3, 4]);
+      expect(result).toEqual([1, 2, 3, 2, 3]);
     });
   
     test('does not modify the array if no arguments are passed', () => {
@@ -313,6 +313,26 @@ describe('Array methods', () => {
       const result = arr.indexOf(10);
       expect(result).toBe(-1);
     });
+
+    test('duplicated array', () => {
+      expect([...arr, ...arr].indexOf(3)).toBe(2);
+    });
+  });
+
+  describe('Array.prototype.lastIndexOf()', () => {
+    test('returns the index of the first occurrence of the specified element', () => {
+      const result = arr.lastIndexOf(3);
+      expect(result).toBe(2);
+    });
+
+    test('returns -1 if the array does not contain the specified element', () => {
+      const result = arr.lastIndexOf(10);
+      expect(result).toBe(-1);
+    });
+
+    test('duplicated array', () => {
+      expect([...arr, ...arr].lastIndexOf(3)).toBe(7);
+    });
   });
 
   describe('Array.prototype.entries()', () => {
@@ -345,16 +365,24 @@ describe('Array methods', () => {
       expect(result.next().done).toBe(true);
     });
   });
+  describe('Array.prototype.values()', () => {
+    test('returns an iterator object that contains the values of the array', () => {
+      const result = arr.values();
+      expect(result.next().value).toBe(1);
+      expect(result.next().value).toBe(2);
+      expect(result.next().value).toBe(3);
+      expect(result.next().value).toBe(4);
+      expect(result.next().value).toBe(5);
+      expect(result.next().done).toBe(true);
+    });
+
+    test('works with an empty array', () => {
+      const emptyArr: unknown[] = [];
+      const result = emptyArr.values();
+      expect(result.next().done).toBe(true);
+    });
+  });
 });
-
-  // - Array.prototype.fill
-  // - Array.prototype.find
-  // - Array.prototype.findIndex
-  // - Array.prototype.includes
-  // - Array.prototype.indexOf
-  // - Array.prototype.entries
-  // - Array.prototype.keys
-
 
 describe('Array.prototype.at', () => {
   test('positive index', () => {
@@ -373,5 +401,35 @@ describe('Array.prototype.at', () => {
     const arr = ['a', 'b', 'c', 'd', 'e'];
     expect(arr.at(5)).toBeUndefined();
     expect(arr.at(-6)).toBeUndefined();
+  });
+});
+
+describe('Array.prototype.flat', () => {
+  test('empty', () => {
+    expect([].flat()).toEqual([]);
+  });
+  test('simple', () => {
+    expect([1,2,3].flat()).toEqual([1,2,3]);
+  });
+  test('complex level:1', () => {
+    expect([1,2,3,[4,5,6]].flat()).toEqual([1,2,3,4,5,6]);
+  });
+  test('complex level:2', () => {
+    expect([1,2,3,[4,5,6,[7,8,9]]].flat()).toEqual([1,2,3,4,5,6,[7,8,9]]);
+  });
+});
+
+describe('Array.prototype.flatMap', () => {
+  test('empty', () => {
+    expect([].flatMap(e => e)).toEqual([]);
+  });
+  test('simple', () => {
+    expect([1,2,3].flatMap(e => e)).toEqual([1,2,3]);
+  });
+  test('complex level:1', () => {
+    expect([1,2,3].flatMap(e => e % 2 === 0 ? [e, e] : e)).toEqual([1,2,2,3]);
+  });
+  test('complex level:2', () => {
+    expect([1,2,3].flatMap(e => e % 2 === 0 ? [e, [e]] : e)).toEqual([1,2,[2],3]);
   });
 });

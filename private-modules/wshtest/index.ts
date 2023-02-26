@@ -542,19 +542,19 @@ interface Mock<T = any, Y extends any[] = any> extends Function, MockInstance<T,
 }
 
 const jest = {
-  fn<T = any, Y extends any[] = any>(implementation?: (...args: Y) => T): Mock<T, Y> {
+  fn<T = any, Y extends any[] = any, THIS = unknown>(implementation?: (this: THIS, ...args: Y) => T): Mock<T, Y> {
     const mock: MockContext<T, Y> = {
       calls: [],
       instances: [],
       invocationCallOrder: [],
       results: [],
     };
-    const callback = function (...args: Y): T {
+    const callback = function (this: THIS, ...args: Y): T {
       const index = mock.calls.length;
       mock.calls.push(args);
       mock.results[index] = {type: 'incomplete', value: undefined};
       try {
-        const value = implementation?.(...args) as T;
+        const value = implementation?.apply(this, args) as T;
         mock.results[index] = {type: 'return', value};
         return value;
       } catch (value) {
