@@ -39,9 +39,45 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 (function () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
-    var _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+    var _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18;
     (_a = Array.isArray) !== null && _a !== void 0 ? _a : (Array.isArray = function (obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
     });
@@ -85,7 +121,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return array;
     });
-    (_d = (_v = Array.prototype).some) !== null && _d !== void 0 ? _d : (_v.some = function some(callback, thisObj) {
+    (_d = (_z = Array.prototype).some) !== null && _d !== void 0 ? _d : (_z.some = function some(callback, thisObj) {
         for (var i = 0; i < this.length; ++i) {
             if (!(i in this)) {
                 continue;
@@ -96,7 +132,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return false;
     });
-    (_e = (_w = Array.prototype).every) !== null && _e !== void 0 ? _e : (_w.every = function every(callback, thisObj) {
+    (_e = (_0 = Array.prototype).every) !== null && _e !== void 0 ? _e : (_0.every = function every(callback, thisObj) {
         for (var i = 0; i < this.length; ++i) {
             if (!(i in this)) {
                 continue;
@@ -107,7 +143,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return true;
     });
-    (_f = (_x = Array.prototype).reduce) !== null && _f !== void 0 ? _f : (_x.reduce = function reduce(callback, initialValue) {
+    (_f = (_1 = Array.prototype).reduce) !== null && _f !== void 0 ? _f : (_1.reduce = function reduce(callback, initialValue) {
         var index = 0;
         var result = 1 < arguments.length ? initialValue : this[index++];
         for (; index < this.length; ++index) {
@@ -118,7 +154,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return result;
     });
-    (_g = (_y = Array.prototype).reduceRight) !== null && _g !== void 0 ? _g : (_y.reduceRight = function reduceRight(callback, initialValue) {
+    (_g = (_2 = Array.prototype).reduceRight) !== null && _g !== void 0 ? _g : (_2.reduceRight = function reduceRight(callback, initialValue) {
         var index = this.length;
         var result = 1 < arguments.length ? initialValue : this[--index];
         while (index-- > 0) {
@@ -129,7 +165,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return result;
     });
-    (_h = (_z = Array.prototype).forEach) !== null && _h !== void 0 ? _h : (_z.forEach = function forEach(callback, thisObj) {
+    (_h = (_3 = Array.prototype).forEach) !== null && _h !== void 0 ? _h : (_3.forEach = function forEach(callback, thisObj) {
         for (var index = 0; index < this.length; ++index) {
             if (!(index in this)) {
                 continue;
@@ -137,7 +173,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             callback.call(thisObj, this[index], index, this);
         }
     });
-    (_j = (_0 = Array.prototype).filter) !== null && _j !== void 0 ? _j : (_0.filter = function filter(callback, thisObj) {
+    (_j = (_4 = Array.prototype).filter) !== null && _j !== void 0 ? _j : (_4.filter = function filter(callback, thisObj) {
         var result = [];
         for (var index = 0; index < this.length; ++index) {
             if (!(index in this)) {
@@ -150,7 +186,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return result;
     });
-    (_k = (_1 = Array.prototype).map) !== null && _k !== void 0 ? _k : (_1.map = function map(callback, thisObj) {
+    (_k = (_5 = Array.prototype).map) !== null && _k !== void 0 ? _k : (_5.map = function map(callback, thisObj) {
         var result = [];
         for (var index = 0; index < this.length; ++index) {
             if (!(index in this)) {
@@ -175,9 +211,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return value;
     }
-    (_l = (_2 = Array.prototype).copyWithin) !== null && _l !== void 0 ? _l : (_2.copyWithin = function copyWithin(_target, _start, _end) {
+    (_l = (_6 = Array.prototype).copyWithin) !== null && _l !== void 0 ? _l : (_6.copyWithin = function copyWithin(_target, _start, _end) {
         var _a, _b, _c;
         var target = (_a = adjustIndex(_target, this.length)) !== null && _a !== void 0 ? _a : 0;
+        if (target >= this.length) {
+            return this;
+        }
         var start = (_b = adjustIndex(_start, this.length)) !== null && _b !== void 0 ? _b : 0;
         if (target === start) {
             return this;
@@ -195,7 +234,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return this;
     });
-    (_m = (_3 = Array.prototype).fill) !== null && _m !== void 0 ? _m : (_3.fill = function fill(value, _start, _end) {
+    (_m = (_7 = Array.prototype).fill) !== null && _m !== void 0 ? _m : (_7.fill = function fill(value, _start, _end) {
         var _a, _b;
         var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : 0;
         var end = (_b = adjustIndex(_end, this.length)) !== null && _b !== void 0 ? _b : this.length;
@@ -204,7 +243,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return this;
     });
-    (_o = (_4 = Array.prototype).find) !== null && _o !== void 0 ? _o : (_4.find = function find(pred, thisArg) {
+    (_o = (_8 = Array.prototype).find) !== null && _o !== void 0 ? _o : (_8.find = function find(pred, thisArg) {
         for (var i = 0; i < this.length; ++i) {
             if (!(i in this)) {
                 continue;
@@ -216,7 +255,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return undefined;
     });
-    (_p = (_5 = Array.prototype).findIndex) !== null && _p !== void 0 ? _p : (_5.findIndex = function findIndex(pred, thisArg) {
+    (_p = (_9 = Array.prototype).findIndex) !== null && _p !== void 0 ? _p : (_9.findIndex = function findIndex(pred, thisArg) {
         for (var i = 0; i < this.length; ++i) {
             if (!(i in this)) {
                 continue;
@@ -228,7 +267,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return -1;
     });
-    (_q = (_6 = Array.prototype).includes) !== null && _q !== void 0 ? _q : (_6.includes = function includes(searchElement) {
+    (_q = (_10 = Array.prototype).includes) !== null && _q !== void 0 ? _q : (_10.includes = function includes(searchElement) {
         for (var i = 0; i < this.length; ++i) {
             if (!(i in this)) {
                 continue;
@@ -239,7 +278,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return false;
     });
-    (_r = (_7 = Array.prototype).indexOf) !== null && _r !== void 0 ? _r : (_7.indexOf = function indexOf(searchElement, _start) {
+    (_r = (_11 = Array.prototype).indexOf) !== null && _r !== void 0 ? _r : (_11.indexOf = function indexOf(searchElement, _start) {
         var _a;
         var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : 0;
         for (var index = start; index < this.length; ++index) {
@@ -249,7 +288,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return -1;
     });
-    (_s = (_8 = Array.prototype).lastIndexOf) !== null && _s !== void 0 ? _s : (_8.lastIndexOf = function lastIndexOf(searchElement, _start) {
+    (_s = (_12 = Array.prototype).lastIndexOf) !== null && _s !== void 0 ? _s : (_12.lastIndexOf = function lastIndexOf(searchElement, _start) {
         var _a;
         var start = (_a = adjustIndex(_start, this.length)) !== null && _a !== void 0 ? _a : this.length - 1;
         for (var index = start; index >= 0; --index) {
@@ -259,7 +298,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return -1;
     });
-    (_t = (_9 = Array.prototype).entries) !== null && _t !== void 0 ? _t : (_9.entries = function entries() {
+    (_t = (_13 = Array.prototype).entries) !== null && _t !== void 0 ? _t : (_13.entries = function entries() {
         var i;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -279,7 +318,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             }
         });
     });
-    (_u = (_10 = Array.prototype).keys) !== null && _u !== void 0 ? _u : (_10.keys = function keys() {
+    (_u = (_14 = Array.prototype).keys) !== null && _u !== void 0 ? _u : (_14.keys = function keys() {
         var i;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -299,6 +338,136 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             }
         });
     });
+    (_v = (_15 = Array.prototype).values) !== null && _v !== void 0 ? _v : (_15.values = function values() {
+        var i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    i = 0;
+                    _a.label = 1;
+                case 1:
+                    if (!(i < this.length)) return [3, 4];
+                    return [4, this[i]];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    ++i;
+                    return [3, 1];
+                case 4: return [2];
+            }
+        });
+    });
+    (_w = (_16 = Array.prototype).at) !== null && _w !== void 0 ? _w : (_16.at = function at(index) {
+        return this[(index < 0 ? this.length : 0) + index];
+    });
+    (_x = (_17 = Array.prototype).flat) !== null && _x !== void 0 ? _x : (_17.flat = function flat(depth) {
+        return __spreadArray([], __read(function flatten(array, depth) {
+            var array_3, array_3_1, item, e_1_1;
+            var e_1, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 7, 8, 9]);
+                        array_3 = __values(array), array_3_1 = array_3.next();
+                        _b.label = 1;
+                    case 1:
+                        if (!!array_3_1.done) return [3, 6];
+                        item = array_3_1.value;
+                        if (!(depth > 0 && Array.isArray(item))) return [3, 3];
+                        return [5, __values(flatten(item, depth - 1))];
+                    case 2:
+                        _b.sent();
+                        return [3, 5];
+                    case 3: return [4, item];
+                    case 4:
+                        _b.sent();
+                        _b.label = 5;
+                    case 5:
+                        array_3_1 = array_3.next();
+                        return [3, 1];
+                    case 6: return [3, 9];
+                    case 7:
+                        e_1_1 = _b.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3, 9];
+                    case 8:
+                        try {
+                            if (array_3_1 && !array_3_1.done && (_a = array_3["return"])) _a.call(array_3);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                        return [7];
+                    case 9: return [2];
+                }
+            });
+        }(this, depth !== null && depth !== void 0 ? depth : 1)), false);
+    });
+    (_y = (_18 = Array.prototype).flatMap) !== null && _y !== void 0 ? _y : (_18.flatMap = function flatMap(callback, thisArg) {
+        var array = this;
+        return __spreadArray([], __read(function flatten() {
+            var _a, _b, _c, index, value, result, result_1, result_1_1, item, e_2_1, e_3_1;
+            var e_3, _d, e_2, _e;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
+                    case 0:
+                        _f.trys.push([0, 14, 15, 16]);
+                        _a = __values(array.entries()), _b = _a.next();
+                        _f.label = 1;
+                    case 1:
+                        if (!!_b.done) return [3, 13];
+                        _c = __read(_b.value, 2), index = _c[0], value = _c[1];
+                        result = callback.call(thisArg, value, index, array);
+                        if (!Array.isArray(result)) return [3, 10];
+                        _f.label = 2;
+                    case 2:
+                        _f.trys.push([2, 7, 8, 9]);
+                        result_1 = (e_2 = void 0, __values(result)), result_1_1 = result_1.next();
+                        _f.label = 3;
+                    case 3:
+                        if (!!result_1_1.done) return [3, 6];
+                        item = result_1_1.value;
+                        return [4, item];
+                    case 4:
+                        _f.sent();
+                        _f.label = 5;
+                    case 5:
+                        result_1_1 = result_1.next();
+                        return [3, 3];
+                    case 6: return [3, 9];
+                    case 7:
+                        e_2_1 = _f.sent();
+                        e_2 = { error: e_2_1 };
+                        return [3, 9];
+                    case 8:
+                        try {
+                            if (result_1_1 && !result_1_1.done && (_e = result_1["return"])) _e.call(result_1);
+                        }
+                        finally { if (e_2) throw e_2.error; }
+                        return [7];
+                    case 9: return [3, 12];
+                    case 10: return [4, result];
+                    case 11:
+                        _f.sent();
+                        _f.label = 12;
+                    case 12:
+                        _b = _a.next();
+                        return [3, 1];
+                    case 13: return [3, 16];
+                    case 14:
+                        e_3_1 = _f.sent();
+                        e_3 = { error: e_3_1 };
+                        return [3, 16];
+                    case 15:
+                        try {
+                            if (_b && !_b.done && (_d = _a["return"])) _d.call(_a);
+                        }
+                        finally { if (e_3) throw e_3.error; }
+                        return [7];
+                    case 16: return [2];
+                }
+            });
+        }()), false);
+    });
 })();
 (function () {
     var _a;
@@ -317,22 +486,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
 };
 (function () {
     var _a, _b;
@@ -438,26 +591,6 @@ var _c, _d, _e, _f;
         }
     });
 });
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 (function () {
     var _a, _b, _c, _d, _e, _f;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -471,8 +604,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         'constructor',
     ];
     function keys(name, obj) {
-        var _a, _b, _c, _i, prop, dontEnums_1, dontEnums_1_1, name_1, e_1_1;
-        var e_1, _d;
+        var _a, _b, _c, _i, prop, dontEnums_1, dontEnums_1_1, name_1, e_4_1;
+        var e_4, _d;
         return __generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
@@ -532,22 +665,22 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                     return [3, 5];
                 case 8: return [3, 11];
                 case 9:
-                    e_1_1 = _e.sent();
-                    e_1 = { error: e_1_1 };
+                    e_4_1 = _e.sent();
+                    e_4 = { error: e_4_1 };
                     return [3, 11];
                 case 10:
                     try {
                         if (dontEnums_1_1 && !dontEnums_1_1.done && (_d = dontEnums_1["return"])) _d.call(dontEnums_1);
                     }
-                    finally { if (e_1) throw e_1.error; }
+                    finally { if (e_4) throw e_4.error; }
                     return [7];
                 case 11: return [2];
             }
         });
     }
     function map(iterable, pred) {
-        var iterable_1, iterable_1_1, e, e_2_1;
-        var e_2, _a;
+        var iterable_1, iterable_1_1, e, e_5_1;
+        var e_5, _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -566,14 +699,14 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                     return [3, 1];
                 case 4: return [3, 7];
                 case 5:
-                    e_2_1 = _b.sent();
-                    e_2 = { error: e_2_1 };
+                    e_5_1 = _b.sent();
+                    e_5 = { error: e_5_1 };
                     return [3, 7];
                 case 6:
                     try {
                         if (iterable_1_1 && !iterable_1_1.done && (_a = iterable_1["return"])) _a.call(iterable_1);
                     }
-                    finally { if (e_2) throw e_2.error; }
+                    finally { if (e_5) throw e_5.error; }
                     return [7];
                 case 7: return [2];
             }
@@ -611,7 +744,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         return new F();
     });
     (_f = Object.assign) !== null && _f !== void 0 ? _f : (Object.assign = function (target) {
-        var e_3, _a, e_4, _b;
+        var e_6, _a, e_7, _b;
         var sources = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             sources[_i - 1] = arguments[_i];
@@ -624,26 +757,26 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
             for (var sources_1 = __values(sources), sources_1_1 = sources_1.next(); !sources_1_1.done; sources_1_1 = sources_1.next()) {
                 var source = sources_1_1.value;
                 try {
-                    for (var _c = (e_4 = void 0, __values(Object.keys(source))), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    for (var _c = (e_7 = void 0, __values(Object.keys(source))), _d = _c.next(); !_d.done; _d = _c.next()) {
                         var name = _d.value;
                         to[name] = source[name];
                     }
                 }
-                catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                catch (e_7_1) { e_7 = { error: e_7_1 }; }
                 finally {
                     try {
                         if (_d && !_d.done && (_b = _c["return"])) _b.call(_c);
                     }
-                    finally { if (e_4) throw e_4.error; }
+                    finally { if (e_7) throw e_7.error; }
                 }
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (sources_1_1 && !sources_1_1.done && (_a = sources_1["return"])) _a.call(sources_1);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_6) throw e_6.error; }
         }
         return to;
     });
@@ -702,7 +835,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 return value;
             }
             return (function recursive(key, subvalue) {
-                var e_5, _a;
+                var e_8, _a;
                 if (subvalue && typeof subvalue === 'object') {
                     try {
                         for (var _b = __values(Object.entries(subvalue)), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -710,12 +843,12 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                             subvalue[k] = recursive(k, v);
                         }
                     }
-                    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+                    catch (e_8_1) { e_8 = { error: e_8_1 }; }
                     finally {
                         try {
                             if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
                         }
-                        finally { if (e_5) throw e_5.error; }
+                        finally { if (e_8) throw e_8.error; }
                     }
                 }
                 return reviewer(key, subvalue);
@@ -936,9 +1069,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
 })();
 (function () {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    var _j, _k, _l, _m, _o, _p, _q, _r;
-    (_a = (_j = String.prototype).repeat) !== null && _a !== void 0 ? _a : (_j.repeat = function repeat(count) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _k, _l, _m, _o, _p, _q, _r, _s, _t;
+    (_a = (_k = String.prototype).repeat) !== null && _a !== void 0 ? _a : (_k.repeat = function repeat(count) {
         if (!count) {
             return '';
         }
@@ -956,7 +1089,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         }
         return this.slice(start, length !== undefined ? (start < 0 && start + length >= 0 ? undefined : start + length) : this.length);
     };
-    (_b = (_k = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_k.padStart = function padStart(length, paddings) {
+    (_b = (_l = String.prototype).padStart) !== null && _b !== void 0 ? _b : (_l.padStart = function padStart(length, paddings) {
         var count = length - this.length;
         if (count <= 0) {
             return "".concat(this);
@@ -964,7 +1097,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
         return paddings.repeat((length / paddings.length + 1) | 0).slice(0, count) + this;
     });
-    (_c = (_l = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_l.padEnd = function padEnd(length, paddings) {
+    (_c = (_m = String.prototype).padEnd) !== null && _c !== void 0 ? _c : (_m.padEnd = function padEnd(length, paddings) {
         var count = length - this.length;
         if (count <= 0) {
             return "".concat(this);
@@ -972,13 +1105,13 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         paddings !== null && paddings !== void 0 ? paddings : (paddings = ' ');
         return this + paddings.repeat((length / paddings.length + 1) | 0).slice(0, count);
     });
-    (_d = (_m = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_m.startsWith = function startsWith(searchString, position) {
+    (_d = (_o = String.prototype).startsWith) !== null && _d !== void 0 ? _d : (_o.startsWith = function startsWith(searchString, position) {
         if (!position) {
             return this.lastIndexOf(searchString, 0) === 0;
         }
         return this.slice(position, position + searchString.length) === searchString;
     });
-    (_e = (_o = String.prototype).endsWith) !== null && _e !== void 0 ? _e : (_o.endsWith = function endsWith(searchString, position) {
+    (_e = (_p = String.prototype).endsWith) !== null && _e !== void 0 ? _e : (_p.endsWith = function endsWith(searchString, position) {
         if (!position) {
             var pos_1 = this.length - searchString.length;
             return this.indexOf(searchString, pos_1) === pos_1;
@@ -986,15 +1119,15 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
         var pos = position - searchString.length;
         return pos >= 0 && this.slice(pos, position) === searchString;
     });
-    (_f = (_p = String.prototype).trim) !== null && _f !== void 0 ? _f : (_p.trim = function trim() {
+    (_f = (_q = String.prototype).trim) !== null && _f !== void 0 ? _f : (_q.trim = function trim() {
         return this.replace(/^\s+|\s+$/g, '');
     });
-    (_g = (_q = String.prototype).includes) !== null && _g !== void 0 ? _g : (_q.includes = function includes(searchString, position) {
+    (_g = (_r = String.prototype).includes) !== null && _g !== void 0 ? _g : (_r.includes = function includes(searchString, position) {
         return this.indexOf(searchString, position) >= 0;
     });
     var original_split = String.prototype.split;
     String.prototype.split = function split(separator, limit) {
-        var e_6, _a;
+        var e_9, _a;
         var str = '' + this;
         if (typeof separator === 'string') {
             return original_split.call(str, separator, limit);
@@ -1015,17 +1148,17 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 index = match.index + match[0].length;
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_9_1) { e_9 = { error: e_9_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_9) throw e_9.error; }
         }
         result.push(str.slice(index));
         return result;
     };
-    (_h = (_r = String.prototype).matchAll) !== null && _h !== void 0 ? _h : (_r.matchAll = function matchAll(_pattern) {
+    (_h = (_s = String.prototype).matchAll) !== null && _h !== void 0 ? _h : (_s.matchAll = function matchAll(_pattern) {
         if (!_pattern.global) {
             throw new Error("matchAll with a non-global RegExp");
         }
@@ -1044,6 +1177,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
                 }
             });
         }.call(this, new RegExp(_pattern.source, flags));
+    });
+    (_j = (_t = String.prototype).at) !== null && _j !== void 0 ? _j : (_t.at = function at(index) {
+        return this.charAt((index < 0 ? this.length : 0) + index) || undefined;
     });
 })();
 
